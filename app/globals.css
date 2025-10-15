@@ -4,7 +4,8 @@
 @font-face {
   font-family: 'BoldingCentury';
   src: url('/fonts/BoldingCentury-Regular.woff2') format('woff2'),
-       url('/fonts/BoldingCentury-Regular.woff') format('woff');
+       url('/fonts/BoldingCentury-Regular.woff') format('woff'),
+       url('/fonts/BoldingCentury-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -13,7 +14,8 @@
 @font-face {
   font-family: 'BoldingCentury';
   src: url('/fonts/BoldingCentury-Italic.woff2') format('woff2'),
-       url('/fonts/BoldingCentury-Italic.woff') format('woff');
+       url('/fonts/BoldingCentury-Italic.woff') format('woff'),
+       url('/fonts/BoldingCentury-Italic.ttf') format('truetype');
   font-weight: 400;
   font-style: italic;
   font-display: swap;

@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Tab } from '@headlessui/react';
+import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -64,13 +66,13 @@ export default function Home() {
         
         <nav>
           <ul className="sidebar-nav">
-            <li><a href="/">Portfolio</a></li>
-            <li><a href="/projects">Projects</a></li>
-            <li><a href="/art">Art</a></li>
-            <li><a href="/about">About</a></li>
-            <li><a href="/books">Books</a></li>
-            <li><a href="/print-shop">Print Shop</a></li>
-            <li><a href="/contact">Contact</a></li>
+            <li><Link href="/">Portfolio</Link></li>
+            <li><Link href="/projects">Projects</Link></li>
+            <li><Link href="/art">Art</Link></li>
+            <li><Link href="/about">About</Link></li>
+            <li><Link href="/books">Books</Link></li>
+            <li><Link href="/print-shop">Print Shop</Link></li>
+            <li><Link href="/contact">Contact</Link></li>
           </ul>
         </nav>
         
@@ -141,10 +143,13 @@ export default function Home() {
                   className={`thumbnail-item ${index === currentSlide ? 'active' : ''}`}
                   onClick={() => selectImage(index)}
                 >
-                  <img
+                  <Image
                     src={image.src}
                     alt={image.alt}
                     className="thumbnail-image"
+                    width={400}
+                    height={300}
+                    style={{ objectFit: 'cover' }}
                   />
                 </div>
               ))}
