@@ -12,24 +12,24 @@ export default function Home() {
   // Sample photography images - replace with your actual images
   const images = [
     {
-      src: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-      alt: 'Architectural Photography'
+      src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      alt: 'Mountain Landscape'
     },
     {
-      src: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-      alt: 'Urban Landscape'
+      src: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      alt: 'Forest Nature'
     },
     {
-      src: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-      alt: 'Modern Architecture'
+      src: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      alt: 'Cultural Festival'
     },
     {
-      src: 'https://images.unsplash.com/photo-1511818966892-d7d671e672a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2071&q=80',
-      alt: 'Industrial Design'
+      src: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      alt: 'Street Art'
     },
     {
-      src: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-      alt: 'Abstract Architecture'
+      src: 'https://images.unsplash.com/photo-1439066615861-d1af74d74000?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      alt: 'Ocean Waves'
     }
   ];
 
@@ -69,9 +69,7 @@ export default function Home() {
             <li><Link href="/">Portfolio</Link></li>
             <li><Link href="/projects">Projects</Link></li>
             <li><Link href="/art">Art</Link></li>
-            <li><Link href="/about">About</Link></li>
-            <li><Link href="/books">Books</Link></li>
-            <li><Link href="/print-shop">Print Shop</Link></li>
+            <li><Link href="/about">About</Link></li>         
             <li><Link href="/contact">Contact</Link></li>
           </ul>
         </nav>
@@ -163,21 +161,21 @@ export default function Home() {
           <div className="content-text">
             <h1>Portfolio</h1>
             <p>
-              <strong>CJ Photography</strong> specializes in architectural and commercial photography, 
-              capturing the essence of modern design and urban landscapes. Our work focuses on 
-              the interplay between light, form, and space, creating compelling visual narratives 
-              that showcase the beauty of contemporary architecture.
+              <strong>CJ Photography</strong> is passionate about capturing the world's diverse beauty 
+              through nature, culture, arts, and places. Our work celebrates the intricate details 
+              of natural landscapes, the vibrant expressions of human culture, and the artistic 
+              essence found in everyday moments and extraordinary destinations.
             </p>
             <p>
-              Based in Los Angeles, we work with architects, developers, and design firms to 
-              create stunning visual content that tells the story of exceptional spaces. 
-              Our approach combines technical precision with artistic vision, ensuring that 
-              each photograph not only documents but elevates the subject matter.
+              From the serene majesty of untouched wilderness to the bustling energy of cultural 
+              festivals, we document the stories that connect us to our planet and each other. 
+              Our approach blends documentary authenticity with artistic vision, creating images 
+              that inspire wonder and preserve memories of the world's most precious moments.
             </p>
             <p>
-              From sleek corporate headquarters to innovative residential projects, we bring 
-              a fresh perspective to architectural photography, highlighting the unique 
-              character and craftsmanship of each project we document.
+              Whether exploring remote natural wonders, immersing in local traditions, or 
+              discovering hidden artistic gems in urban landscapes, we bring a fresh perspective 
+              to visual storytelling that honors both the grandeur and intimacy of our world.
             </p>
           </div>
         </section>

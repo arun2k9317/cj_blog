@@ -1,23 +1,21 @@
 @import "tailwindcss";
 
-/* BoldingCentury Font Face Declarations */
+/* Typrighter Font Face Declarations */
 @font-face {
-  font-family: 'BoldingCentury';
-  src: url('/fonts/BoldingCentury-Regular.woff2') format('woff2'),
-       url('/fonts/BoldingCentury-Regular.woff') format('woff'),
-       url('/fonts/BoldingCentury-Regular.ttf') format('truetype');
+  font-family: 'Typrighter';
+  src: url('/fonts/typrighterV2-1.otf') format('opentype'),
+       url('/fonts/typrighterV2-1.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'BoldingCentury';
-  src: url('/fonts/BoldingCentury-Italic.woff2') format('woff2'),
-       url('/fonts/BoldingCentury-Italic.woff') format('woff'),
-       url('/fonts/BoldingCentury-Italic.ttf') format('truetype');
-  font-weight: 400;
-  font-style: italic;
+  font-family: 'Typrighter';
+  src: url('/fonts/typrighter-B.otf') format('opentype'),
+       url('/fonts/typrighter-B.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
   font-display: swap;
 }
 
@@ -41,7 +39,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-bolding: 'BoldingCentury', serif;
+  --font-primary: 'Typrighter', sans-serif;
 }
 
 * {
@@ -57,7 +55,7 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-bolding), var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-primary), var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.6;
   overflow-x: hidden;
 }
@@ -65,10 +63,13 @@ body {
 /* Gallery styles */
 .gallery-container {
   position: relative;
-  width: 100%;
-  height: 100vh;
+  width: calc(100% - 80px);
+  height: calc(100vh - 80px);
+  margin: 40px;
   overflow: hidden;
   background: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .gallery-slide {
@@ -79,7 +80,7 @@ body {
   height: 100%;
   opacity: 0;
   transition: opacity 0.8s ease-in-out;
-  background-size: contain;
+  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 }
@@ -89,7 +90,7 @@ body {
 }
 
 .gallery-controls {
-  font-family: var(--font-bolding);
+  font-family: var(--font-primary);
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -137,13 +138,14 @@ body {
 }
 
 .sidebar-logo {
-  font-family: var(--font-bolding);
-  font-size: 24px;
-  font-weight: 400;
+  font-family: var(--font-primary);
+  font-size: 28px;
+  font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 40px;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
+  line-height: 1.2;
 }
 
 .sidebar-nav {
@@ -157,7 +159,7 @@ body {
 }
 
 .sidebar-nav a {
-  font-family: var(--font-bolding);
+  font-family: var(--font-primary);
   color: var(--gray-700);
   text-decoration: none;
   font-size: 16px;
@@ -206,7 +208,7 @@ body {
 }
 
 .sidebar-tab {
-  font-family: var(--font-bolding);
+  font-family: var(--font-primary);
   padding: 12px 16px;
   background: transparent;
   border: 1px solid var(--gray-300);
@@ -271,7 +273,7 @@ padding: 20px;}
 }
 
 .content-text {
-  font-family: var(--font-bolding);
+  font-family: var(--font-primary);
   max-width: 800px;
   margin: 0 auto;
   padding: 0 20px;
@@ -281,9 +283,9 @@ padding: 20px;}
 }
 
 .content-text h1 {
-  font-family: var(--font-bolding);
+  font-family: var(--font-primary);
   font-size: 32px;
-  font-weight: 400;
+  font-weight: 700;
   margin-bottom: 20px;
   color: var(--gray-900);
 }
@@ -293,8 +295,8 @@ padding: 20px;}
 }
 
 .content-text strong {
-  font-family: var(--font-bolding);
-  font-weight: 400;
+  font-family: var(--font-primary);
+  font-weight: 700;
   color: var(--gray-900);
 }
 
@@ -432,7 +434,7 @@ padding: 20px;}
 }
 
 .back-btn {
-  font-family: var(--font-bolding);
+  font-family: var(--font-primary);
   padding: 16px 32px;
   background: rgba(0, 0, 0, 0.8);
   color: white;
@@ -450,6 +452,198 @@ padding: 20px;}
   background: rgba(0, 0, 0, 0.9);
   transform: translateY(-2px);
   box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* Projects Page Styles */
+.projects-container {
+  padding: 40px;
+  background: white;
+  min-height: 100vh;
+}
+
+.projects-header {
+  margin-bottom: 60px;
+  text-align: center;
+}
+
+.projects-header h1 {
+  font-family: var(--font-primary);
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.projects-header p {
+  font-family: var(--font-primary);
+  font-size: 18px;
+  color: var(--gray-600);
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.project-card {
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.project-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.project-image-container {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  overflow: hidden;
+}
+
+.project-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.project-card:hover .project-thumbnail {
+  transform: scale(1.05);
+}
+
+.project-info {
+  padding: 30px;
+}
+
+.project-title {
+  font-family: var(--font-primary);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.project-location {
+  font-family: var(--font-primary);
+  font-size: 16px;
+  color: var(--gray-600);
+  margin-bottom: 4px;
+}
+
+.project-architect {
+  font-family: var(--font-primary);
+  font-size: 14px;
+  color: var(--gray-500);
+  font-style: italic;
+}
+
+/* Project Detail Page Styles */
+.project-info-section {
+  padding: 60px 40px;
+  background: white;
+}
+
+.project-details {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.project-details .project-title {
+  font-family: var(--font-primary);
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.project-details .project-location {
+  font-family: var(--font-primary);
+  font-size: 20px;
+  color: var(--gray-600);
+  margin-bottom: 8px;
+}
+
+.project-details .project-architect {
+  font-family: var(--font-primary);
+  font-size: 16px;
+  color: var(--gray-500);
+  font-style: italic;
+  margin-bottom: 30px;
+}
+
+.project-description {
+  font-family: var(--font-primary);
+  font-size: 18px;
+  color: var(--gray-700);
+  line-height: 1.8;
+  margin-bottom: 40px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.back-to-projects {
+  font-family: var(--font-primary);
+  color: var(--gray-600);
+  text-decoration: none;
+  font-size: 16px;
+  transition: color 0.3s ease;
+  display: inline-block;
+  padding: 12px 24px;
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.back-to-projects:hover {
+  color: var(--gray-900);
+  border-color: var(--gray-400);
+}
+
+.project-not-found {
+  padding: 80px 40px;
+  text-align: center;
+}
+
+.project-not-found h1 {
+  font-family: var(--font-primary);
+  font-size: 36px;
+  color: var(--gray-900);
+  margin-bottom: 20px;
+}
+
+.project-not-found p {
+  font-family: var(--font-primary);
+  font-size: 18px;
+  color: var(--gray-600);
+  margin-bottom: 30px;
+}
+
+/* Active navigation link */
+.sidebar-nav a.active {
+  color: var(--gray-900);
+  font-weight: 500;
 }
 
 /* Mobile responsive styles */
@@ -512,7 +706,9 @@ padding: 20px;}
   }
   
   .gallery-container {
-    height: 60vh;
+    width: calc(100% - 40px);
+    height: calc(60vh - 40px);
+    margin: 20px;
   }
   
   .gallery-controls {
@@ -568,5 +764,47 @@ padding: 20px;}
   .back-btn {
     padding: 12px 24px;
     font-size: 14px;
+  }
+  
+  /* Projects page mobile styles */
+  .projects-container {
+    padding: 20px;
+  }
+  
+  .projects-header h1 {
+    font-size: 32px;
+  }
+  
+  .projects-header p {
+    font-size: 16px;
+  }
+  
+  .projects-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .project-image-container {
+    height: 250px;
+  }
+  
+  .project-info {
+    padding: 20px;
+  }
+  
+  .project-title {
+    font-size: 20px;
+  }
+  
+  .project-info-section {
+    padding: 40px 20px;
+  }
+  
+  .project-details .project-title {
+    font-size: 28px;
+  }
+  
+  .project-description {
+    font-size: 16px;
   }
 }
