@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
@@ -121,7 +121,7 @@ export default function ProjectDetailPage() {
         <main className="main-content">
           <div className="project-not-found">
             <h1>Project Not Found</h1>
-            <p>The project you're looking for doesn't exist.</p>
+            <p>The project you&apos;re looking for doesn&apos;t exist.</p>
             <Link href="/projects" className="back-to-projects">← Back to Projects</Link>
           </div>
         </main>

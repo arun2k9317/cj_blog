@@ -161,7 +161,7 @@ export default function Home() {
           <div className="content-text">
             <h1>Portfolio</h1>
             <p>
-              <strong>CJ Photography</strong> is passionate about capturing the world's diverse beauty 
+              <strong>CJ Photography</strong> is passionate about capturing the world&apos;s diverse beauty 
               through nature, culture, arts, and places. Our work celebrates the intricate details 
               of natural landscapes, the vibrant expressions of human culture, and the artistic 
               essence found in everyday moments and extraordinary destinations.
@@ -170,7 +170,7 @@ export default function Home() {
               From the serene majesty of untouched wilderness to the bustling energy of cultural 
               festivals, we document the stories that connect us to our planet and each other. 
               Our approach blends documentary authenticity with artistic vision, creating images 
-              that inspire wonder and preserve memories of the world's most precious moments.
+              that inspire wonder and preserve memories of the world&apos;s most precious moments.
             </p>
             <p>
               Whether exploring remote natural wonders, immersing in local traditions, or 
