@@ -1,21 +1,111 @@
 @import "tailwindcss";
 
-/* Typrighter Font Face Declarations */
+/* EthosNova Font Face Declarations */
 @font-face {
-  font-family: 'Typrighter';
-  src: url('/fonts/typrighterV2-1.otf') format('opentype'),
-       url('/fonts/typrighterV2-1.ttf') format('truetype');
+  font-family: 'Ethos Nova';
+  src: url('/fonts/EthosNova-Regular.woff2') format('woff2'),
+       url('/fonts/EthosNova-Regular.woff') format('woff');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Typrighter';
-  src: url('/fonts/typrighter-B.otf') format('opentype'),
-       url('/fonts/typrighter-B.ttf') format('truetype');
+  font-family: 'Ethos Nova';
+  src: url('/fonts/EthosNova-Bold.woff2') format('woff2'),
+       url('/fonts/EthosNova-Bold.woff') format('woff');
   font-weight: 700;
   font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Ethos Nova';
+  src: url('/fonts/EthosNova-Italic.woff2') format('woff2'),
+       url('/fonts/EthosNova-Italic.woff') format('woff');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Ethos Nova';
+  src: url('/fonts/EthosNova-BoldItalic.woff2') format('woff2'),
+       url('/fonts/EthosNova-BoldItalic.woff') format('woff');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Ethos Nova';
+  src: url('/fonts/EthosNova-Light.woff2') format('woff2'),
+       url('/fonts/EthosNova-Light.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Ethos Nova';
+  src: url('/fonts/EthosNova-LightItalic.woff2') format('woff2'),
+       url('/fonts/EthosNova-LightItalic.woff') format('woff');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Ethos Nova';
+  src: url('/fonts/EthosNova-Medium.woff2') format('woff2'),
+       url('/fonts/EthosNova-Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Ethos Nova';
+  src: url('/fonts/EthosNova-MediumItalic.woff2') format('woff2'),
+       url('/fonts/EthosNova-MediumItalic.woff') format('woff');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Ethos Nova';
+  src: url('/fonts/EthosNova-Heavy.woff2') format('woff2'),
+       url('/fonts/EthosNova-Heavy.woff') format('woff');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Ethos Nova';
+  src: url('/fonts/EthosNova-HeavyItalic.woff2') format('woff2'),
+       url('/fonts/EthosNova-HeavyItalic.woff') format('woff');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Ethos Nova';
+  src: url('/fonts/EthosNova-Thin.woff2') format('woff2'),
+       url('/fonts/EthosNova-Thin.woff') format('woff');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Ethos Nova';
+  src: url('/fonts/EthosNova-ThinItalic.woff2') format('woff2'),
+       url('/fonts/EthosNova-ThinItalic.woff') format('woff');
+  font-weight: 100;
+  font-style: italic;
   font-display: swap;
 }
 
@@ -39,7 +129,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-primary: 'Typrighter', sans-serif;
+  --font-primary: 'Ethos Nova', sans-serif;
 }
 
 * {
