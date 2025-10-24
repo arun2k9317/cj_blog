@@ -2,8 +2,11 @@
 
 import { useState } from 'react';
 import ImageManager from '@/components/ImageManager';
+import ProjectBuilder from '@/components/ProjectBuilder';
+import { Project } from '@/types/project';
 
 export default function AdminPage() {
+  const [activeTab, setActiveTab] = useState<'images' | 'projects'>('projects');
   const [selectedProject, setSelectedProject] = useState('carla-ridge-residence');
   const [projectImages, setProjectImages] = useState<Record<string, string[]>>({
     'carla-ridge-residence': [],
@@ -30,6 +33,52 @@ export default function AdminPage() {
     }));
   };
 
+  const handleProjectSave = async (project: Project) => {
+    try {
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(project),
+      });
+
+      if (response.ok) {
+        alert('Project saved successfully!');
+      } else {
+        const error = await response.json();
+        alert(`Error saving project: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Error saving project:', error);
+      alert('Failed to save project');
+    }
+  };
+
+  const handleImageUpload = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('projectId', 'admin-uploads');
+    formData.append('imageName', file.name.split('.')[0]);
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        return result.url;
+      } else {
+        throw new Error('Upload failed');
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw error;
+    }
+  };
+
   const exportProjectData = () => {
     const data = {
       projects: Object.entries(projectImages).map(([projectId, images]) => ({
@@ -53,43 +102,66 @@ export default function AdminPage() {
   return (
     <div className="admin-page">
       <div className="admin-header">
-        <h1>Image Management</h1>
+        <h1>Admin Dashboard</h1>
         <div className="admin-actions">
-          <button onClick={exportProjectData} className="export-btn">
-            Export Project Data
+          <button 
+            onClick={() => setActiveTab('projects')}
+            className={`tab-btn ${activeTab === 'projects' ? 'active' : ''}`}
+          >
+            Project Builder
           </button>
+          <button 
+            onClick={() => setActiveTab('images')}
+            className={`tab-btn ${activeTab === 'images' ? 'active' : ''}`}
+          >
+            Image Management
+          </button>
+          {activeTab === 'images' && (
+            <button onClick={exportProjectData} className="export-btn">
+              Export Project Data
+            </button>
+          )}
         </div>
       </div>
 
       <div className="admin-content">
-        <div className="project-selector">
-          <label htmlFor="project-select">Select Project:</label>
-          <select
-            id="project-select"
-            value={selectedProject}
-            onChange={(e) => setSelectedProject(e.target.value)}
-            className="project-select"
-          >
-            {projects.map(project => (
-              <option key={project.id} value={project.id}>
-                {project.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        {activeTab === 'projects' ? (
+          <ProjectBuilder
+            onSave={handleProjectSave}
+            onImageUpload={handleImageUpload}
+          />
+        ) : (
+          <>
+            <div className="project-selector">
+              <label htmlFor="project-select">Select Project:</label>
+              <select
+                id="project-select"
+                value={selectedProject}
+                onChange={(e) => setSelectedProject(e.target.value)}
+                className="project-select"
+              >
+                {projects.map(project => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div className="project-info">
-          <h2>{projects.find(p => p.id === selectedProject)?.name}</h2>
-          <p>Project ID: {selectedProject}</p>
-          <p>Images: {projectImages[selectedProject]?.length || 0}</p>
-        </div>
+            <div className="project-info">
+              <h2>{projects.find(p => p.id === selectedProject)?.name}</h2>
+              <p>Project ID: {selectedProject}</p>
+              <p>Images: {projectImages[selectedProject]?.length || 0}</p>
+            </div>
 
-        <ImageManager
-          projectId={selectedProject}
-          existingImages={projectImages[selectedProject] || []}
-          onImagesChange={(images) => handleImagesChange(selectedProject, images)}
-          maxImages={20}
-        />
+            <ImageManager
+              projectId={selectedProject}
+              existingImages={projectImages[selectedProject] || []}
+              onImagesChange={(images) => handleImagesChange(selectedProject, images)}
+              maxImages={20}
+            />
+          </>
+        )}
       </div>
 
       <style jsx>{`
@@ -117,6 +189,28 @@ export default function AdminPage() {
         .admin-actions {
           display: flex;
           gap: 1rem;
+          align-items: center;
+        }
+
+        .tab-btn {
+          padding: 0.5rem 1rem;
+          border: 1px solid #ddd;
+          background: white;
+          color: #666;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+          background: #f5f5f5;
+          border-color: #999;
+        }
+
+        .tab-btn.active {
+          background: #0070f3;
+          color: white;
+          border-color: #0070f3;
         }
 
         .export-btn {

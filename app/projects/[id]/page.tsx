@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
+import ProjectRenderer from '@/components/ProjectRenderer';
+import { Project } from '@/types/project';
 
 // Sample project data - in a real app, this would come from a CMS or API
 const projectsData = {
@@ -98,8 +100,179 @@ export default function ProjectDetailPage() {
   const projectId = params.id as string;
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showThumbnails, setShowThumbnails] = useState(false);
+  const [project, setProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const project = projectsData[projectId as keyof typeof projectsData];
+  // Try to fetch from API first, fallback to static data
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        const response = await fetch(`/api/projects/${projectId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setProject(data.project);
+        } else {
+          // Fallback to static data
+          const staticProject = projectsData[projectId as keyof typeof projectsData];
+          if (staticProject) {
+            // Convert static project to new format
+            const convertedProject: Project = {
+              id: staticProject.id,
+              title: staticProject.title,
+              slug: staticProject.id,
+              description: staticProject.description,
+              location: staticProject.location,
+              architect: staticProject.architect,
+              contentBlocks: [
+                {
+                  id: '1',
+                  type: 'text',
+                  order: 0,
+                  content: staticProject.title,
+                  textAlign: 'center',
+                  fontSize: 'xlarge',
+                  fontWeight: 'bold'
+                },
+                {
+                  id: '2',
+                  type: 'text',
+                  order: 1,
+                  content: `${staticProject.location} • ${staticProject.architect}`,
+                  textAlign: 'center',
+                  fontSize: 'medium',
+                  fontWeight: 'normal'
+                },
+                {
+                  id: '3',
+                  type: 'spacer',
+                  order: 2,
+                  height: 2
+                },
+                {
+                  id: '4',
+                  type: 'text',
+                  order: 3,
+                  content: staticProject.description,
+                  textAlign: 'left',
+                  fontSize: 'medium',
+                  fontWeight: 'normal'
+                },
+                ...staticProject.images.map((image, index) => ({
+                  id: `img-${index + 5}`,
+                  type: 'image' as const,
+                  order: index + 4,
+                  src: image,
+                  alt: `${staticProject.title} - Image ${index + 1}`,
+                  alignment: 'center' as const,
+                  aspectRatio: 'landscape' as const
+                }))
+              ],
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              published: true
+            };
+            setProject(convertedProject);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching project:', error);
+        // Fallback to static data
+        const staticProject = projectsData[projectId as keyof typeof projectsData];
+        if (staticProject) {
+          // Convert static project to new format (same as above)
+          const convertedProject: Project = {
+            id: staticProject.id,
+            title: staticProject.title,
+            slug: staticProject.id,
+            description: staticProject.description,
+            location: staticProject.location,
+            architect: staticProject.architect,
+            contentBlocks: [
+              {
+                id: '1',
+                type: 'text',
+                order: 0,
+                content: staticProject.title,
+                textAlign: 'center',
+                fontSize: 'xlarge',
+                fontWeight: 'bold'
+              },
+              {
+                id: '2',
+                type: 'text',
+                order: 1,
+                content: `${staticProject.location} • ${staticProject.architect}`,
+                textAlign: 'center',
+                fontSize: 'medium',
+                fontWeight: 'normal'
+              },
+              {
+                id: '3',
+                type: 'spacer',
+                order: 2,
+                height: 2
+              },
+              {
+                id: '4',
+                type: 'text',
+                order: 3,
+                content: staticProject.description,
+                textAlign: 'left',
+                fontSize: 'medium',
+                fontWeight: 'normal'
+              },
+              ...staticProject.images.map((image, index) => ({
+                id: `img-${index + 5}`,
+                type: 'image' as const,
+                order: index + 4,
+                src: image,
+                alt: `${staticProject.title} - Image ${index + 1}`,
+                alignment: 'center' as const,
+                aspectRatio: 'landscape' as const
+              }))
+            ],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            published: true
+          };
+          setProject(convertedProject);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProject();
+  }, [projectId]);
+
+  if (loading) {
+    return (
+      <div className="main-layout">
+        <aside className="sidebar">
+          <div className="sidebar-logo">CJ PHOTOGRAPHY</div>
+          <nav>
+            <ul className="sidebar-nav">
+              <li><Link href="/">Portfolio</Link></li>
+              <li><Link href="/projects">Projects</Link></li>
+              <li><Link href="/art">Art</Link></li>
+              <li><Link href="/about">About</Link></li>
+              <li><Link href="/books">Books</Link></li>
+              <li><Link href="/print-shop">Print Shop</Link></li>
+              <li><Link href="/contact">Contact</Link></li>
+            </ul>
+          </nav>
+        </aside>
+        <main className="main-content">
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+              <p>Loading project...</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   if (!project) {
     return (
@@ -129,19 +302,6 @@ export default function ProjectDetailPage() {
     );
   }
 
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % project.images.length);
-  };
-
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + project.images.length) % project.images.length);
-  };
-
-  const selectImage = (index: number) => {
-    setCurrentImageIndex(index);
-    setShowThumbnails(false);
-  };
-
   return (
     <div className="main-layout">
       {/* Left Sidebar */}
@@ -169,86 +329,18 @@ export default function ProjectDetailPage() {
             </svg>
           </a>
         </div>
-
-        {/* Project Controls */}
-        <div className="sidebar-controls">
-          <button className="sidebar-tab" onClick={prevImage}>
-            PREV
-          </button>
-          <button className="sidebar-tab" onClick={nextImage}>
-            NEXT
-          </button>
-          <button className="sidebar-tab" onClick={() => setShowThumbnails(!showThumbnails)}>
-            {showThumbnails ? 'BACK TO SLIDESHOW' : 'SHOW THUMBNAILS'}
-          </button>
-        </div>
       </aside>
 
       {/* Main Content */}
       <main className="main-content">
-        {!showThumbnails ? (
-          /* Slideshow View */
-          <section className="gallery-container">
-            {project.images.map((image, index) => (
-              <div
-                key={index}
-                className={`gallery-slide ${index === currentImageIndex ? 'active' : ''}`}
-                style={{
-                  backgroundImage: `url(${image})`,
-                }}
-              />
-            ))}
-            
-            {/* Gallery Controls */}
-            <button
-              className="gallery-controls gallery-prev"
-              onClick={prevImage}
-              aria-label="Previous image"
-            >
-              ‹
-            </button>
-            <button
-              className="gallery-controls gallery-next"
-              onClick={nextImage}
-              aria-label="Next image"
-            >
-              ›
-            </button>
-          </section>
-        ) : (
-          /* Thumbnail Grid View */
-          <section className="thumbnail-grid-container">
-            <div className="thumbnail-grid">
-              {project.images.map((image, index) => (
-                <div
-                  key={index}
-                  className={`thumbnail-item ${index === currentImageIndex ? 'active' : ''}`}
-                  onClick={() => selectImage(index)}
-                >
-                  <Image
-                    src={image}
-                    alt={`${project.title} - Image ${index + 1}`}
-                    className="thumbnail-image"
-                    width={400}
-                    height={300}
-                    style={{ objectFit: 'cover' }}
-                  />
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Project Information */}
-        <section className="project-info-section">
-          <div className="project-details">
-            <h1 className="project-title">{project.title}</h1>
-            <p className="project-location">{project.location}</p>
-            <p className="project-architect">{project.architect}</p>
-            <p className="project-description">{project.description}</p>
+        <div className="max-w-4xl mx-auto p-6">
+          <ProjectRenderer project={project} />
+          
+          {/* Back to Projects Link */}
+          <div className="mt-8 text-center">
             <Link href="/projects" className="back-to-projects">← Back to Projects</Link>
           </div>
-        </section>
+        </div>
       </main>
     </div>
   );
