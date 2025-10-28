@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { TextBlock as TextBlockType } from '@/types/project';
-import { useState } from 'react';
+import { TextBlock as TextBlockType } from "@/types/project";
+import { useState } from "react";
 
 interface TextBlockProps {
   block: TextBlockType;
@@ -10,7 +10,12 @@ interface TextBlockProps {
   onDelete?: (blockId: string) => void;
 }
 
-export default function TextBlock({ block, isEditing = false, onUpdate, onDelete }: TextBlockProps) {
+export default function TextBlock({
+  block,
+  isEditing = false,
+  onUpdate,
+  onDelete,
+}: TextBlockProps) {
   const [isEditingText, setIsEditingText] = useState(false);
   const [content, setContent] = useState(block.content);
 
@@ -28,29 +33,42 @@ export default function TextBlock({ block, isEditing = false, onUpdate, onDelete
 
   const getTextAlignClass = (align?: string) => {
     switch (align) {
-      case 'center': return 'text-center';
-      case 'right': return 'text-right';
-      default: return 'text-left';
+      case "center":
+        return "text-center";
+      case "right":
+        return "text-right";
+      default:
+        return "text-left";
     }
   };
 
   const getFontSizeClass = (size?: string) => {
     switch (size) {
-      case 'small': return 'text-sm';
-      case 'medium': return 'text-base';
-      case 'large': return 'text-xl';
-      case 'xlarge': return 'text-3xl';
-      default: return 'text-base';
+      case "small":
+        return "text-sm";
+      case "medium":
+        return "text-base";
+      case "large":
+        return "text-xl";
+      case "xl":
+        return "text-3xl";
+      default:
+        return "text-base";
     }
   };
 
   const getFontWeightClass = (weight?: string) => {
     switch (weight) {
-      case 'light': return 'font-light';
-      case 'normal': return 'font-normal';
-      case 'medium': return 'font-medium';
-      case 'bold': return 'font-bold';
-      default: return 'font-normal';
+      case "light":
+        return "font-light";
+      case "normal":
+        return "font-normal";
+      case "medium":
+        return "font-medium";
+      case "bold":
+        return "font-bold";
+      default:
+        return "font-normal";
     }
   };
 
@@ -68,7 +86,7 @@ export default function TextBlock({ block, isEditing = false, onUpdate, onDelete
             </button>
           </div>
         </div>
-        
+
         <div className="space-y-3">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -82,15 +100,17 @@ export default function TextBlock({ block, isEditing = false, onUpdate, onDelete
               placeholder="Enter your text content..."
             />
           </div>
-          
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Text Alignment
               </label>
               <select
-                value={block.textAlign || 'left'}
-                onChange={(e) => onUpdate?.({ ...block, textAlign: e.target.value as any })}
+                value={block.textAlign || "left"}
+                onChange={(e) =>
+                  onUpdate?.({ ...block, textAlign: e.target.value as any })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
               >
                 <option value="left">Left</option>
@@ -98,30 +118,34 @@ export default function TextBlock({ block, isEditing = false, onUpdate, onDelete
                 <option value="right">Right</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Font Size
               </label>
               <select
-                value={block.fontSize || 'medium'}
-                onChange={(e) => onUpdate?.({ ...block, fontSize: e.target.value as any })}
+                value={block.fontSize || "medium"}
+                onChange={(e) =>
+                  onUpdate?.({ ...block, fontSize: e.target.value as any })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
               >
                 <option value="small">Small</option>
                 <option value="medium">Medium</option>
                 <option value="large">Large</option>
-                <option value="xlarge">Extra Large</option>
+                <option value="xl">Extra Large</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Font Weight
               </label>
               <select
-                value={block.fontWeight || 'normal'}
-                onChange={(e) => onUpdate?.({ ...block, fontWeight: e.target.value as any })}
+                value={block.fontWeight || "normal"}
+                onChange={(e) =>
+                  onUpdate?.({ ...block, fontWeight: e.target.value as any })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
               >
                 <option value="light">Light</option>
@@ -164,10 +188,12 @@ export default function TextBlock({ block, isEditing = false, onUpdate, onDelete
         </div>
       ) : (
         <div
-          className={`cursor-pointer hover:bg-gray-50 p-2 rounded ${getFontSizeClass(block.fontSize)} ${getFontWeightClass(block.fontWeight)}`}
+          className={`cursor-pointer hover:bg-gray-50 p-2 rounded ${getFontSizeClass(
+            block.fontSize
+          )} ${getFontWeightClass(block.fontWeight)}`}
           onClick={() => setIsEditingText(true)}
         >
-          {block.content || 'Click to add text content...'}
+          {block.content || "Click to add text content..."}
         </div>
       )}
     </div>

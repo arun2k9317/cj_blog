@@ -12,7 +12,7 @@ export interface TextBlock extends BaseContentBlock {
   type: 'text';
   content: string;
   textAlign?: 'left' | 'center' | 'right';
-  fontSize?: 'small' | 'medium' | 'large' | 'xlarge';
+  fontSize?: 'small' | 'medium' | 'large' | 'xl';
   fontWeight?: 'light' | 'normal' | 'medium' | 'bold';
 }
 
@@ -49,11 +49,11 @@ export interface SpacerBlock extends BaseContentBlock {
   height: number; // in pixels or rem
 }
 
-export type ContentBlock = 
-  | TextBlock 
-  | ImageBlock 
-  | ImageGalleryBlock 
-  | QuoteBlock 
+export type ContentBlock =
+  | TextBlock
+  | ImageBlock
+  | ImageGalleryBlock
+  | QuoteBlock
   | SpacerBlock;
 
 export interface Project {
@@ -62,7 +62,6 @@ export interface Project {
   slug: string;
   description?: string;
   location?: string;
-  architect?: string;
   featuredImage?: string;
   contentBlocks: ContentBlock[];
   createdAt: string;
@@ -75,7 +74,7 @@ export interface ProjectTemplate {
   id: string;
   name: string;
   description: string;
-  contentBlocks: Omit<ContentBlock, 'id'>[];
+  contentBlocks: any[];
 }
 
 // Default templates
@@ -88,9 +87,9 @@ export const DEFAULT_TEMPLATES: ProjectTemplate[] = [
       {
         type: 'text',
         order: 0,
-        content: 'Project Introduction',
+        content: 'Project Title',
         textAlign: 'center',
-        fontSize: 'xlarge',
+        fontSize: 'xl',
         fontWeight: 'bold'
       },
       {
@@ -126,7 +125,7 @@ export const DEFAULT_TEMPLATES: ProjectTemplate[] = [
         order: 0,
         content: 'Documentary Title',
         textAlign: 'center',
-        fontSize: 'xlarge',
+        fontSize: 'xl',
         fontWeight: 'bold'
       },
       {
@@ -156,6 +155,49 @@ export const DEFAULT_TEMPLATES: ProjectTemplate[] = [
         images: [],
         layout: 'grid',
         columns: 2
+      }
+    ]
+  },
+  {
+    id: 'cultural-heritage',
+    name: 'Cultural Heritage',
+    description: 'A project showcasing traditional art forms and cultural monuments',
+    contentBlocks: [
+      {
+        type: 'text',
+        order: 0,
+        content: 'Cultural Heritage Project',
+        textAlign: 'center',
+        fontSize: 'xl',
+        fontWeight: 'bold'
+      },
+      {
+        type: 'text',
+        order: 1,
+        content: 'Preserving traditions through photography',
+        textAlign: 'center',
+        fontSize: 'medium',
+        fontWeight: 'normal'
+      },
+      {
+        type: 'spacer',
+        order: 2,
+        height: 2
+      },
+      {
+        type: 'text',
+        order: 3,
+        content: 'This project documents the rich cultural heritage...',
+        textAlign: 'left',
+        fontSize: 'medium',
+        fontWeight: 'normal'
+      },
+      {
+        type: 'image-gallery',
+        order: 4,
+        images: [],
+        layout: 'masonry',
+        columns: 3
       }
     ]
   }

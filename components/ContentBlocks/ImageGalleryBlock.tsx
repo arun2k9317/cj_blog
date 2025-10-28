@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { ImageGalleryBlock as ImageGalleryBlockType } from '@/types/project';
-import { useState } from 'react';
-import Image from 'next/image';
+import { ImageGalleryBlock as ImageGalleryBlockType } from "@/types/project";
+import { useState } from "react";
+import Image from "next/image";
 
 interface ImageGalleryBlockProps {
   block: ImageGalleryBlockType;
@@ -12,36 +12,38 @@ interface ImageGalleryBlockProps {
   onImageUpload?: (file: File) => Promise<string>;
 }
 
-export default function ImageGalleryBlock({ 
-  block, 
-  isEditing = false, 
-  onUpdate, 
-  onDelete, 
-  onImageUpload 
+export default function ImageGalleryBlock({
+  block,
+  isEditing = false,
+  onUpdate,
+  onDelete,
+  onImageUpload,
 }: ImageGalleryBlockProps) {
   const [isUploading, setIsUploading] = useState(false);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const files = Array.from(event.target.files || []);
     if (!files.length || !onImageUpload) return;
 
     setIsUploading(true);
     try {
-      const uploadPromises = files.map(file => onImageUpload(file));
+      const uploadPromises = files.map((file) => onImageUpload(file));
       const imageUrls = await Promise.all(uploadPromises);
-      
+
       const newImages = imageUrls.map((url, index) => ({
         src: url,
         alt: files[index].name,
-        caption: ''
+        caption: "",
       }));
 
       onUpdate?.({
         ...block,
-        images: [...block.images, ...newImages]
+        images: [...block.images, ...newImages],
       });
     } catch (error) {
-      console.error('Failed to upload images:', error);
+      console.error("Failed to upload images:", error);
     } finally {
       setIsUploading(false);
     }
@@ -66,11 +68,16 @@ export default function ImageGalleryBlock({
 
   const getGridClass = (columns?: number) => {
     switch (columns) {
-      case 1: return 'grid-cols-1';
-      case 2: return 'grid-cols-1 md:grid-cols-2';
-      case 3: return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
-      case 4: return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4';
-      default: return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
+      case 1:
+        return "grid-cols-1";
+      case 2:
+        return "grid-cols-1 md:grid-cols-2";
+      case 3:
+        return "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
+      case 4:
+        return "grid-cols-1 md:grid-cols-2 lg:grid-cols-4";
+      default:
+        return "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
     }
   };
 
@@ -88,7 +95,7 @@ export default function ImageGalleryBlock({
             </button>
           </div>
         </div>
-        
+
         <div className="space-y-4">
           {/* Upload New Images */}
           <div>
@@ -103,7 +110,9 @@ export default function ImageGalleryBlock({
               className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
               disabled={isUploading}
             />
-            {isUploading && <p className="mt-2 text-sm text-gray-500">Uploading images...</p>}
+            {isUploading && (
+              <p className="mt-2 text-sm text-gray-500">Uploading images...</p>
+            )}
           </div>
 
           {/* Layout Options */}
@@ -113,8 +122,13 @@ export default function ImageGalleryBlock({
                 Layout
               </label>
               <select
-                value={block.layout || 'grid'}
-                onChange={(e) => onUpdate?.({ ...block, layout: e.target.value as any })}
+                value={block.layout || "grid"}
+                onChange={(e) =>
+                  onUpdate?.({
+                    ...block,
+                    layout: e.target.value as ImageGalleryBlockType["layout"],
+                  })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
               >
                 <option value="grid">Grid</option>
@@ -122,14 +136,16 @@ export default function ImageGalleryBlock({
                 <option value="carousel">Carousel</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Columns
               </label>
               <select
                 value={block.columns || 3}
-                onChange={(e) => onUpdate?.({ ...block, columns: parseInt(e.target.value) })}
+                onChange={(e) =>
+                  onUpdate?.({ ...block, columns: parseInt(e.target.value) })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
               >
                 <option value={1}>1 Column</option>
@@ -148,14 +164,17 @@ export default function ImageGalleryBlock({
               </label>
               <div className="space-y-3">
                 {block.images.map((image, index) => (
-                  <div key={index} className="flex gap-3 p-3 border border-gray-200 rounded-lg">
+                  <div
+                    key={index}
+                    className="flex gap-3 p-3 border border-gray-200 rounded-lg"
+                  >
                     <div className="flex-shrink-0">
                       <Image
                         src={image.src}
                         alt={image.alt}
                         width={80}
                         height={80}
-                        className="rounded object-cover"
+                        className="object-cover object-center"
                       />
                     </div>
                     <div className="flex-1 space-y-2">
@@ -168,8 +187,10 @@ export default function ImageGalleryBlock({
                       />
                       <input
                         type="text"
-                        value={image.caption || ''}
-                        onChange={(e) => updateImageCaption(index, e.target.value)}
+                        value={image.caption || ""}
+                        onChange={(e) =>
+                          updateImageCaption(index, e.target.value)
+                        }
                         className="w-full p-2 text-sm border border-gray-300 rounded"
                         placeholder="Caption (optional)"
                       />
@@ -203,15 +224,19 @@ export default function ImageGalleryBlock({
 
   return (
     <div className="content-block">
-      <div className={`grid gap-4 ${getGridClass(block.columns)}`}>
+      <div
+        className={`grid gap-6 ${getGridClass(
+          block.columns
+        )} max-w-6xl w-full mx-auto`}
+      >
         {block.images.map((image, index) => (
           <div key={index} className="relative group">
-            <div className="aspect-square overflow-hidden rounded-lg">
+            <div className="aspect-square overflow-hidden">
               <Image
                 src={image.src}
                 alt={image.alt}
                 fill
-                className="object-cover"
+                className="object-cover object-center"
               />
             </div>
             {image.caption && (

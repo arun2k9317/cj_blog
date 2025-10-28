@@ -1,65 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Project } from '@/types/project';
-
-// In-memory storage for demo purposes
-// In production, you'd use a database like PostgreSQL, MongoDB, etc.
-let projects: Project[] = [
-  {
-    id: 'carla-ridge-residence',
-    title: 'Carla Ridge Residence',
-    slug: 'carla-ridge-residence',
-    description: 'Modern hillside residence with extensive outdoor living spaces and panoramic city views.',
-    location: 'Los Angeles, CA',
-    architect: 'Walker Workshop',
-    contentBlocks: [
-      {
-        id: '1',
-        type: 'text',
-        order: 0,
-        content: 'Carla Ridge Residence',
-        textAlign: 'center',
-        fontSize: 'xlarge',
-        fontWeight: 'bold'
-      },
-      {
-        id: '2',
-        type: 'text',
-        order: 1,
-        content: 'Los Angeles, CA • Walker Workshop',
-        textAlign: 'center',
-        fontSize: 'medium',
-        fontWeight: 'normal'
-      },
-      {
-        id: '3',
-        type: 'spacer',
-        order: 2,
-        height: 2
-      },
-      {
-        id: '4',
-        type: 'text',
-        order: 3,
-        content: 'Modern hillside residence with extensive outdoor living spaces and panoramic city views.',
-        textAlign: 'left',
-        fontSize: 'medium',
-        fontWeight: 'normal'
-      },
-      {
-        id: '5',
-        type: 'image',
-        order: 4,
-        src: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-        alt: 'Carla Ridge Residence exterior view',
-        alignment: 'center',
-        aspectRatio: 'landscape'
-      }
-    ],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    published: true
-  }
-];
+import {
+  initializeDatabase,
+  getProjectWithBlocks,
+  updateProject,
+  deleteProject,
+  deleteContentBlocksByProject,
+  createContentBlock
+} from '@/lib/supabase';
 
 // GET /api/projects/[id] - Get a specific project
 export async function GET(
@@ -67,8 +15,10 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const project = projects.find(p => p.id === params.id);
-    
+    await initializeDatabase();
+
+    const project = await getProjectWithBlocks(params.id);
+
     if (!project) {
       return NextResponse.json(
         { error: 'Project not found' },
@@ -97,27 +47,58 @@ export async function PUT(
 ) {
   try {
     const projectData: Partial<Project> = await request.json();
-    
-    const projectIndex = projects.findIndex(p => p.id === params.id);
-    
-    if (projectIndex === -1) {
-      return NextResponse.json(
-        { error: 'Project not found' },
-        { status: 404 }
-      );
+
+    await initializeDatabase();
+
+    // Update project metadata
+    const updatedProject = await updateProject(params.id, {
+      title: projectData.title,
+      slug: projectData.slug,
+      description: projectData.description,
+      location: projectData.location,
+      featuredImage: projectData.featuredImage,
+      published: projectData.published,
+      tags: projectData.tags
+    });
+
+    // Update content blocks if provided
+    if (projectData.contentBlocks) {
+      // Delete existing blocks
+      await deleteContentBlocksByProject(params.id);
+
+      // Create new blocks
+      for (const block of projectData.contentBlocks) {
+        await createContentBlock({
+          id: block.id,
+          projectId: params.id,
+          type: block.type,
+          order: block.order,
+          content: 'content' in block ? block.content : undefined,
+          textAlign: 'textAlign' in block ? block.textAlign : undefined,
+          fontSize: 'fontSize' in block ? block.fontSize : undefined,
+          fontWeight: 'fontWeight' in block ? block.fontWeight : undefined,
+          src: 'src' in block ? block.src : undefined,
+          alt: 'alt' in block ? block.alt : undefined,
+          caption: 'caption' in block ? block.caption : undefined,
+          aspectRatio: 'aspectRatio' in block ? block.aspectRatio : undefined,
+          alignment: 'alignment' in block ? block.alignment : undefined,
+          images: 'images' in block ? block.images : undefined,
+          layout: 'layout' in block ? block.layout : undefined,
+          columns: 'columns' in block ? block.columns : undefined,
+          text: 'text' in block ? block.text : undefined,
+          author: 'author' in block ? block.author : undefined,
+          style: 'style' in block ? block.style : undefined,
+          height: 'height' in block ? block.height : undefined
+        });
+      }
     }
 
-    // Update the project
-    projects[projectIndex] = {
-      ...projects[projectIndex],
-      ...projectData,
-      id: params.id, // Ensure ID doesn't change
-      updatedAt: new Date().toISOString()
-    };
+    // Get the updated project with blocks
+    const projectWithBlocks = await getProjectWithBlocks(params.id);
 
     return NextResponse.json({
       success: true,
-      project: projects[projectIndex]
+      project: projectWithBlocks
     });
 
   } catch (error) {
@@ -135,16 +116,13 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const projectIndex = projects.findIndex(p => p.id === params.id);
-    
-    if (projectIndex === -1) {
-      return NextResponse.json(
-        { error: 'Project not found' },
-        { status: 404 }
-      );
-    }
+    await initializeDatabase();
 
-    projects.splice(projectIndex, 1);
+    // Delete content blocks first (due to foreign key constraint)
+    await deleteContentBlocksByProject(params.id);
+
+    // Delete the project
+    await deleteProject(params.id);
 
     return NextResponse.json({
       success: true,

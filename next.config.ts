@@ -15,7 +15,13 @@ const nextConfig: NextConfig = {
       // Vercel Blob Storage domains
       {
         protocol: 'https',
-        hostname: '*.public.blob.vercel-storage.com',
+        hostname: 'cj-photography-images.public.blob.vercel-storage.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'v96anmwogiriaihi.public.blob.vercel-storage.com',
         port: '',
         pathname: '/**',
       },

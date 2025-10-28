@@ -2,114 +2,115 @@
 
 /* EthosNova Font Face Declarations */
 @font-face {
-  font-family: 'Ethos Nova';
-  src: url('/fonts/EthosNova-Regular.woff2') format('woff2'),
-       url('/fonts/EthosNova-Regular.woff') format('woff');
+  font-family: "Ethos Nova";
+  src: url("/fonts/EthosNova-Regular.woff2") format("woff2"),
+    url("/fonts/EthosNova-Regular.woff") format("woff");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Ethos Nova';
-  src: url('/fonts/EthosNova-Bold.woff2') format('woff2'),
-       url('/fonts/EthosNova-Bold.woff') format('woff');
+  font-family: "Ethos Nova";
+  src: url("/fonts/EthosNova-Bold.woff2") format("woff2"),
+    url("/fonts/EthosNova-Bold.woff") format("woff");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Ethos Nova';
-  src: url('/fonts/EthosNova-Italic.woff2') format('woff2'),
-       url('/fonts/EthosNova-Italic.woff') format('woff');
+  font-family: "Ethos Nova";
+  src: url("/fonts/EthosNova-Italic.woff2") format("woff2"),
+    url("/fonts/EthosNova-Italic.woff") format("woff");
   font-weight: 400;
   font-style: italic;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Ethos Nova';
-  src: url('/fonts/EthosNova-BoldItalic.woff2') format('woff2'),
-       url('/fonts/EthosNova-BoldItalic.woff') format('woff');
+  font-family: "Ethos Nova";
+  src: url("/fonts/EthosNova-BoldItalic.woff2") format("woff2"),
+    url("/fonts/EthosNova-BoldItalic.woff") format("woff");
   font-weight: 700;
   font-style: italic;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Ethos Nova';
-  src: url('/fonts/EthosNova-Light.woff2') format('woff2'),
-       url('/fonts/EthosNova-Light.woff') format('woff');
+  font-family: "Ethos Nova";
+  src: url("/fonts/EthosNova-Light.woff2") format("woff2"),
+    url("/fonts/EthosNova-Light.woff") format("woff");
   font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Ethos Nova';
-  src: url('/fonts/EthosNova-LightItalic.woff2') format('woff2'),
-       url('/fonts/EthosNova-LightItalic.woff') format('woff');
+  font-family: "Ethos Nova";
+  src: url("/fonts/EthosNova-LightItalic.woff2") format("woff2"),
+    url("/fonts/EthosNova-LightItalic.woff") format("woff");
   font-weight: 300;
   font-style: italic;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Ethos Nova';
-  src: url('/fonts/EthosNova-Medium.woff2') format('woff2'),
-       url('/fonts/EthosNova-Medium.woff') format('woff');
+  font-family: "Ethos Nova";
+  src: url("/fonts/EthosNova-Medium.woff2") format("woff2"),
+    url("/fonts/EthosNova-Medium.woff") format("woff");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Ethos Nova';
-  src: url('/fonts/EthosNova-MediumItalic.woff2') format('woff2'),
-       url('/fonts/EthosNova-MediumItalic.woff') format('woff');
+  font-family: "Ethos Nova";
+  src: url("/fonts/EthosNova-MediumItalic.woff2") format("woff2"),
+    url("/fonts/EthosNova-MediumItalic.woff") format("woff");
   font-weight: 500;
   font-style: italic;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Ethos Nova';
-  src: url('/fonts/EthosNova-Heavy.woff2') format('woff2'),
-       url('/fonts/EthosNova-Heavy.woff') format('woff');
+  font-family: "Ethos Nova";
+  src: url("/fonts/EthosNova-Heavy.woff2") format("woff2"),
+    url("/fonts/EthosNova-Heavy.woff") format("woff");
   font-weight: 900;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Ethos Nova';
-  src: url('/fonts/EthosNova-HeavyItalic.woff2') format('woff2'),
-       url('/fonts/EthosNova-HeavyItalic.woff') format('woff');
+  font-family: "Ethos Nova";
+  src: url("/fonts/EthosNova-HeavyItalic.woff2") format("woff2"),
+    url("/fonts/EthosNova-HeavyItalic.woff") format("woff");
   font-weight: 900;
   font-style: italic;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Ethos Nova';
-  src: url('/fonts/EthosNova-Thin.woff2') format('woff2'),
-       url('/fonts/EthosNova-Thin.woff') format('woff');
+  font-family: "Ethos Nova";
+  src: url("/fonts/EthosNova-Thin.woff2") format("woff2"),
+    url("/fonts/EthosNova-Thin.woff") format("woff");
   font-weight: 100;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Ethos Nova';
-  src: url('/fonts/EthosNova-ThinItalic.woff2') format('woff2'),
-       url('/fonts/EthosNova-ThinItalic.woff') format('woff');
+  font-family: "Ethos Nova";
+  src: url("/fonts/EthosNova-ThinItalic.woff2") format("woff2"),
+    url("/fonts/EthosNova-ThinItalic.woff") format("woff");
   font-weight: 100;
   font-style: italic;
   font-display: swap;
 }
 
 :root {
+  /* --background: #ede8d0; */
   --background: #ffffff;
   --foreground: #171717;
   --gray-100: #f5f5f5;
@@ -129,7 +130,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-primary: 'Ethos Nova', sans-serif;
+  --font-primary: "Ethos Nova", sans-serif;
 }
 
 * {
@@ -145,7 +146,8 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-primary), var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-primary), var(--font-geist-sans), -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   line-height: 1.6;
   overflow-x: hidden;
 }
@@ -157,8 +159,8 @@ body {
   height: calc(100vh - 80px);
   margin: 40px;
   overflow: hidden;
-  background: #f8f9fa;
-  border-radius: 8px;
+  background: var(--background);
+  border-radius: 0;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
@@ -177,6 +179,39 @@ body {
 
 .gallery-slide.active {
   opacity: 1;
+}
+
+/* Overlay for slideshow */
+.gallery-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 24px;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 55%,
+    rgba(0, 0, 0, 0.45) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.25s ease-in-out;
+  pointer-events: none;
+}
+
+.gallery-container:hover .gallery-overlay {
+  opacity: 1;
+}
+
+.gallery-overlay-title {
+  font-family: var(--font-primary);
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-align: center;
 }
 
 .gallery-controls {
@@ -216,7 +251,7 @@ body {
 /* Sidebar styles */
 .sidebar {
   width: 280px;
-  background: white;
+  background: var(--background);
   border-right: 1px solid var(--gray-200);
   padding: 40px 30px;
   position: fixed;
@@ -330,7 +365,8 @@ body {
   flex: 1;
   margin-left: 280px;
   min-height: 100vh;
-padding: 20px;}
+  padding: 20px;
+}
 
 /* Header styles */
 .header {
@@ -359,7 +395,12 @@ padding: 20px;}
 /* Content section */
 .content-section {
   padding: 80px 0;
-  background: white;
+  background: var(--background);
+}
+
+/* Generic spacing between rendered content blocks (project images, text, etc.) */
+.content-block {
+  margin-bottom: 20px;
 }
 
 .content-text {
@@ -393,7 +434,7 @@ padding: 20px;}
 /* Thumbnail Grid Styles */
 .thumbnail-grid-container {
   padding: 40px;
-  background: white;
+  background: var(--background);
   min-height: 100vh;
 }
 
@@ -408,10 +449,35 @@ padding: 20px;}
 .thumbnail-item {
   position: relative;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 0;
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   aspect-ratio: 4/3;
+}
+
+.thumb-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 12px;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.thumbnail-item:hover .thumb-overlay {
+  opacity: 1;
+}
+
+.thumb-overlay-title {
+  font-family: var(--font-primary);
+  color: #fff;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-align: center;
 }
 
 .thumbnail-item:hover {
@@ -547,7 +613,7 @@ padding: 20px;}
 /* Projects Page Styles */
 .projects-container {
   padding: 40px;
-  background: white;
+  background: var(--background);
   min-height: 100vh;
 }
 
@@ -647,7 +713,7 @@ padding: 20px;}
 /* Project Detail Page Styles */
 .project-info-section {
   padding: 60px 40px;
-  background: white;
+  background: var(--background);
 }
 
 .project-details {
@@ -741,7 +807,7 @@ padding: 20px;}
   .main-layout {
     flex-direction: column;
   }
-  
+
   .sidebar {
     position: relative;
     width: 100%;
@@ -750,92 +816,92 @@ padding: 20px;}
     border-right: none;
     border-bottom: 1px solid var(--gray-200);
   }
-  
+
   .sidebar-logo {
     font-size: 16px;
     margin-bottom: 20px;
   }
-  
+
   .sidebar-nav {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
   }
-  
+
   .sidebar-nav li {
     margin-bottom: 0;
   }
-  
+
   .sidebar-social {
     position: static;
     margin-top: 20px;
   }
-  
+
   .sidebar-controls {
     position: static;
     margin-top: 20px;
     left: auto;
     right: auto;
   }
-  
+
   .sidebar-tab-list {
     flex-direction: row;
     flex-wrap: wrap;
     gap: 10px;
   }
-  
+
   .sidebar-tab {
     flex: 1;
     min-width: 80px;
     font-size: 12px;
     padding: 10px 12px;
   }
-  
+
   .main-content {
     margin-left: 0;
   }
-  
+
   .gallery-container {
     width: calc(100% - 40px);
     height: calc(60vh - 40px);
     margin: 20px;
   }
-  
+
   .gallery-controls {
     padding: 10px 15px;
     font-size: 16px;
   }
-  
+
   .gallery-prev {
     left: 10px;
   }
-  
+
   .gallery-next {
     right: 10px;
   }
-  
+
   .content-section {
     padding: 40px 0;
   }
-  
+
   .content-text {
     padding: 0 20px;
     font-size: 14px;
   }
-  
+
   .content-text h1 {
     font-size: 24px;
   }
-  
+
   .thumbnail-grid-container {
     padding: 20px;
   }
-  
+
   .thumbnail-grid {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 15px;
   }
-  
+
   .view-controls {
     bottom: 20px;
     left: 20px;
@@ -845,55 +911,55 @@ padding: 20px;}
     flex-wrap: wrap;
     gap: 4px;
   }
-  
+
   .control-btn {
     padding: 10px 16px;
     font-size: 12px;
   }
-  
+
   .back-btn {
     padding: 12px 24px;
     font-size: 14px;
   }
-  
+
   /* Projects page mobile styles */
   .projects-container {
     padding: 20px;
   }
-  
+
   .projects-header h1 {
     font-size: 32px;
   }
-  
+
   .projects-header p {
     font-size: 16px;
   }
-  
+
   .projects-grid {
     grid-template-columns: 1fr;
     gap: 20px;
   }
-  
+
   .project-image-container {
     height: 250px;
   }
-  
+
   .project-info {
     padding: 20px;
   }
-  
+
   .project-title {
     font-size: 20px;
   }
-  
+
   .project-info-section {
     padding: 40px 20px;
   }
-  
+
   .project-details .project-title {
     font-size: 28px;
   }
-  
+
   .project-description {
     font-size: 16px;
   }

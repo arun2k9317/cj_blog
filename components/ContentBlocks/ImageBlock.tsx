@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { ImageBlock as ImageBlockType } from '@/types/project';
-import { useState } from 'react';
-import Image from 'next/image';
+import { ImageBlock as ImageBlockType } from "@/types/project";
+import { useState } from "react";
+import Image from "next/image";
 
 interface ImageBlockProps {
   block: ImageBlockType;
@@ -12,18 +12,19 @@ interface ImageBlockProps {
   onImageUpload?: (file: File) => Promise<string>;
 }
 
-export default function ImageBlock({ 
-  block, 
-  isEditing = false, 
-  onUpdate, 
-  onDelete, 
-  onImageUpload 
+export default function ImageBlock({
+  block,
+  isEditing = false,
+  onUpdate,
+  onDelete,
+  onImageUpload,
 }: ImageBlockProps) {
   const [isUploading, setIsUploading] = useState(false);
-  const [isEditingCaption, setIsEditingCaption] = useState(false);
-  const [caption, setCaption] = useState(block.caption || '');
+  const [caption, setCaption] = useState(block.caption || "");
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file || !onImageUpload) return;
 
@@ -32,7 +33,7 @@ export default function ImageBlock({
       const imageUrl = await onImageUpload(file);
       onUpdate?.({ ...block, src: imageUrl });
     } catch (error) {
-      console.error('Failed to upload image:', error);
+      console.error("Failed to upload image:", error);
     } finally {
       setIsUploading(false);
     }
@@ -40,31 +41,39 @@ export default function ImageBlock({
 
   const handleCaptionSave = () => {
     onUpdate?.({ ...block, caption });
-    setIsEditingCaption(false);
   };
 
   const handleCaptionCancel = () => {
-    setCaption(block.caption || '');
-    setIsEditingCaption(false);
+    setCaption(block.caption || "");
   };
 
   const getAspectRatioClass = (ratio?: string) => {
     switch (ratio) {
-      case 'square': return 'aspect-square';
-      case 'landscape': return 'aspect-video';
-      case 'portrait': return 'aspect-[3/4]';
-      case 'wide': return 'aspect-[21/9]';
-      default: return 'aspect-auto';
+      case "square":
+        return "aspect-square";
+      case "landscape":
+        return "aspect-video";
+      case "portrait":
+        return "aspect-[3/4]";
+      case "wide":
+        return "aspect-[21/9]";
+      default:
+        return "aspect-auto";
     }
   };
 
   const getAlignmentClass = (alignment?: string) => {
     switch (alignment) {
-      case 'left': return 'mx-0 mr-auto';
-      case 'right': return 'mx-0 ml-auto';
-      case 'center': return 'mx-auto';
-      case 'full-width': return 'w-full';
-      default: return 'mx-auto';
+      case "left":
+        return "mx-0 mr-auto";
+      case "right":
+        return "mx-0 ml-auto";
+      case "center":
+        return "mx-auto";
+      case "full-width":
+        return "w-full";
+      default:
+        return "mx-auto";
     }
   };
 
@@ -82,7 +91,7 @@ export default function ImageBlock({
             </button>
           </div>
         </div>
-        
+
         <div className="space-y-3">
           {/* Image Upload */}
           <div>
@@ -115,7 +124,9 @@ export default function ImageBlock({
                   className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                   disabled={isUploading}
                 />
-                {isUploading && <p className="mt-2 text-sm text-gray-500">Uploading...</p>}
+                {isUploading && (
+                  <p className="mt-2 text-sm text-gray-500">Uploading...</p>
+                )}
               </div>
             )}
           </div>
@@ -145,8 +156,8 @@ export default function ImageBlock({
               onChange={(e) => setCaption(e.target.value)}
               onBlur={handleCaptionSave}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') handleCaptionSave();
-                if (e.key === 'Escape') handleCaptionCancel();
+                if (e.key === "Enter") handleCaptionSave();
+                if (e.key === "Escape") handleCaptionCancel();
               }}
               className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Add a caption for the image"
@@ -160,8 +171,14 @@ export default function ImageBlock({
                 Aspect Ratio
               </label>
               <select
-                value={block.aspectRatio || 'auto'}
-                onChange={(e) => onUpdate?.({ ...block, aspectRatio: e.target.value as any })}
+                value={block.aspectRatio || "auto"}
+                onChange={(e) =>
+                  onUpdate?.({
+                    ...block,
+                    aspectRatio: e.target
+                      .value as ImageBlockType["aspectRatio"],
+                  })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
               >
                 <option value="auto">Auto</option>
@@ -171,14 +188,19 @@ export default function ImageBlock({
                 <option value="wide">Wide (21:9)</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Alignment
               </label>
               <select
-                value={block.alignment || 'center'}
-                onChange={(e) => onUpdate?.({ ...block, alignment: e.target.value as any })}
+                value={block.alignment || "center"}
+                onChange={(e) =>
+                  onUpdate?.({
+                    ...block,
+                    alignment: e.target.value as ImageBlockType["alignment"],
+                  })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
               >
                 <option value="left">Left</option>
@@ -206,16 +228,24 @@ export default function ImageBlock({
 
   return (
     <div className="content-block">
-      <div className={`relative ${getAlignmentClass(block.alignment)} ${block.alignment === 'full-width' ? 'w-full' : 'max-w-2xl'}`}>
-        <div className={`relative overflow-hidden rounded-lg ${getAspectRatioClass(block.aspectRatio)}`}>
+      <div
+        className={`relative ${getAlignmentClass(block.alignment)} ${
+          block.alignment === "full-width" ? "w-full" : "max-w-6xl w-full"
+        }`}
+      >
+        <div
+          className={`relative overflow-hidden ${getAspectRatioClass(
+            block.aspectRatio
+          )}`}
+        >
           <Image
             src={block.src}
             alt={block.alt}
             fill
-            className="object-cover"
+            className="object-cover object-center"
           />
         </div>
-        
+
         {block.caption && (
           <p className="mt-2 text-sm text-gray-600 text-center italic">
             {block.caption}
