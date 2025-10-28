@@ -1,13 +1,24 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+let serverClient: SupabaseClient | null = null;
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export function getSupabaseServerClient(): SupabaseClient {
+    if (serverClient) return serverClient;
+
+    const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!url) throw new Error('SUPABASE_URL or NEXT_PUBLIC_SUPABASE_URL is required.');
+    if (!key) throw new Error('SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY is required.');
+
+    serverClient = createClient(url, key);
+    return serverClient;
+}
 
 // Database schema creation
 export async function initializeDatabase() {
     try {
+        const supabase = getSupabaseServerClient();
         // Create projects table
         const { error: projectsError } = await supabase.rpc('exec_sql', {
             sql: `
@@ -99,6 +110,7 @@ export async function createProject(project: {
     published?: boolean;
     tags?: string[];
 }) {
+    const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
         .from('projects')
         .insert({
@@ -119,6 +131,7 @@ export async function createProject(project: {
 }
 
 export async function getProject(id: string) {
+    const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
         .from('projects')
         .select('*')
@@ -130,6 +143,7 @@ export async function getProject(id: string) {
 }
 
 export async function getAllProjects(publishedOnly: boolean = true) {
+    const supabase = getSupabaseServerClient();
     let query = supabase.from('projects').select('*');
 
     if (publishedOnly) {
@@ -151,6 +165,7 @@ export async function updateProject(id: string, updates: Partial<{
     published: boolean;
     tags: string[];
 }>) {
+    const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
         .from('projects')
         .update({
@@ -166,6 +181,7 @@ export async function updateProject(id: string, updates: Partial<{
 }
 
 export async function deleteProject(id: string) {
+    const supabase = getSupabaseServerClient();
     const { error } = await supabase
         .from('projects')
         .delete()
@@ -197,6 +213,7 @@ export async function createContentBlock(block: {
     style?: string;
     height?: number;
 }) {
+    const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
         .from('content_blocks')
         .insert({
@@ -229,6 +246,7 @@ export async function createContentBlock(block: {
 }
 
 export async function getContentBlocks(projectId: string) {
+    const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
         .from('content_blocks')
         .select('*')
@@ -240,6 +258,7 @@ export async function getContentBlocks(projectId: string) {
 }
 
 export async function updateContentBlock(id: string, updates: Record<string, unknown>) {
+    const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
         .from('content_blocks')
         .update({
@@ -255,6 +274,7 @@ export async function updateContentBlock(id: string, updates: Record<string, unk
 }
 
 export async function deleteContentBlock(id: string) {
+    const supabase = getSupabaseServerClient();
     const { error } = await supabase
         .from('content_blocks')
         .delete()
@@ -264,6 +284,7 @@ export async function deleteContentBlock(id: string) {
 }
 
 export async function deleteContentBlocksByProject(projectId: string) {
+    const supabase = getSupabaseServerClient();
     const { error } = await supabase
         .from('content_blocks')
         .delete()

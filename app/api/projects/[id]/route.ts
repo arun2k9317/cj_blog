@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { Project } from '@/types/project';
 import {
   initializeDatabase,
@@ -11,13 +11,14 @@ import {
 
 // GET /api/projects/[id] - Get a specific project
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     await initializeDatabase();
 
-    const project = await getProjectWithBlocks(params.id);
+    const { id } = await context.params;
+    const project = await getProjectWithBlocks(id);
 
     if (!project) {
       return NextResponse.json(
@@ -42,8 +43,8 @@ export async function GET(
 
 // PUT /api/projects/[id] - Update a project
 export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const projectData: Partial<Project> = await request.json();
@@ -51,7 +52,8 @@ export async function PUT(
     await initializeDatabase();
 
     // Update project metadata
-    const updatedProject = await updateProject(params.id, {
+    const { id } = await context.params;
+    const _updatedProject = await updateProject(id, {
       title: projectData.title,
       slug: projectData.slug,
       description: projectData.description,
@@ -64,13 +66,13 @@ export async function PUT(
     // Update content blocks if provided
     if (projectData.contentBlocks) {
       // Delete existing blocks
-      await deleteContentBlocksByProject(params.id);
+      await deleteContentBlocksByProject(id);
 
       // Create new blocks
       for (const block of projectData.contentBlocks) {
         await createContentBlock({
           id: block.id,
-          projectId: params.id,
+          projectId: id,
           type: block.type,
           order: block.order,
           content: 'content' in block ? block.content : undefined,
@@ -94,7 +96,7 @@ export async function PUT(
     }
 
     // Get the updated project with blocks
-    const projectWithBlocks = await getProjectWithBlocks(params.id);
+    const projectWithBlocks = await getProjectWithBlocks(id);
 
     return NextResponse.json({
       success: true,
@@ -112,17 +114,19 @@ export async function PUT(
 
 // DELETE /api/projects/[id] - Delete a project
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     await initializeDatabase();
 
+    const { id } = await context.params;
+
     // Delete content blocks first (due to foreign key constraint)
-    await deleteContentBlocksByProject(params.id);
+    await deleteContentBlocksByProject(id);
 
     // Delete the project
-    await deleteProject(params.id);
+    await deleteProject(id);
 
     return NextResponse.json({
       success: true,
