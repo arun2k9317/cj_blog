@@ -109,7 +109,10 @@ export default function TextBlock({
               <select
                 value={block.textAlign || "left"}
                 onChange={(e) =>
-                  onUpdate?.({ ...block, textAlign: e.target.value as any })
+                  onUpdate?.({
+                    ...block,
+                    textAlign: e.target.value as TextBlockType["textAlign"],
+                  })
                 }
                 className="w-full p-2 border border-gray-300 rounded-md"
               >
@@ -126,7 +129,10 @@ export default function TextBlock({
               <select
                 value={block.fontSize || "medium"}
                 onChange={(e) =>
-                  onUpdate?.({ ...block, fontSize: e.target.value as any })
+                  onUpdate?.({
+                    ...block,
+                    fontSize: e.target.value as TextBlockType["fontSize"],
+                  })
                 }
                 className="w-full p-2 border border-gray-300 rounded-md"
               >
@@ -144,7 +150,10 @@ export default function TextBlock({
               <select
                 value={block.fontWeight || "normal"}
                 onChange={(e) =>
-                  onUpdate?.({ ...block, fontWeight: e.target.value as any })
+                  onUpdate?.({
+                    ...block,
+                    fontWeight: e.target.value as TextBlockType["fontWeight"],
+                  })
                 }
                 className="w-full p-2 border border-gray-300 rounded-md"
               >

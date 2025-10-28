@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { ContentBlock as ContentBlockType } from '@/types/project';
-import TextBlock from './TextBlock';
-import ImageBlock from './ImageBlock';
-import ImageGalleryBlock from './ImageGalleryBlock';
-import QuoteBlock from './QuoteBlock';
-import SpacerBlock from './SpacerBlock';
+import { ContentBlock as ContentBlockType } from "@/types/project";
+import TextBlock from "./TextBlock";
+import ImageBlock from "./ImageBlock";
+import ImageGalleryBlock from "./ImageGalleryBlock";
+import QuoteBlock from "./QuoteBlock";
+import SpacerBlock from "./SpacerBlock";
 
 interface ContentBlockProps {
   block: ContentBlockType;
@@ -19,20 +19,20 @@ export default function ContentBlock(props: ContentBlockProps) {
   const { block } = props;
 
   switch (block.type) {
-    case 'text':
+    case "text":
       return <TextBlock {...props} block={block} />;
-    case 'image':
+    case "image":
       return <ImageBlock {...props} block={block} />;
-    case 'image-gallery':
+    case "image-gallery":
       return <ImageGalleryBlock {...props} block={block} />;
-    case 'quote':
+    case "quote":
       return <QuoteBlock {...props} block={block} />;
-    case 'spacer':
+    case "spacer":
       return <SpacerBlock {...props} block={block} />;
     default:
       return (
         <div className="content-block p-4 border border-red-300 bg-red-50 text-red-700 rounded">
-          Unknown block type: {(block as any).type}
+          Unknown block type: {String((block as { type: string }).type)}
         </div>
       );
   }

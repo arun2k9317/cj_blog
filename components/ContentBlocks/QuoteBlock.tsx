@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { QuoteBlock as QuoteBlockType } from '@/types/project';
-import { useState } from 'react';
+import { QuoteBlock as QuoteBlockType } from "@/types/project";
+import { useState } from "react";
 
 interface QuoteBlockProps {
   block: QuoteBlockType;
@@ -10,11 +10,16 @@ interface QuoteBlockProps {
   onDelete?: (blockId: string) => void;
 }
 
-export default function QuoteBlock({ block, isEditing = false, onUpdate, onDelete }: QuoteBlockProps) {
+export default function QuoteBlock({
+  block,
+  isEditing = false,
+  onUpdate,
+  onDelete,
+}: QuoteBlockProps) {
   const [isEditingText, setIsEditingText] = useState(false);
   const [isEditingAuthor, setIsEditingAuthor] = useState(false);
   const [text, setText] = useState(block.text);
-  const [author, setAuthor] = useState(block.author || '');
+  const [author, setAuthor] = useState(block.author || "");
 
   const handleTextSave = () => {
     if (onUpdate) {
@@ -36,23 +41,29 @@ export default function QuoteBlock({ block, isEditing = false, onUpdate, onDelet
   };
 
   const handleAuthorCancel = () => {
-    setAuthor(block.author || '');
+    setAuthor(block.author || "");
     setIsEditingAuthor(false);
   };
 
   const getAlignmentClass = (align?: string) => {
     switch (align) {
-      case 'left': return 'text-left';
-      case 'right': return 'text-right';
-      default: return 'text-center';
+      case "left":
+        return "text-left";
+      case "right":
+        return "text-right";
+      default:
+        return "text-center";
     }
   };
 
   const getStyleClass = (style?: string) => {
     switch (style) {
-      case 'bordered': return 'border-l-4 border-gray-300 pl-4';
-      case 'highlighted': return 'bg-yellow-50 border border-yellow-200 p-4 rounded-lg';
-      default: return '';
+      case "bordered":
+        return "border-l-4 border-gray-300 pl-4";
+      case "highlighted":
+        return "bg-yellow-50 border border-yellow-200 p-4 rounded-lg";
+      default:
+        return "";
     }
   };
 
@@ -70,7 +81,7 @@ export default function QuoteBlock({ block, isEditing = false, onUpdate, onDelet
             </button>
           </div>
         </div>
-        
+
         <div className="space-y-3">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -84,7 +95,7 @@ export default function QuoteBlock({ block, isEditing = false, onUpdate, onDelet
               placeholder="Enter the quote text..."
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Author (Optional)
@@ -104,8 +115,13 @@ export default function QuoteBlock({ block, isEditing = false, onUpdate, onDelet
                 Alignment
               </label>
               <select
-                value={block.alignment || 'center'}
-                onChange={(e) => onUpdate?.({ ...block, alignment: e.target.value as any })}
+                value={block.alignment || "center"}
+                onChange={(e) =>
+                  onUpdate?.({
+                    ...block,
+                    alignment: e.target.value as QuoteBlockType["alignment"],
+                  })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
               >
                 <option value="left">Left</option>
@@ -113,14 +129,19 @@ export default function QuoteBlock({ block, isEditing = false, onUpdate, onDelet
                 <option value="right">Right</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Style
               </label>
               <select
-                value={block.style || 'minimal'}
-                onChange={(e) => onUpdate?.({ ...block, style: e.target.value as any })}
+                value={block.style || "minimal"}
+                onChange={(e) =>
+                  onUpdate?.({
+                    ...block,
+                    style: e.target.value as QuoteBlockType["style"],
+                  })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
               >
                 <option value="minimal">Minimal</option>
@@ -166,10 +187,10 @@ export default function QuoteBlock({ block, isEditing = false, onUpdate, onDelet
             className="cursor-pointer hover:bg-gray-50 p-2 rounded"
             onClick={() => setIsEditingText(true)}
           >
-            {block.text || 'Click to add quote text...'}
+            {block.text || "Click to add quote text..."}
           </div>
         )}
-        
+
         {block.author && (
           <footer className="mt-3 text-sm text-gray-600">
             {isEditingAuthor ? (

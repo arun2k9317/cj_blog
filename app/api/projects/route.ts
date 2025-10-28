@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Project, ContentBlock } from '@/types/project';
+import { Project } from '@/types/project';
 import {
   initializeDatabase,
   getAllProjects,
@@ -8,7 +8,7 @@ import {
 } from '@/lib/supabase';
 
 // Sample photography projects with blob storage images
-const sampleProjects = [
+const sampleProjects: Project[] = [
   {
     id: 'nature-wildlife-series',
     title: 'Nature & Wildlife Series',
@@ -213,28 +213,43 @@ export async function GET() {
 
         // Create content blocks
         for (const block of projectData.contentBlocks) {
-          await createContentBlock({
+          const base = {
             id: block.id,
             projectId: newProject.id,
             type: block.type,
-            order: block.order,
-            content: 'content' in block ? (block as any).content : undefined,
-            textAlign: 'textAlign' in block ? (block as any).textAlign : undefined,
-            fontSize: 'fontSize' in block ? (block as any).fontSize : undefined,
-            fontWeight: 'fontWeight' in block ? (block as any).fontWeight : undefined,
-            src: 'src' in block ? (block as any).src : undefined,
-            alt: 'alt' in block ? (block as any).alt : undefined,
-            caption: 'caption' in block ? (block as any).caption : undefined,
-            aspectRatio: 'aspectRatio' in block ? (block as any).aspectRatio : undefined,
-            alignment: 'alignment' in block ? (block as any).alignment : undefined,
-            images: 'images' in block ? (block as any).images : undefined,
-            layout: 'layout' in block ? (block as any).layout : undefined,
-            columns: 'columns' in block ? (block as any).columns : undefined,
-            text: 'text' in block ? (block as any).text : undefined,
-            author: 'author' in block ? (block as any).author : undefined,
-            style: 'style' in block ? (block as any).style : undefined,
-            height: 'height' in block ? (block as any).height : undefined
-          });
+            order: block.order
+          } as {
+            id: string; projectId: string; type: string; order: number;
+            content?: string; textAlign?: string; fontSize?: string; fontWeight?: string;
+            src?: string; alt?: string; caption?: string; aspectRatio?: string; alignment?: string;
+            images?: unknown; layout?: string; columns?: number; text?: string; author?: string; style?: string; height?: number;
+          };
+
+          if (block.type === 'text') {
+            base.content = block.content;
+            base.textAlign = block.textAlign;
+            base.fontSize = block.fontSize;
+            base.fontWeight = block.fontWeight;
+          } else if (block.type === 'image') {
+            base.src = block.src;
+            base.alt = block.alt;
+            base.caption = block.caption;
+            base.aspectRatio = block.aspectRatio;
+            base.alignment = block.alignment;
+          } else if (block.type === 'image-gallery') {
+            base.images = block.images;
+            base.layout = block.layout;
+            base.columns = block.columns;
+          } else if (block.type === 'quote') {
+            base.text = block.text;
+            base.author = block.author;
+            base.alignment = block.alignment;
+            base.style = block.style;
+          } else if (block.type === 'spacer') {
+            base.height = block.height;
+          }
+
+          await createContentBlock(base);
         }
       }
 
