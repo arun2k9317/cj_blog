@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CJ Photography Blog",
-  description: "The website and online portfolio of CJ Photography",
+  title: "NJ Photography Blog",
+  description: "The website and online portfolio of NJ Photography",
 };
 
 export default function RootLayout({

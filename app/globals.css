@@ -204,6 +204,37 @@ body {
   opacity: 1;
 }
 
+.cursor-left {
+  cursor: url("/cursors/left.cur"), w-resize;
+}
+
+.cursor-right {
+  cursor: url("/cursors/right.cur"), e-resize;
+}
+
+.cursor-middle {
+  cursor: pointer;
+}
+
+.gallery-caption {
+  font-family: var(--font-primary);
+  color: #111111;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-align: center;
+  margin-top: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  pointer-events: none;
+}
+
+/* Reveal caption when hovering the slideshow */
+.gallery-container:hover + .gallery-caption {
+  opacity: 1;
+}
+
 .gallery-overlay-title {
   font-family: var(--font-primary);
   color: #ffffff;
@@ -260,17 +291,29 @@ body {
   height: 100vh;
   overflow-y: auto;
   z-index: 50;
+  transition: width 0.3s ease;
 }
 
 .sidebar-logo {
   font-family: var(--font-primary);
-  font-size: 28px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 40px;
   text-transform: uppercase;
   letter-spacing: 2px;
   line-height: 1.2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  text-align: right;
+}
+
+.sidebar-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .sidebar-nav {
@@ -287,7 +330,7 @@ body {
   font-family: var(--font-primary);
   color: var(--gray-700);
   text-decoration: none;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 400;
   display: block;
   padding: 8px 0;
@@ -334,30 +377,29 @@ body {
 
 .sidebar-tab {
   font-family: var(--font-primary);
-  padding: 12px 16px;
+  padding: 4px 0;
   background: transparent;
-  border: 1px solid var(--gray-300);
+  border: none;
   color: var(--gray-700);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 400;
   cursor: pointer;
-  transition: all 0.3s ease;
-  border-radius: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  text-align: center;
-  width: 100%;
+  transition: color 0.2s ease;
+  border-radius: 0;
+  text-transform: none;
+  letter-spacing: 0;
+  text-align: right;
+  width: auto;
 }
 
 .sidebar-tab:hover {
-  background: var(--gray-100);
   color: var(--gray-900);
-  border-color: var(--gray-400);
+  text-decoration: underline;
 }
 
 .sidebar-tab:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+  text-decoration: underline;
 }
 
 /* Main content area */
@@ -366,6 +408,58 @@ body {
   margin-left: 280px;
   min-height: 100vh;
   padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+/* Collapsed sidebar state applied via wrapper class on layout */
+.main-layout.sidebar-collapsed .sidebar {
+  width: 110px;
+  padding: 48px 16px 16px 16px; /* extra top/right padding to avoid toggle overlap */
+}
+
+.main-layout.sidebar-collapsed .main-content {
+  margin-left: 110px;
+}
+
+/* Hide only the second-line word (PHOTOGRAPHY), keep the NJ + logo row */
+.main-layout.sidebar-collapsed .sidebar-logo > span,
+.main-layout.sidebar-collapsed .sidebar-controls,
+.main-layout.sidebar-collapsed .sidebar-nav,
+.main-layout.sidebar-collapsed .sidebar-social {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.main-layout.sidebar-collapsed .sidebar-logo {
+  align-items: flex-end;
+}
+
+.main-layout.sidebar-collapsed .sidebar-logo-row {
+  gap: 4px;
+}
+
+/* Sidebar toggle button */
+.sidebar-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 25px;
+  height: 25px;
+  border-radius: 14px;
+  border: 1px solid var(--gray-300);
+  background: #fff;
+  color: var(--gray-800);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.sidebar-toggle:hover {
+  background: var(--gray-100);
+  color: var(--gray-900);
+  border-color: var(--gray-400);
 }
 
 /* Header styles */
@@ -618,13 +712,14 @@ body {
 }
 
 .projects-header {
-  margin-bottom: 60px;
-  text-align: center;
+  margin-bottom: 40px;
+  margin-left: 60px;
+  text-align: left;
 }
 
 .projects-header h1 {
   font-family: var(--font-primary);
-  font-size: 48px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 20px;
@@ -688,7 +783,7 @@ body {
 
 .project-title {
   font-family: var(--font-primary);
-  font-size: 24px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 8px;
@@ -698,7 +793,7 @@ body {
 
 .project-location {
   font-family: var(--font-primary);
-  font-size: 16px;
+  font-size: 13px;
   color: var(--gray-600);
   margin-bottom: 4px;
 }
@@ -760,21 +855,16 @@ body {
 
 .back-to-projects {
   font-family: var(--font-primary);
-  color: var(--gray-600);
+  color: var(--gray-700);
   text-decoration: none;
-  font-size: 16px;
-  transition: color 0.3s ease;
+  font-size: 12px;
+  transition: color 0.2s ease;
   display: inline-block;
-  padding: 12px 24px;
-  border: 1px solid var(--gray-300);
-  border-radius: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .back-to-projects:hover {
   color: var(--gray-900);
-  border-color: var(--gray-400);
+  text-decoration: underline;
 }
 
 .project-not-found {
@@ -803,6 +893,35 @@ body {
 }
 
 /* Mobile responsive styles */
+@media (min-width: 1440px) {
+  .projects-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 1200px) {
+  .thumbnail-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+  .projects-grid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .thumbnail-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .projects-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+  .project-image-container {
+    height: 220px;
+  }
+}
+
 @media (max-width: 768px) {
   .main-layout {
     flex-direction: column;
@@ -928,7 +1047,7 @@ body {
   }
 
   .projects-header h1 {
-    font-size: 32px;
+    font-size: 15px;
   }
 
   .projects-header p {
@@ -942,6 +1061,11 @@ body {
 
   .project-image-container {
     height: 250px;
+  }
+
+  .projects-header {
+    margin-left: 0;
+    text-align: left;
   }
 
   .project-info {
@@ -962,5 +1086,18 @@ body {
 
   .project-description {
     font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .projects-container {
+    padding: 16px;
+  }
+  .projects-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .project-image-container {
+    height: 200px;
   }
 }

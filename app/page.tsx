@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { Tab } from "@headlessui/react";
 import Link from "next/link";
 import Image from "next/image";
@@ -9,6 +10,11 @@ export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showThumbnails, setShowThumbnails] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [hoverRegion, setHoverRegion] = useState<
+    "left" | "middle" | "right" | null
+  >(null);
+  const router = useRouter();
 
   // Random images from Vercel Blob projects (click to navigate to project)
   const BLOB_BASE =
@@ -46,10 +52,10 @@ export default function Home() {
         count: 7,
       },
       {
-        slug: "kalarippattu",
-        name: "Kalarippattu",
-        folder: "kalarippattu",
-        prefix: "kalarippattu_",
+        slug: "kalaripayattu",
+        name: "kalaripayattu",
+        folder: "kalaripayattu",
+        prefix: "kalaripayattu_",
         count: 15,
         extension: "JPG",
       },
@@ -105,10 +111,60 @@ export default function Home() {
   // thumbnails navigate directly to project; no local selection function needed
 
   return (
-    <div className="main-layout">
+    <div
+      className={`main-layout ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}
+    >
       {/* Left Sidebar */}
       <aside className="sidebar">
-        <div className="sidebar-logo">CJ PHOTOGRAPHY</div>
+        <button
+          className="sidebar-toggle"
+          onClick={() => setIsSidebarCollapsed((v) => !v)}
+          aria-label={
+            isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
+          }
+        >
+          {isSidebarCollapsed ? (
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M9 18l6-6-6-6"></path>
+            </svg>
+          ) : (
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M15 18l-6-6 6-6"></path>
+            </svg>
+          )}
+        </button>
+        <div className="sidebar-logo">
+          <div className="sidebar-logo-row">
+            <span>NJ</span>
+            <Image
+              src="/logo.png"
+              alt="NJ Photography Logo"
+              width={40}
+              height={40}
+            />
+          </div>
+          <span>PHOTOGRAPHY</span>
+        </div>
 
         <nav>
           <ul className="sidebar-nav">
@@ -166,82 +222,96 @@ export default function Home() {
       {/* Main Content */}
       <main className="main-content">
         {!showThumbnails ? (
-          /* Slideshow View */
-          <section
-            className="gallery-container"
-            onMouseEnter={() => setIsHovering(true)}
-            onMouseLeave={() => setIsHovering(false)}
-          >
-            {images.map((image, index) => (
-              <div
-                key={index}
-                className={`gallery-slide ${
-                  index === currentSlide ? "active" : ""
-                }`}
-                style={{
-                  backgroundImage: `url(${image.src})`,
-                }}
-              />
-            ))}
-
-            {/* Click-through to current image's project */}
-            <Link
-              href={images[currentSlide]?.href || "/projects"}
-              className="absolute inset-0 z-[5]"
+          <>
+            <section
+              className={`gallery-container ${
+                hoverRegion === "left"
+                  ? "cursor-left"
+                  : hoverRegion === "right"
+                  ? "cursor-right"
+                  : hoverRegion === "middle"
+                  ? "cursor-middle"
+                  : ""
+              }`}
               onMouseEnter={() => setIsHovering(true)}
-              onMouseLeave={() => setIsHovering(false)}
-              aria-label="Open project"
-            />
-
-            {/* Gallery Controls */}
-            <button
-              className="gallery-controls gallery-prev"
-              onClick={prevSlide}
-              aria-label="Previous image"
+              onMouseLeave={() => {
+                setIsHovering(false);
+                setHoverRegion(null);
+              }}
+              onMouseMove={(e) => {
+                const rect = (
+                  e.currentTarget as HTMLElement
+                ).getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const ratio = x / rect.width;
+                if (ratio < 1 / 3) {
+                  setHoverRegion("left");
+                } else if (ratio > 2 / 3) {
+                  setHoverRegion("right");
+                } else {
+                  setHoverRegion("middle");
+                }
+              }}
+              onClick={(e) => {
+                const rect = (
+                  e.currentTarget as HTMLElement
+                ).getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const ratio = x / rect.width;
+                if (ratio < 1 / 3) {
+                  prevSlide();
+                  return;
+                }
+                if (ratio > 2 / 3) {
+                  nextSlide();
+                  return;
+                }
+                const href = images[currentSlide]?.href || "/projects";
+                router.push(href);
+              }}
             >
-              ‹
-            </button>
-            <button
-              className="gallery-controls gallery-next"
-              onClick={nextSlide}
-              aria-label="Next image"
-            >
-              ›
-            </button>
-            {/* Hover overlay with project name */}
-            <div className="gallery-overlay" aria-hidden>
-              <div className="gallery-overlay-title">
-                {images[currentSlide]?.alt}
-              </div>
-            </div>
-          </section>
-        ) : (
-          /* Thumbnail Grid View */
-          <section className="thumbnail-grid-container">
-            <div className="thumbnail-grid">
               {images.map((image, index) => (
-                <Link
+                <div
                   key={index}
-                  href={image.href}
-                  className={`thumbnail-item ${
+                  className={`gallery-slide ${
                     index === currentSlide ? "active" : ""
                   }`}
-                >
-                  <Image
-                    src={image.src}
-                    alt={image.alt}
-                    className="thumbnail-image"
-                    width={400}
-                    height={300}
-                    style={{ objectFit: "cover" }}
-                  />
-                  <div className="thumb-overlay" aria-hidden>
-                    <div className="thumb-overlay-title">{image.alt}</div>
-                  </div>
-                </Link>
+                  style={{
+                    backgroundImage: `url(${image.src})`,
+                  }}
+                />
               ))}
-            </div>
-          </section>
+            </section>
+            <div className="gallery-caption">{images[currentSlide]?.alt}</div>
+          </>
+        ) : (
+          <>
+            <section className="thumbnail-grid-container">
+              <div className="thumbnail-grid">
+                {images.map((image, index) => (
+                  <Link
+                    key={index}
+                    href={image.href}
+                    className={`thumbnail-item ${
+                      index === currentSlide ? "active" : ""
+                    }`}
+                  >
+                    <Image
+                      src={image.src}
+                      alt={image.alt}
+                      className="thumbnail-image"
+                      width={400}
+                      height={300}
+                      style={{ objectFit: "cover" }}
+                    />
+                    <div className="thumb-overlay" aria-hidden>
+                      <div className="thumb-overlay-title">{image.alt}</div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          </>
         )}
 
         {/* Content Section */}
@@ -249,7 +319,7 @@ export default function Home() {
           <div className="content-text">
             <h1>Portfolio</h1>
             <p>
-              <strong>CJ Photography</strong> is passionate about capturing the
+              <strong>NJ Photography</strong> is passionate about capturing the
               world&apos;s diverse beauty through nature, culture, arts, and
               places. Our work celebrates the intricate details of natural
               landscapes, the vibrant expressions of human culture, and the

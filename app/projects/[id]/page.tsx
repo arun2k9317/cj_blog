@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import Image from "next/image";
 import ProjectRenderer from "@/components/ProjectRenderer";
 import { Project } from "@/types/project";
 
@@ -43,14 +44,14 @@ const projectsData = {
       (i) => `${BLOB_BASE}/duskFallsOnMountains/duskFallsOnMountains_${i}.jpg`
     ),
   },
-  kalarippattu: {
-    id: "kalarippattu",
-    title: "Kalarippattu",
+  kalaripayattu: {
+    id: "kalaripayattu",
+    title: "kalaripayattu",
     location: "",
     architect: "",
-    description: "Kalarippattu photo series.",
+    description: "kalaripayattu photo series.",
     images: range(15).map(
-      (i) => `${BLOB_BASE}/kalarippattu/kalarippattu_${i}.JPG`
+      (i) => `${BLOB_BASE}/kalaripayattu/kalaripayattu_${i}.JPG`
     ),
   },
 };
@@ -60,6 +61,7 @@ export default function ProjectDetailPage() {
   const projectId = params.id as string;
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // Try to fetch from API first, fallback to static data
   useEffect(() => {
@@ -135,9 +137,61 @@ export default function ProjectDetailPage() {
 
   if (loading) {
     return (
-      <div className="main-layout">
+      <div
+        className={`main-layout ${
+          isSidebarCollapsed ? "sidebar-collapsed" : ""
+        }`}
+      >
         <aside className="sidebar">
-          <div className="sidebar-logo">CJ PHOTOGRAPHY</div>
+          <button
+            className="sidebar-toggle"
+            onClick={() => setIsSidebarCollapsed((v) => !v)}
+            aria-label={
+              isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
+            }
+          >
+            {isSidebarCollapsed ? (
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="M9 18l6-6-6-6"></path>
+              </svg>
+            ) : (
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="M15 18l-6-6 6-6"></path>
+              </svg>
+            )}
+          </button>
+          <div className="sidebar-logo">
+            <div className="sidebar-logo-row">
+              <span>NJ</span>
+              <Image
+                src="/logo.png"
+                alt="NJ Photography Logo"
+                width={40}
+                height={40}
+              />
+            </div>
+            <span>PHOTOGRAPHY</span>
+          </div>
           <nav>
             <ul className="sidebar-nav">
               <li>
@@ -153,12 +207,6 @@ export default function ProjectDetailPage() {
                 <Link href="/about">About</Link>
               </li>
               <li>
-                <Link href="/books">Books</Link>
-              </li>
-              <li>
-                <Link href="/print-shop">Print Shop</Link>
-              </li>
-              <li>
                 <Link href="/contact">Contact</Link>
               </li>
             </ul>
@@ -166,8 +214,8 @@ export default function ProjectDetailPage() {
         </aside>
         <main className="main-content">
           <div className="flex items-center justify-center h-96">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+            <div className="flex items-center gap-3">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900"></div>
               <p>Loading project...</p>
             </div>
           </div>
@@ -178,9 +226,61 @@ export default function ProjectDetailPage() {
 
   if (!project) {
     return (
-      <div className="main-layout">
+      <div
+        className={`main-layout ${
+          isSidebarCollapsed ? "sidebar-collapsed" : ""
+        }`}
+      >
         <aside className="sidebar">
-          <div className="sidebar-logo">CJ PHOTOGRAPHY</div>
+          <button
+            className="sidebar-toggle"
+            onClick={() => setIsSidebarCollapsed((v) => !v)}
+            aria-label={
+              isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
+            }
+          >
+            {isSidebarCollapsed ? (
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="M9 18l6-6-6-6"></path>
+              </svg>
+            ) : (
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="M15 18l-6-6 6-6"></path>
+              </svg>
+            )}
+          </button>
+          <div className="sidebar-logo">
+            <div className="sidebar-logo-row">
+              <span>NJ</span>
+              <Image
+                src="/logo.png"
+                alt="NJ Photography Logo"
+                width={40}
+                height={40}
+              />
+            </div>
+            <span>PHOTOGRAPHY</span>
+          </div>
           <nav>
             <ul className="sidebar-nav">
               <li>
@@ -194,12 +294,6 @@ export default function ProjectDetailPage() {
               </li>
               <li>
                 <Link href="/about">About</Link>
-              </li>
-              <li>
-                <Link href="/books">Books</Link>
-              </li>
-              <li>
-                <Link href="/print-shop">Print Shop</Link>
               </li>
               <li>
                 <Link href="/contact">Contact</Link>
@@ -221,10 +315,60 @@ export default function ProjectDetailPage() {
   }
 
   return (
-    <div className="main-layout">
+    <div
+      className={`main-layout ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}
+    >
       {/* Left Sidebar */}
       <aside className="sidebar">
-        <div className="sidebar-logo">CJ PHOTOGRAPHY</div>
+        <button
+          className="sidebar-toggle"
+          onClick={() => setIsSidebarCollapsed((v) => !v)}
+          aria-label={
+            isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
+          }
+        >
+          {isSidebarCollapsed ? (
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M9 18l6-6-6-6"></path>
+            </svg>
+          ) : (
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M15 18l-6-6 6-6"></path>
+            </svg>
+          )}
+        </button>
+        <div className="sidebar-logo">
+          <div className="sidebar-logo-row">
+            <span>NJ</span>
+            <Image
+              src="/logo.png"
+              alt="NJ Photography Logo"
+              width={40}
+              height={40}
+            />
+          </div>
+          <span>PHOTOGRAPHY</span>
+        </div>
 
         <nav>
           <ul className="sidebar-nav">
@@ -241,12 +385,6 @@ export default function ProjectDetailPage() {
             </li>
             <li>
               <Link href="/about">About</Link>
-            </li>
-            <li>
-              <Link href="/books">Books</Link>
-            </li>
-            <li>
-              <Link href="/print-shop">Print Shop</Link>
             </li>
             <li>
               <Link href="/contact">Contact</Link>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 
 // Hardcoded projects pointing to Vercel Blob storage
 const BLOB_BASE =
@@ -33,21 +34,72 @@ const projects = [
     description: "Photo series: Dusk Falls On Mountains.",
   },
   {
-    id: "kalarippattu",
-    title: "Kalarippattu",
+    id: "kalaripayattu",
+    title: "kalaripayattu",
     location: "",
     architect: "",
-    thumbnail: `${BLOB_BASE}/kalarippattu/kalarippattu_1.JPG`,
-    description: "Photo series: Kalarippattu.",
+    thumbnail: `${BLOB_BASE}/kalaripayattu/kalaripayattu_1.JPG`,
+    description: "Photo series: kalaripayattu.",
   },
 ];
 
 export default function ProjectsPage() {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   return (
-    <div className="main-layout">
+    <div
+      className={`main-layout ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}
+    >
       {/* Left Sidebar */}
       <aside className="sidebar">
-        <div className="sidebar-logo">CJ PHOTOGRAPHY</div>
+        <button
+          className="sidebar-toggle"
+          onClick={() => setIsSidebarCollapsed((v: boolean) => !v)}
+          aria-label={
+            isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
+          }
+        >
+          {isSidebarCollapsed ? (
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M9 18l6-6-6-6"></path>
+            </svg>
+          ) : (
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M15 18l-6-6 6-6"></path>
+            </svg>
+          )}
+        </button>
+        <div className="sidebar-logo">
+          <div className="sidebar-logo-row">
+            <span>NJ</span>
+            <Image
+              src="/logo.png"
+              alt="NJ Photography Logo"
+              width={40}
+              height={40}
+            />
+          </div>
+          <span>PHOTOGRAPHY</span>
+        </div>
 
         <nav>
           <ul className="sidebar-nav">
@@ -64,12 +116,6 @@ export default function ProjectsPage() {
             </li>
             <li>
               <Link href="/about">About</Link>
-            </li>
-            <li>
-              <Link href="/books">Books</Link>
-            </li>
-            <li>
-              <Link href="/print-shop">Print Shop</Link>
             </li>
             <li>
               <Link href="/contact">Contact</Link>
@@ -95,7 +141,6 @@ export default function ProjectsPage() {
         <div className="projects-container">
           <div className="projects-header">
             <h1>Projects</h1>
-            <p>World through my lens</p>
           </div>
 
           <div className="projects-grid">
