@@ -30,7 +30,7 @@ export default function ImageLightbox({
   const [showInfo, setShowInfo] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isMagnifierOn, setIsMagnifierOn] = useState(false);
+  const [isMagnifierOn] = useState(false);
   const [isLensVisible, setIsLensVisible] = useState(false);
   const [lensPosition, setLensPosition] = useState<{ x: number; y: number }>({
     x: 0,

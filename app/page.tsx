@@ -21,56 +21,73 @@ export default function Home() {
   // Temporary iconic image (can be changed from admin later)
   const iconicImage = `${BLOB_BASE}/behindTheTeaCup/behindTheTeaCup_1.jpg`;
 
+  type Series = {
+    id: string;
+    title: string;
+    folder: string;
+    description: string;
+    count: number;
+    ext: string;
+  };
+
   // Projects catalog (can be replaced by admin-managed data later)
-  const projects = [
-    {
-      id: "behindTheTeaCup",
-      title: "Behind The Tea Cup",
-      folder: "behindTheTeaCup",
-      description: "Behind The Tea Cup photo series.",
-      count: 10,
-      ext: "jpg",
-    },
-    {
-      id: "coffee-and-the-hills",
-      title: "Coffee And The Hills",
-      folder: "coffeeAndTheHills",
-      description: "Coffee And The Hills photo series.",
-      count: 16,
-      ext: "jpg",
-    },
-  ];
+  const projects = useMemo<Series[]>(
+    () => [
+      {
+        id: "behindTheTeaCup",
+        title: "Behind The Tea Cup",
+        folder: "behindTheTeaCup",
+        description: "Behind The Tea Cup photo series.",
+        count: 10,
+        ext: "jpg",
+      },
+      {
+        id: "coffee-and-the-hills",
+        title: "Coffee And The Hills",
+        folder: "coffeeAndTheHills",
+        description: "Coffee And The Hills photo series.",
+        count: 16,
+        ext: "jpg",
+      },
+    ],
+    []
+  );
 
   // Stories submenu items (reuse lightbox)
-  const stories = [
-    {
-      id: "dusk-falls-on-mountains",
-      title: "Dusk Falls On Mountains",
-      folder: "duskFallsOnMountains",
-      description: "Dusk Falls On Mountains photo series.",
-      count: 7,
-      ext: "jpg",
-    },
-    {
-      id: "kalaripayattu",
-      title: "Kalaripayattu",
-      folder: "kalaripayattu",
-      description: "kalaripayattu photo series.",
-      count: 15,
-      ext: "JPG",
-    },
-  ];
+  const stories = useMemo<Series[]>(
+    () => [
+      {
+        id: "dusk-falls-on-mountains",
+        title: "Dusk Falls On Mountains",
+        folder: "duskFallsOnMountains",
+        description: "Dusk Falls On Mountains photo series.",
+        count: 7,
+        ext: "jpg",
+      },
+      {
+        id: "kalaripayattu",
+        title: "Kalaripayattu",
+        folder: "kalaripayattu",
+        description: "kalaripayattu photo series.",
+        count: 15,
+        ext: "JPG",
+      },
+    ],
+    []
+  );
 
   const range = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
 
-  const activeProject = useMemo(() => {
-    const all = [...projects, ...stories];
-    return all.find((p) => p.id === selectedProjectId) || projects[0];
-  }, [projects, stories, selectedProjectId]);
+  const allSeries = useMemo<Series[]>(() => [...projects, ...stories], [projects, stories]);
+
+  const activeProject: Series = useMemo(() => {
+    const found = allSeries.find((p) => p.id === selectedProjectId);
+    return found ?? projects[0];
+  }, [allSeries, selectedProjectId, projects]);
 
   const projectImages = useMemo(() => {
-    const total = (activeProject as any).count ?? 10;
-    const ext = (activeProject as any).ext ?? "jpg";
+    const total = activeProject.count;
+    const ext = activeProject.ext;
     return range(total).map(
       (i) => `${BLOB_BASE}/${activeProject.folder}/${activeProject.folder}_${i}.${ext}`
     );
