@@ -158,7 +158,8 @@ body {
   margin: 40px;
   overflow: hidden;
   background: var(--background);
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), margin 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    margin 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .iconic-image-wrapper {
@@ -310,10 +311,10 @@ body {
 
 /* Sidebar styles */
 .sidebar {
-  width: 280px;
+  width: 200px;
   background: var(--background);
   border-right: 1px solid var(--gray-200);
-  padding: 40px 30px;
+  padding: 40px 20px 40px 14px; /* reduce left padding to remove extra left space */
   position: fixed;
   top: 0;
   left: 0;
@@ -321,7 +322,8 @@ body {
   overflow-y: auto;
   overflow-x: visible;
   z-index: 50;
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar-logo {
@@ -335,9 +337,9 @@ body {
   line-height: 1.2;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-end; /* align to left */
   gap: 4px;
-  text-align: right;
+  text-align: right; /* align to left */
 }
 
 .sidebar-logo-row {
@@ -365,7 +367,7 @@ body {
   display: block;
   padding: 8px 0;
   transition: color 0.3s ease;
-  text-align: right;
+  text-align: right; /* align to left */
 }
 
 .sidebar-nav a:hover {
@@ -418,7 +420,7 @@ body {
   border-radius: 0;
   text-transform: none;
   letter-spacing: 0;
-  text-align: right;
+  text-align: left; /* align to left */
   width: auto;
 }
 
@@ -468,7 +470,8 @@ body {
 .sidebar-nav,
 .sidebar-social {
   transform: translateX(0);
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.2s, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.2s;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.2s,
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.2s;
 }
 
 /* Position toggle button when sidebar is collapsed */
@@ -494,7 +497,8 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, position 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+    position 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 100;
 }
 
@@ -1168,7 +1172,7 @@ body {
 }
 
 .image-lightbox.dark-mode {
-  background: #000000;
+  background: #111111; /* very dark grey instead of pure black */
   color: #ffffff;
 }
 
@@ -1215,7 +1219,7 @@ body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  padding: 60px 20px 160px;
+  padding: 60px 20px 40px;
 }
 
 .lightbox-image-wrapper {
@@ -1422,33 +1426,114 @@ body {
 }
 
 .lightbox-control-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border: 1px solid var(--gray-300);
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none; /* remove outer square border */
   background: transparent;
   color: var(--gray-900);
-  border-radius: 4px;
-  font-family: var(--font-primary);
-  font-size: 13px;
+  border-radius: 8px; /* invisible unless hover background applied */
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.lightbox-control-btn svg {
+  display: block;
 }
 
 .lightbox-control-btn:hover {
-  background: var(--gray-100);
-  border-color: var(--gray-400);
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .image-lightbox.dark-mode .lightbox-control-btn {
-  border-color: rgba(255, 255, 255, 0.2);
   color: #ffffff;
 }
 
 .image-lightbox.dark-mode .lightbox-control-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Magnifier lens */
+.lightbox-magnifier-lens {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 9999px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  z-index: 1000;
+}
+
+.image-lightbox.dark-mode .lightbox-magnifier-lens {
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
+}
+
+/* Tooltips for lightbox controls */
+.lightbox-control-btn[data-tooltip],
+.lightbox-switch[data-tooltip] {
+  position: relative;
+}
+
+.lightbox-control-btn[data-tooltip]::after,
+.lightbox-switch[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 50%;
+  right: 44px; /* show to the left of the icon */
+  transform: translateY(-50%);
+  background: rgba(17, 17, 17, 0.95);
+  color: #ffffff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-family: var(--font-primary);
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 10001;
+}
+
+.lightbox-control-btn[data-tooltip]::before,
+.lightbox-switch[data-tooltip]::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 32px;
+  transform: translateY(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent transparent rgba(17, 17, 17, 0.95);
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 10001;
+}
+
+.lightbox-control-btn:hover[data-tooltip]::after,
+.lightbox-control-btn:focus-visible[data-tooltip]::after,
+.lightbox-control-btn:hover[data-tooltip]::before,
+.lightbox-control-btn:focus-visible[data-tooltip]::before,
+.lightbox-switch:hover[data-tooltip]::after,
+.lightbox-switch:hover[data-tooltip]::before {
+  opacity: 1;
+  transform: translateY(-50%);
+}
+
+.image-lightbox.dark-mode .lightbox-control-btn[data-tooltip]::after,
+.image-lightbox.dark-mode .lightbox-switch[data-tooltip]::after {
+  background: #ffffff;
+  color: #111111;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+}
+
+.image-lightbox.dark-mode .lightbox-control-btn[data-tooltip]::before,
+.image-lightbox.dark-mode .lightbox-switch[data-tooltip]::before {
+  border-color: transparent transparent transparent #ffffff;
 }
 
 .lightbox-fullscreen-btn {
@@ -1467,6 +1552,149 @@ body {
   font-size: 13px;
   font-weight: 600;
   z-index: 10000;
+}
+
+/* Custom tooltips for controls */
+.with-tooltip {
+  position: relative;
+}
+
+.with-tooltip[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 50%;
+  right: 44px; /* show tooltip to the left of icon stack */
+  transform: translateY(-50%);
+  white-space: nowrap;
+  font-family: var(--font-primary);
+  font-size: 12px;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 10001;
+}
+
+.with-tooltip[data-tooltip]:hover::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 32px; /* arrow between tooltip and icon */
+  transform: translateY(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent transparent rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+  z-index: 10001;
+}
+
+.image-lightbox.dark-mode .with-tooltip[data-tooltip]:hover::after {
+  background: rgba(255, 255, 255, 0.95);
+  color: #111;
+}
+
+.image-lightbox.dark-mode .with-tooltip[data-tooltip]:hover::before {
+  border-color: transparent transparent transparent rgba(255, 255, 255, 0.95);
+}
+
+/* Zoom Scroller Control */
+
+.lightbox-zoom-control {
+  position: absolute;
+  top: calc(50% + 90px); /* directly below next arrow */
+  right: 40px; /* nudge left so knob centers visually */
+  height: 120px; /* compact slider */
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* anchor slider to the right edge */
+  width: 40px; /* narrow container so slider aligns with icons */
+  overflow: visible;
+  padding: 0;
+  background: transparent;
+  backdrop-filter: none;
+  border: none;
+  z-index: 10000;
+}
+
+.image-lightbox.dark-mode .lightbox-zoom-control {
+  background: transparent;
+  border: none;
+}
+
+/* Right-side vertical icon stack above next arrow */
+.lightbox-side-controls {
+  position: absolute;
+  right: 20px;
+  top: 80px; /* just below close button */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 10000;
+}
+
+.zoom-slider {
+  /* Vertical slider with bottom->top movement */
+  -webkit-appearance: none;
+  appearance: none;
+  width: 120px; /* becomes height after rotation */
+  height: 6px; /* becomes width after rotation */
+  transform: rotate(-90deg);
+  transform-origin: right center; /* keep right edge fixed */
+  background: transparent;
+}
+
+.zoom-slider:focus {
+  outline: none;
+}
+
+.zoom-slider::-webkit-slider-runnable-track {
+  height: 3px;
+  background: var(--gray-400);
+  border-radius: 9999px;
+}
+
+.zoom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  /* center the knob over the 3px track (12-3)/2 ≈ 4.5 */
+  margin-top: -4.5px;
+  background: var(--gray-900);
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.image-lightbox.dark-mode .zoom-slider::-webkit-slider-runnable-track {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.image-lightbox.dark-mode .zoom-slider::-webkit-slider-thumb {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.6);
+}
+
+/* Firefox */
+.zoom-slider::-moz-range-track {
+  height: 3px;
+  background: var(--gray-400);
+  border-radius: 9999px;
+}
+.zoom-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: var(--gray-900);
+  border: 2px solid white;
+  border-radius: 50%;
+}
+.image-lightbox.dark-mode .zoom-slider::-moz-range-track {
+  background: rgba(255, 255, 255, 0.45);
+}
+.image-lightbox.dark-mode .zoom-slider::-moz-range-thumb {
+  background: #ffffff;
+  border-color: #111111;
 }
 
 .image-lightbox.dark-mode .lightbox-counter {
@@ -1537,4 +1765,80 @@ body {
     padding: 6px 12px;
     font-size: 12px;
   }
+}
+
+/* Lightbox switch (dark/light) */
+.lightbox-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.lightbox-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.lightbox-switch-slider {
+  position: relative;
+  width: 42px;
+  height: 22px;
+  background: var(--gray-300);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+  display: inline-block;
+}
+
+.lightbox-switch-slider::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: left 0.2s ease;
+}
+
+.lightbox-switch input:checked + .lightbox-switch-slider {
+  background: var(--gray-700);
+}
+
+.lightbox-switch input:checked + .lightbox-switch-slider::after {
+  left: 22px;
+}
+
+.image-lightbox.dark-mode .lightbox-switch-slider {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.image-lightbox.dark-mode
+  .lightbox-switch
+  input:checked
+  + .lightbox-switch-slider {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.image-lightbox.dark-mode .lightbox-switch-slider::after {
+  background: #ffffff;
+}
+
+.image-lightbox.dark-mode
+  .lightbox-switch
+  input:checked
+  + .lightbox-switch-slider::after {
+  background: #111111;
+}
+
+.lightbox-switch input:focus {
+  outline: none;
+}
+.lightbox-switch input:focus + .lightbox-switch-slider {
+  box-shadow: none;
 }
