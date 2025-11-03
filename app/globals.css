@@ -354,6 +354,42 @@ body {
   padding: 0;
 }
 
+.sidebar-submenu {
+  list-style: none;
+  margin: 6px 0 10px 0;
+  padding: 0 8px 0 0; /* indent toward the right edge */
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease, opacity 0.2s ease;
+  align-items: flex-end; /* right-align submenu items */
+}
+
+.sidebar-submenu.open {
+  max-height: 300px; /* enough to fit a few items */
+  opacity: 1;
+}
+
+.sidebar-submenu-item {
+  font-family: var(--font-primary);
+  background: transparent;
+  border: none;
+  color: var(--gray-700);
+  font-size: 12px;
+  cursor: pointer;
+  text-align: right; /* align with right-justified sidebar */
+  display: block;
+  width: 100%;
+}
+
+.sidebar-submenu-item:hover {
+  color: var(--gray-900);
+  text-decoration: none;
+}
+
 .sidebar-nav li {
   margin-bottom: 8px;
 }
@@ -409,29 +445,42 @@ body {
 
 .sidebar-tab {
   font-family: var(--font-primary);
-  padding: 4px 0;
+  padding: 8px 0;
   background: transparent;
   border: none;
   color: var(--gray-700);
-  font-size: 12px;
+  font-size: 15px; /* match main nav item size */
   font-weight: 400;
   cursor: pointer;
   transition: color 0.2s ease;
   border-radius: 0;
   text-transform: none;
   letter-spacing: 0;
-  text-align: left; /* align to left */
-  width: auto;
+  text-align: right;
+  width: 100%; /* occupy full row for proper right alignment */
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* right-oriented */
+  gap: 8px;
 }
 
 .sidebar-tab:hover {
   color: var(--gray-900);
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 .sidebar-tab:focus {
   outline: none;
-  text-decoration: underline;
+  text-decoration: none;
+}
+
+.sidebar-tab-chevron {
+  display: inline-flex;
+  transition: transform 0.2s ease;
+}
+
+.sidebar-tab-chevron.open {
+  transform: rotate(90deg); /* right > down */
 }
 
 /* Main content area */
@@ -1169,6 +1218,95 @@ body {
   display: flex;
   flex-direction: column;
   transition: background-color 0.3s ease;
+}
+
+/* removed older duplicate grid rules */
+
+/* removed older duplicate thumb item rules */
+
+.thumb-grid-image {
+  object-fit: cover;
+}
+
+.lightbox-thumb-grid {
+  position: absolute;
+  inset: 20px 6% 20px 6%; /* slightly larger modal */
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: 180px; /* fixed row height to avoid cascading */
+  gap: 12px;
+  padding: 24px;
+  background: rgba(2, 2, 2, 0.92);
+  backdrop-filter: blur(6px);
+  border-radius: 10px;
+  overflow: auto;
+  z-index: 10002;
+  /* Custom scrollbar (Firefox & WebKit) */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.35) transparent;
+}
+
+.image-lightbox.dark-mode .lightbox-thumb-grid {
+  background: rgba(0, 0, 0, 0.7);
+  scrollbar-color: rgba(255, 255, 255, 0.5) transparent;
+}
+
+/* WebKit scrollbar styling for the thumbnail modal */
+.lightbox-thumb-grid::-webkit-scrollbar {
+  width: 10px;
+}
+
+.lightbox-thumb-grid::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 8px;
+}
+
+.lightbox-thumb-grid::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+}
+
+.lightbox-thumb-grid::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.image-lightbox.dark-mode .lightbox-thumb-grid::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.5);
+  border-color: rgba(0, 0, 0, 0.4);
+}
+
+.image-lightbox.dark-mode .lightbox-thumb-grid::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.thumb-grid-item {
+  position: relative;
+  width: 100%;
+  aspect-ratio: auto; /* use fixed row height */
+  height: 100%;
+  border: 2px solid transparent;
+  border-radius: 0; /* no rounded corners */
+  overflow: hidden;
+  background: var(--gray-200);
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.thumb-grid-item:hover {
+  transform: translateY(-2px);
+}
+
+.thumb-grid-item.active {
+  border-color: var(--gray-900);
+}
+
+.image-lightbox.dark-mode .thumb-grid-item.active {
+  border-color: #ffffff;
+}
+
+.thumb-grid-image {
+  object-fit: cover;
 }
 
 .image-lightbox.dark-mode {

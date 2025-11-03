@@ -8,6 +8,11 @@ import ImageLightbox from "@/components/ImageLightbox";
 export default function Home() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    null
+  );
+  const [isProjectsOpen, setIsProjectsOpen] = useState(false);
+  const [isStoriesOpen, setIsStoriesOpen] = useState(false);
 
   // Iconic image placeholder - will be replaced from admin module later
   const BLOB_BASE =
@@ -16,17 +21,64 @@ export default function Home() {
   // Temporary iconic image (can be changed from admin later)
   const iconicImage = `${BLOB_BASE}/behindTheTeaCup/behindTheTeaCup_1.jpg`;
 
-  // Get images for the lightbox (from behind-the-tea-cup project)
+  // Projects catalog (can be replaced by admin-managed data later)
+  const projects = [
+    {
+      id: "behindTheTeaCup",
+      title: "Behind The Tea Cup",
+      folder: "behindTheTeaCup",
+      description: "Behind The Tea Cup photo series.",
+      count: 10,
+      ext: "jpg",
+    },
+    {
+      id: "coffee-and-the-hills",
+      title: "Coffee And The Hills",
+      folder: "coffeeAndTheHills",
+      description: "Coffee And The Hills photo series.",
+      count: 16,
+      ext: "jpg",
+    },
+  ];
+
+  // Stories submenu items (reuse lightbox)
+  const stories = [
+    {
+      id: "dusk-falls-on-mountains",
+      title: "Dusk Falls On Mountains",
+      folder: "duskFallsOnMountains",
+      description: "Dusk Falls On Mountains photo series.",
+      count: 7,
+      ext: "jpg",
+    },
+    {
+      id: "kalaripayattu",
+      title: "Kalaripayattu",
+      folder: "kalaripayattu",
+      description: "kalaripayattu photo series.",
+      count: 15,
+      ext: "JPG",
+    },
+  ];
+
   const range = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
+
+  const activeProject = useMemo(() => {
+    const all = [...projects, ...stories];
+    return all.find((p) => p.id === selectedProjectId) || projects[0];
+  }, [projects, stories, selectedProjectId]);
+
   const projectImages = useMemo(() => {
-    return range(10).map(
-      (i) => `${BLOB_BASE}/behindTheTeaCup/behindTheTeaCup_${i}.jpg`
+    const total = (activeProject as any).count ?? 10;
+    const ext = (activeProject as any).ext ?? "jpg";
+    return range(total).map(
+      (i) => `${BLOB_BASE}/${activeProject.folder}/${activeProject.folder}_${i}.${ext}`
     );
-  }, [BLOB_BASE]);
+  }, [BLOB_BASE, activeProject]);
 
   const projectInfo = {
-    title: "Behind The Tea Cup",
-    description: "Behind The Tea Cup photo series.",
+    title: activeProject.title,
+    description: activeProject.description,
     location: "",
   };
 
@@ -92,10 +144,86 @@ export default function Home() {
               <Link href="/" className="active">Home</Link>
             </li>
             <li>
-              <Link href="/projects">Projects</Link>
+              <button
+                className="sidebar-tab sidebar-tab-toggle"
+                aria-expanded={isProjectsOpen}
+                onClick={() => setIsProjectsOpen((v) => !v)}
+              >
+                <span className="sidebar-tab-label">Projects</span>
+                <span
+                  className={`sidebar-tab-chevron ${isProjectsOpen ? "open" : ""}`}
+                  aria-hidden
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="8 4 16 12 8 20" />
+                  </svg>
+                </span>
+              </button>
+              <ul className={`sidebar-submenu ${isProjectsOpen ? "open" : ""}`}>
+                {projects.map((p) => (
+                  <li key={p.id}>
+                    <button
+                      className="sidebar-submenu-item"
+                      onClick={() => {
+                        setSelectedProjectId(p.id);
+                        setLightboxOpen(true);
+                      }}
+                    >
+                      {p.title}
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </li>
             <li>
-              <Link href="/stories">Stories</Link>
+              <button
+                className="sidebar-tab sidebar-tab-toggle"
+                aria-expanded={isStoriesOpen}
+                onClick={() => setIsStoriesOpen((v) => !v)}
+              >
+                <span className="sidebar-tab-label">Stories</span>
+                <span
+                  className={`sidebar-tab-chevron ${isStoriesOpen ? "open" : ""}`}
+                  aria-hidden
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="8 4 16 12 8 20" />
+                  </svg>
+                </span>
+              </button>
+              <ul className={`sidebar-submenu ${isStoriesOpen ? "open" : ""}`}>
+                {stories.map((s) => (
+                  <li key={s.id}>
+                    <button
+                      className="sidebar-submenu-item"
+                      onClick={() => {
+                        setSelectedProjectId(s.id);
+                        setLightboxOpen(true);
+                      }}
+                    >
+                      {s.title}
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </li>
             <li>
               <Link href="/about">About</Link>

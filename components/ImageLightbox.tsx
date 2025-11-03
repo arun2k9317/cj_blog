@@ -26,7 +26,7 @@ export default function ImageLightbox({
   onImageChange,
 }: ImageLightboxProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
-  const [showThumbnails, setShowThumbnails] = useState(true);
+  const [showThumbnails, setShowThumbnails] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -43,6 +43,14 @@ export default function ImageLightbox({
   const minZoom = 1;
   const maxZoom = 3;
   const zoomStep = 0.1;
+  const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
+  const isPanningRef = useRef(false);
+  const [isPanning, setIsPanning] = useState(false);
+  const panStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const panAtDragStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
   useEffect(() => {
     setCurrentIndex(initialIndex);
@@ -177,6 +185,77 @@ export default function ImageLightbox({
     setZoomLevel(clampZoom(val));
   };
 
+  // Reset pan when zooming back to 1x or image changes
+  useEffect(() => {
+    if (zoomLevel <= 1.001) {
+      setPanOffset({ x: 0, y: 0 });
+      setIsPanning(false);
+      isPanningRef.current = false;
+    }
+  }, [zoomLevel, currentIndex]);
+
+  const clampPan = (desired: {
+    x: number;
+    y: number;
+  }): { x: number; y: number } => {
+    const wrapper = imageWrapperRef.current;
+    if (!wrapper) return desired;
+    const width = wrapper.clientWidth;
+    const height = wrapper.clientHeight;
+    const scaledWidth = width * zoomLevel;
+    const scaledHeight = height * zoomLevel;
+    const maxX = Math.max(0, (scaledWidth - width) / 2);
+    const maxY = Math.max(0, (scaledHeight - height) / 2);
+    return {
+      x: Math.max(-maxX, Math.min(maxX, desired.x)),
+      y: Math.max(-maxY, Math.min(maxY, desired.y)),
+    };
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (zoomLevel <= 1) return;
+    const el = e.currentTarget as HTMLDivElement;
+    // Only start panning on primary button/touch
+    if (e.button !== undefined && e.button !== 0) return;
+    el.setPointerCapture?.(e.pointerId);
+    isPanningRef.current = true;
+    setIsPanning(true);
+    panStartRef.current = { x: e.clientX, y: e.clientY };
+    panAtDragStartRef.current = { ...panOffset };
+  };
+
+  const endPan = (
+    currentTarget?: (EventTarget & HTMLDivElement) | null,
+    pointerId?: number
+  ) => {
+    try {
+      if (currentTarget && pointerId !== undefined) {
+        if (currentTarget.hasPointerCapture?.(pointerId)) {
+          currentTarget.releasePointerCapture?.(pointerId);
+        }
+      }
+    } catch {
+      // noop – releasePointerCapture may throw if pointer already ended
+    }
+    isPanningRef.current = false;
+    setIsPanning(false);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    endPan(e.currentTarget, e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isPanningRef.current) return;
+    const deltaX = e.clientX - panStartRef.current.x;
+    const deltaY = e.clientY - panStartRef.current.y;
+    const next = clampPan({
+      x: panAtDragStartRef.current.x + deltaX,
+      y: panAtDragStartRef.current.y + deltaY,
+    });
+    setPanOffset(next);
+  };
+
   if (!isOpen) return null;
 
   const currentImage = images[currentIndex];
@@ -215,7 +294,17 @@ export default function ImageLightbox({
           ref={imageWrapperRef}
           onMouseMove={handleMouseMove}
           onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
+          onMouseLeave={() => {
+            handleMouseLeave();
+            endPan();
+          }}
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
+          onPointerMove={handlePointerMove}
+          style={{
+            cursor:
+              zoomLevel > 1 ? (isPanning ? "grabbing" : "grab") : "default",
+          }}
         >
           <Image
             src={currentImage}
@@ -223,7 +312,7 @@ export default function ImageLightbox({
             fill
             className="lightbox-main-image"
             style={{
-              transform: `scale(${zoomLevel})`,
+              transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
               transformOrigin: "center center",
               transition: "transform 0.2s ease",
             }}
@@ -312,27 +401,33 @@ export default function ImageLightbox({
         </div>
       )}
 
-      {/* Thumbnails */}
+      {/* Thumbnails Grid Overlay */}
       {showThumbnails && (
-        <div className="lightbox-thumbnails">
+        <div
+          className="lightbox-thumb-grid"
+          role="dialog"
+          aria-label="Thumbnails grid"
+        >
           {images.map((img, index) => (
             <button
               key={index}
-              className={`lightbox-thumbnail ${
+              className={`thumb-grid-item ${
                 index === currentIndex ? "active" : ""
               }`}
               onClick={() => {
                 setCurrentIndex(index);
                 onImageChange?.(index);
+                setShowThumbnails(false);
               }}
-              aria-label={`Go to image ${index + 1}`}
+              aria-label={`Open image ${index + 1}`}
             >
               <Image
                 src={img}
                 alt={`Thumbnail ${index + 1}`}
                 fill
-                className="lightbox-thumbnail-image"
-                sizes="(max-width: 768px) 60px, 80px"
+                className="thumb-grid-image"
+                sizes="(max-width: 1200px) 33vw, 280px"
+                priority={index < 6}
               />
             </button>
           ))}
