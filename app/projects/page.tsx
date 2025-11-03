@@ -25,22 +25,6 @@ const projects = [
     thumbnail: `${BLOB_BASE}/coffeeAndTheHills/coffeeAndTheHills_1.jpg`,
     description: "Photo series: Coffee And The Hills.",
   },
-  {
-    id: "dusk-falls-on-mountains",
-    title: "Dusk Falls On Mountains",
-    location: "",
-    architect: "",
-    thumbnail: `${BLOB_BASE}/duskFallsOnMountains/duskFallsOnMountains_1.jpg`,
-    description: "Photo series: Dusk Falls On Mountains.",
-  },
-  {
-    id: "kalaripayattu",
-    title: "kalaripayattu",
-    location: "",
-    architect: "",
-    thumbnail: `${BLOB_BASE}/kalaripayattu/kalaripayattu_1.JPG`,
-    description: "Photo series: kalaripayattu.",
-  },
 ];
 
 export default function ProjectsPage() {
@@ -104,7 +88,7 @@ export default function ProjectsPage() {
         <nav>
           <ul className="sidebar-nav">
             <li>
-              <Link href="/">Portfolio</Link>
+              <Link href="/">Home</Link>
             </li>
             <li>
               <Link href="/projects" className="active">
@@ -112,7 +96,7 @@ export default function ProjectsPage() {
               </Link>
             </li>
             <li>
-              <Link href="/art">Art</Link>
+              <Link href="/stories">Stories</Link>
             </li>
             <li>
               <Link href="/about">About</Link>
