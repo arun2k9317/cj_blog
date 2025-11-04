@@ -1,114 +1,103 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
-import { Tab } from "@headlessui/react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import ImageLightbox from "@/components/ImageLightbox";
 
 export default function Home() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [showThumbnails, setShowThumbnails] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [hoverRegion, setHoverRegion] = useState<
-    "left" | "middle" | "right" | null
-  >(null);
-  const router = useRouter();
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    null
+  );
+  const [isProjectsOpen, setIsProjectsOpen] = useState(false);
+  const [isStoriesOpen, setIsStoriesOpen] = useState(false);
 
-  // Random images from Vercel Blob projects (click to navigate to project)
+  // Iconic image placeholder - will be replaced from admin module later
   const BLOB_BASE =
     "https://v96anmwogiriaihi.public.blob.vercel-storage.com/admin-uploads";
+  
+  // Temporary iconic image (can be changed from admin later)
+  const iconicImage = `${BLOB_BASE}/behindTheTeaCup/behindTheTeaCup_1.jpg`;
 
-  const images = useMemo(() => {
-    type P = {
-      slug: string;
-      name: string;
-      folder: string;
-      prefix: string;
-      count: number;
-      extension?: string;
-    };
-    const projects: P[] = [
+  type Series = {
+    id: string;
+    title: string;
+    folder: string;
+    description: string;
+    count: number;
+    ext: string;
+  };
+
+  // Projects catalog (can be replaced by admin-managed data later)
+  const projects = useMemo<Series[]>(
+    () => [
       {
-        slug: "behind-the-tea-cup",
-        name: "Behind The Tea Cup",
+        id: "behindTheTeaCup",
+        title: "Behind The Tea Cup",
         folder: "behindTheTeaCup",
-        prefix: "behindTheTeaCup_",
+        description: "Behind The Tea Cup photo series.",
         count: 10,
+        ext: "jpg",
       },
       {
-        slug: "coffee-and-the-hills",
-        name: "Coffee And The Hills",
+        id: "coffee-and-the-hills",
+        title: "Coffee And The Hills",
         folder: "coffeeAndTheHills",
-        prefix: "coffeeAndTheHills_",
+        description: "Coffee And The Hills photo series.",
         count: 16,
+        ext: "jpg",
       },
+    ],
+    []
+  );
+
+  // Stories submenu items (reuse lightbox)
+  const stories = useMemo<Series[]>(
+    () => [
       {
-        slug: "dusk-falls-on-mountains",
-        name: "Dusk Falls On Mountains",
+        id: "dusk-falls-on-mountains",
+        title: "Dusk Falls On Mountains",
         folder: "duskFallsOnMountains",
-        prefix: "duskFallsOnMountains_",
+        description: "Dusk Falls On Mountains photo series.",
         count: 7,
+        ext: "jpg",
       },
       {
-        slug: "kalaripayattu",
-        name: "kalaripayattu",
+        id: "kalaripayattu",
+        title: "Kalaripayattu",
         folder: "kalaripayattu",
-        prefix: "kalaripayattu_",
+        description: "kalaripayattu photo series.",
         count: 15,
-        extension: "JPG",
+        ext: "JPG",
       },
-    ];
-    const all: { src: string; alt: string; href: string }[] = [];
-    for (const p of projects) {
-      const ext = p.extension || "jpg";
-      for (let i = 1; i <= p.count; i++) {
-        all.push({
-          src: `${BLOB_BASE}/${p.folder}/${p.prefix}${i}.${ext}`,
-          alt: p.name,
-          href: `/projects/${p.slug}`,
-        });
-      }
-    }
-    // Deterministic shuffle to avoid SSR/CSR hydration mismatch
-    const rng = (() => {
-      let a = 0x12345678; // fixed seed
-      return () => {
-        a |= 0;
-        a = (a + 0x6d2b79f5) | 0;
-        let t = Math.imul(a ^ (a >>> 15), 1 | a);
-        t ^= t + Math.imul(t ^ (t >>> 7), 61 | t);
-        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-      };
-    })();
-    for (let i = all.length - 1; i > 0; i--) {
-      const j = Math.floor(rng() * (i + 1));
-      [all[i], all[j]] = [all[j], all[i]];
-    }
-    // show a reasonable subset for performance
-    return all.slice(0, 20);
-  }, []);
+    ],
+    []
+  );
 
-  // Auto-advance slideshow (only when not showing thumbnails or hovering)
-  useEffect(() => {
-    if (!showThumbnails && !isHovering) {
-      const timer = setInterval(() => {
-        setCurrentSlide((prev) => (prev + 1) % images.length);
-      }, 4000);
-      return () => clearInterval(timer);
-    }
-  }, [images.length, showThumbnails, isHovering]);
+  const range = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % images.length);
+  const allSeries = useMemo<Series[]>(() => [...projects, ...stories], [projects, stories]);
+
+  const activeProject: Series = useMemo(() => {
+    const found = allSeries.find((p) => p.id === selectedProjectId);
+    return found ?? projects[0];
+  }, [allSeries, selectedProjectId, projects]);
+
+  const projectImages = useMemo(() => {
+    const total = activeProject.count;
+    const ext = activeProject.ext;
+    return range(total).map(
+      (i) => `${BLOB_BASE}/${activeProject.folder}/${activeProject.folder}_${i}.${ext}`
+    );
+  }, [BLOB_BASE, activeProject]);
+
+  const projectInfo = {
+    title: activeProject.title,
+    description: activeProject.description,
+    location: "",
   };
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + images.length) % images.length);
-  };
-
-  // thumbnails navigate directly to project; no local selection function needed
 
   return (
     <div
@@ -169,13 +158,89 @@ export default function Home() {
         <nav>
           <ul className="sidebar-nav">
             <li>
-              <Link href="/">Portfolio</Link>
+              <Link href="/" className="active">Home</Link>
             </li>
             <li>
-              <Link href="/projects">Projects</Link>
+              <button
+                className="sidebar-tab sidebar-tab-toggle"
+                aria-expanded={isProjectsOpen}
+                onClick={() => setIsProjectsOpen((v) => !v)}
+              >
+                <span className="sidebar-tab-label">Projects</span>
+                <span
+                  className={`sidebar-tab-chevron ${isProjectsOpen ? "open" : ""}`}
+                  aria-hidden
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="8 4 16 12 8 20" />
+                  </svg>
+                </span>
+              </button>
+              <ul className={`sidebar-submenu ${isProjectsOpen ? "open" : ""}`}>
+                {projects.map((p) => (
+                  <li key={p.id}>
+                    <button
+                      className="sidebar-submenu-item"
+                      onClick={() => {
+                        setSelectedProjectId(p.id);
+                        setLightboxOpen(true);
+                      }}
+                    >
+                      {p.title}
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </li>
             <li>
-              <Link href="/art">Art</Link>
+              <button
+                className="sidebar-tab sidebar-tab-toggle"
+                aria-expanded={isStoriesOpen}
+                onClick={() => setIsStoriesOpen((v) => !v)}
+              >
+                <span className="sidebar-tab-label">Stories</span>
+                <span
+                  className={`sidebar-tab-chevron ${isStoriesOpen ? "open" : ""}`}
+                  aria-hidden
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="8 4 16 12 8 20" />
+                  </svg>
+                </span>
+              </button>
+              <ul className={`sidebar-submenu ${isStoriesOpen ? "open" : ""}`}>
+                {stories.map((s) => (
+                  <li key={s.id}>
+                    <button
+                      className="sidebar-submenu-item"
+                      onClick={() => {
+                        setSelectedProjectId(s.id);
+                        setLightboxOpen(true);
+                      }}
+                    >
+                      {s.title}
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </li>
             <li>
               <Link href="/about">About</Link>
@@ -197,127 +262,41 @@ export default function Home() {
             </svg>
           </a>
         </div>
-
-        {/* Sidebar Controls */}
-        <div className="sidebar-controls">
-          <Tab.Group>
-            <Tab.List className="sidebar-tab-list">
-              <Tab className="sidebar-tab" onClick={prevSlide}>
-                PREV
-              </Tab>
-              <Tab className="sidebar-tab" onClick={nextSlide}>
-                NEXT
-              </Tab>
-              <Tab
-                className="sidebar-tab"
-                onClick={() => setShowThumbnails(!showThumbnails)}
-              >
-                {showThumbnails ? "BACK TO SLIDESHOW" : "SHOW THUMBNAILS"}
-              </Tab>
-            </Tab.List>
-          </Tab.Group>
-        </div>
       </aside>
 
       {/* Main Content */}
       <main className="main-content">
-        {!showThumbnails ? (
-          <>
-            <section
-              className={`gallery-container ${
-                hoverRegion === "left"
-                  ? "cursor-left"
-                  : hoverRegion === "right"
-                  ? "cursor-right"
-                  : hoverRegion === "middle"
-                  ? "cursor-middle"
-                  : ""
-              }`}
-              onMouseEnter={() => setIsHovering(true)}
-              onMouseLeave={() => {
-                setIsHovering(false);
-                setHoverRegion(null);
-              }}
-              onMouseMove={(e) => {
-                const rect = (
-                  e.currentTarget as HTMLElement
-                ).getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const ratio = x / rect.width;
-                if (ratio < 1 / 3) {
-                  setHoverRegion("left");
-                } else if (ratio > 2 / 3) {
-                  setHoverRegion("right");
-                } else {
-                  setHoverRegion("middle");
-                }
-              }}
-              onClick={(e) => {
-                const rect = (
-                  e.currentTarget as HTMLElement
-                ).getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const ratio = x / rect.width;
-                if (ratio < 1 / 3) {
-                  prevSlide();
-                  return;
-                }
-                if (ratio > 2 / 3) {
-                  nextSlide();
-                  return;
-                }
-                const href = images[currentSlide]?.href || "/projects";
-                router.push(href);
-              }}
-            >
-              {images.map((image, index) => (
-                <div
-                  key={index}
-                  className={`gallery-slide ${
-                    index === currentSlide ? "active" : ""
-                  }`}
-                  style={{
-                    backgroundImage: `url(${image.src})`,
-                  }}
-                />
-              ))}
-            </section>
-            <div className="gallery-caption">{images[currentSlide]?.alt}</div>
-          </>
-        ) : (
-          <>
-            <section className="thumbnail-grid-container">
-              <div className="thumbnail-grid">
-                {images.map((image, index) => (
-                  <Link
-                    key={index}
-                    href={image.href}
-                    className={`thumbnail-item ${
-                      index === currentSlide ? "active" : ""
-                    }`}
-                  >
-                    <Image
-                      src={image.src}
-                      alt={image.alt}
-                      className="thumbnail-image"
-                      width={400}
-                      height={300}
-                      style={{ objectFit: "cover" }}
-                    />
-                    <div className="thumb-overlay" aria-hidden>
-                      <div className="thumb-overlay-title">{image.alt}</div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          </>
-        )}
+        {/* Iconic Image Section */}
+        <section className="iconic-image-container">
+          <div 
+            className="iconic-image-wrapper"
+            onClick={() => setLightboxOpen(true)}
+            style={{ cursor: "pointer" }}
+          >
+            <Image
+              src={iconicImage}
+              alt="NJ Photography"
+              width={1400}
+              height={900}
+              className="iconic-image"
+              priority
+            />
+          </div>
+        </section>
+
+        {/* Image Lightbox */}
+        <ImageLightbox
+          images={projectImages}
+          currentIndex={0}
+          projectInfo={projectInfo}
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+        />
 
         {/* Content Section */}
         <section className="content-section">
           <div className="content-text">
-            <h1>Portfolio</h1>
+            <h1>NJ Photography</h1>
             <p>
               <strong>NJ Photography</strong> is passionate about capturing the
               world&apos;s diverse beauty through nature, culture, arts, and

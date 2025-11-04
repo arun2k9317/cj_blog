@@ -195,13 +195,13 @@ export default function ProjectDetailPage() {
           <nav>
             <ul className="sidebar-nav">
               <li>
-                <Link href="/">Portfolio</Link>
+                <Link href="/">Home</Link>
               </li>
               <li>
                 <Link href="/projects">Projects</Link>
               </li>
               <li>
-                <Link href="/art">Art</Link>
+                <Link href="/stories">Stories</Link>
               </li>
               <li>
                 <Link href="/about">About</Link>
@@ -284,13 +284,13 @@ export default function ProjectDetailPage() {
           <nav>
             <ul className="sidebar-nav">
               <li>
-                <Link href="/">Portfolio</Link>
+                <Link href="/">Home</Link>
               </li>
               <li>
                 <Link href="/projects">Projects</Link>
               </li>
               <li>
-                <Link href="/art">Art</Link>
+                <Link href="/stories">Stories</Link>
               </li>
               <li>
                 <Link href="/about">About</Link>
