@@ -2,11 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import Image from "next/image";
 import ProjectRenderer from "@/components/ProjectRenderer";
 import { Project } from "@/types/project";
-import { IconChevronRight, IconChevronLeft } from "@tabler/icons-react";
 
 // Hardcoded project data using Vercel Blob storage
 const BLOB_BASE =
@@ -57,12 +54,10 @@ const projectsData = {
   },
 };
 
-export default function ProjectDetailPage() {
-  const params = useParams();
-  const projectId = params.id as string;
+export default function ProjectDetailPage({ params }: { params: { id: string } }) {
+  const projectId = params.id;
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // Try to fetch from API first, fallback to static data
   useEffect(() => {
@@ -73,11 +68,8 @@ export default function ProjectDetailPage() {
           const data = await response.json();
           setProject(data.project);
         } else {
-          // Fallback to static data
-          const staticProject =
-            projectsData[projectId as keyof typeof projectsData];
+          const staticProject = projectsData[projectId as keyof typeof projectsData];
           if (staticProject) {
-            // Convert static project to new format (avoid duplicating header fields)
             const convertedProject: Project = {
               id: staticProject.id,
               title: staticProject.title,
@@ -102,11 +94,8 @@ export default function ProjectDetailPage() {
         }
       } catch (error) {
         console.error("Error fetching project:", error);
-        // Fallback to static data
-        const staticProject =
-          projectsData[projectId as keyof typeof projectsData];
+        const staticProject = projectsData[projectId as keyof typeof projectsData];
         if (staticProject) {
-          // Convert static project to new format (avoid duplicating header fields)
           const convertedProject: Project = {
             id: staticProject.id,
             title: staticProject.title,
@@ -138,227 +127,37 @@ export default function ProjectDetailPage() {
 
   if (loading) {
     return (
-      <div
-        className={`main-layout ${
-          isSidebarCollapsed ? "sidebar-collapsed" : ""
-        }`}
-      >
-        <aside className="sidebar">
-          <button
-            className="sidebar-toggle"
-            onClick={() => setIsSidebarCollapsed((v) => !v)}
-            aria-label={
-              isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
-            }
-          >
-            {isSidebarCollapsed ? (
-              <IconChevronRight size={12} aria-hidden />
-            ) : (
-              <IconChevronLeft size={12} aria-hidden />
-            )}
-          </button>
-          <div className="sidebar-logo">
-            <div className="sidebar-logo-row">
-              <span>NJ</span>
-              <Image
-                src="/logo.png"
-                alt="NJ Photography Logo"
-                width={40}
-                height={40}
-              />
-            </div>
-            <span>PHOTOGRAPHY</span>
-          </div>
-          <nav>
-            <ul className="sidebar-nav">
-              <li>
-                <Link href="/">Home</Link>
-              </li>
-              <li>
-                <Link href="/projects">Projects</Link>
-              </li>
-              <li>
-                <Link href="/stories">Stories</Link>
-              </li>
-              <li>
-                <Link href="/about">About</Link>
-              </li>
-              <li>
-                <Link href="/contact">Contact</Link>
-              </li>
-            </ul>
-          </nav>
-        </aside>
-        <main className="main-content">
-          <div className="flex items-center justify-center h-96">
-            <div className="flex items-center gap-3">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900"></div>
-              <p>Loading project...</p>
-            </div>
-          </div>
-        </main>
+      <div className="flex items-center justify-center h-96">
+        <div className="flex items-center gap-3">
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900"></div>
+          <p>Loading project...</p>
+        </div>
       </div>
     );
   }
 
   if (!project) {
     return (
-      <div
-        className={`main-layout ${
-          isSidebarCollapsed ? "sidebar-collapsed" : ""
-        }`}
-      >
-        <aside className="sidebar">
-          <button
-            className="sidebar-toggle"
-            onClick={() => setIsSidebarCollapsed((v) => !v)}
-            aria-label={
-              isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
-            }
-          >
-            {isSidebarCollapsed ? (
-              <IconChevronRight size={12} aria-hidden />
-            ) : (
-              <IconChevronLeft size={12} aria-hidden />
-            )}
-          </button>
-          <div className="sidebar-logo">
-            <div className="sidebar-logo-row">
-              <span>NJ</span>
-              <Image
-                src="/logo.png"
-                alt="NJ Photography Logo"
-                width={40}
-                height={40}
-              />
-            </div>
-            <span>PHOTOGRAPHY</span>
-          </div>
-          <nav>
-            <ul className="sidebar-nav">
-              <li>
-                <Link href="/">Home</Link>
-              </li>
-              <li>
-                <Link href="/projects">Projects</Link>
-              </li>
-              <li>
-                <Link href="/stories">Stories</Link>
-              </li>
-              <li>
-                <Link href="/about">About</Link>
-              </li>
-              <li>
-                <Link href="/contact">Contact</Link>
-              </li>
-            </ul>
-          </nav>
-        </aside>
-        <main className="main-content">
-          <div className="project-not-found">
-            <h1>Project Not Found</h1>
-            <p>The project you&apos;re looking for doesn&apos;t exist.</p>
-            <Link href="/projects" className="back-to-projects">
-              ← Back to Projects
-            </Link>
-          </div>
-        </main>
+      <div className="project-not-found">
+        <h1>Project Not Found</h1>
+        <p>The project you&apos;re looking for doesn&apos;t exist.</p>
+        <Link href="/projects" className="back-to-projects">
+          ← Back to Projects
+        </Link>
       </div>
     );
   }
 
   return (
-    <div
-      className={`main-layout ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}
-    >
-      {/* Left Sidebar */}
-      <aside className="sidebar">
-        <button
-          className="sidebar-toggle"
-          onClick={() => setIsSidebarCollapsed((v) => !v)}
-          aria-label={
-            isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
-          }
-        >
-          {isSidebarCollapsed ? (
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
-            >
-              <path d="M9 18l6-6-6-6"></path>
-            </svg>
-          ) : (
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
-            >
-              <path d="M15 18l-6-6 6-6"></path>
-            </svg>
-          )}
-        </button>
-        <div className="sidebar-logo">
-          <div className="sidebar-logo-row">
-            <span>NJ</span>
-            <Image
-              src="/logo.png"
-              alt="NJ Photography Logo"
-              width={40}
-              height={40}
-            />
-          </div>
-          <span>PHOTOGRAPHY</span>
-        </div>
+    <div className="max-w-6xl mx-auto p-6">
+      <ProjectRenderer project={project} />
 
-        <nav>
-          <ul className="sidebar-nav">
-            <li>
-              <Link href="/">Portfolio</Link>
-            </li>
-            <li>
-              <Link href="/projects" className="active">
-                Projects
-              </Link>
-            </li>
-            <li>
-              <Link href="/art">Art</Link>
-            </li>
-            <li>
-              <Link href="/about">About</Link>
-            </li>
-            <li>
-              <Link href="/contact">Contact</Link>
-            </li>
-          </ul>
-        </nav>
-      </aside>
-
-      {/* Main Content */}
-      <main className="main-content">
-        <div className="max-w-6xl mx-auto p-6">
-          <ProjectRenderer project={project} />
-
-          {/* Back to Projects Link */}
-          <div className="mt-8 text-center">
-            <Link href="/projects" className="back-to-projects">
-              ← Back to Projects
-            </Link>
-          </div>
-        </div>
-      </main>
+      {/* Back to Projects Link */}
+      <div className="mt-8 text-center">
+        <Link href="/projects" className="back-to-projects">
+          ← Back to Projects
+        </Link>
+      </div>
     </div>
   );
 }

@@ -339,8 +339,7 @@ body {
   overflow-x: visible;
   z-index: 50;
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-    padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-    background-color 0.3s ease,
+    padding 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease,
     border-color 0.3s ease;
 }
 
@@ -436,9 +435,21 @@ body {
 
 .sidebar-theme-switcher {
   position: absolute;
-  bottom: 90px;
+  bottom: 10px;
   left: 30px;
   right: 30px;
+}
+
+/* Inline theme switcher layout */
+.theme-switcher-inline {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.theme-switcher-inline svg {
+  color: var(--gray-700);
 }
 
 .theme-switcher-btn {
@@ -476,7 +487,12 @@ body {
 .sidebar-social {
   position: absolute;
   bottom: 40px;
-  left: 30px;
+  left: auto;
+  right: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
 }
 
 .sidebar-social a {
@@ -2004,8 +2020,8 @@ body {
 
 .lightbox-switch-slider {
   position: relative;
-  width: 42px;
-  height: 22px;
+  width: 34px;
+  height: 18px;
   background: var(--gray-300);
   border-radius: 9999px;
   transition: background 0.2s ease;
@@ -2017,8 +2033,8 @@ body {
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
   background: #ffffff;
   border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
@@ -2030,7 +2046,7 @@ body {
 }
 
 .lightbox-switch input:checked + .lightbox-switch-slider::after {
-  left: 22px;
+  left: 18px;
 }
 
 .image-lightbox.dark-mode .lightbox-switch-slider {
