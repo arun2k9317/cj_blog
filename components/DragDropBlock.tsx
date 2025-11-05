@@ -3,6 +3,7 @@
 import { ContentBlock } from '@/types/project';
 import { useState, useRef } from 'react';
 import ContentBlockComponent from './ContentBlocks/ContentBlock';
+import { IconGripVertical, IconX } from '@tabler/icons-react';
 
 interface DragDropBlockProps {
   block: ContentBlock;
@@ -104,9 +105,7 @@ export default function DragDropBlock({
       {isEditing && (
         <div className="absolute -left-8 top-0 h-full w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <div className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-move">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M8 6h8v2H8V6zm0 4h8v2H8v-2zm0 4h8v2H8v-2z"/>
-            </svg>
+            <IconGripVertical size={16} />
           </div>
         </div>
       )}
@@ -140,9 +139,7 @@ export default function DragDropBlock({
             className="w-4 h-4 text-red-400 hover:text-red-600 cursor-pointer"
             title="Delete block"
           >
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-            </svg>
+            <IconX size={16} />
           </button>
         </div>
       )}

@@ -2,6 +2,16 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
+import { useTheme } from "@/contexts/ThemeContext";
+import {
+  IconX,
+  IconChevronLeft,
+  IconChevronRight,
+  IconLayoutGrid,
+  IconInfoCircle,
+  IconMaximize,
+  IconMinimize,
+} from "@tabler/icons-react";
 
 export interface ImageLightboxProps {
   images: string[];
@@ -25,10 +35,11 @@ export default function ImageLightbox({
   onClose,
   onImageChange,
 }: ImageLightboxProps) {
+  const { theme, toggleTheme } = useTheme();
+  const isDarkMode = theme === "dark";
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [showThumbnails, setShowThumbnails] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isMagnifierOn] = useState(false);
   const [isLensVisible, setIsLensVisible] = useState(false);
@@ -272,19 +283,7 @@ export default function ImageLightbox({
         onClick={onClose}
         aria-label="Close lightbox"
       >
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
+        <IconX size={24} />
       </button>
 
       {/* Main Image Container */}
@@ -351,36 +350,14 @@ export default function ImageLightbox({
           onClick={handlePrevious}
           aria-label="Previous image"
         >
-          <svg
-            width="32"
-            height="32"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <polyline points="15 18 9 12 15 6"></polyline>
-          </svg>
+          <IconChevronLeft size={32} />
         </button>
         <button
           className="lightbox-nav lightbox-nav-next"
           onClick={handleNext}
           aria-label="Next image"
         >
-          <svg
-            width="32"
-            height="32"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
+          <IconChevronRight size={32} />
         </button>
       </div>
 
@@ -449,21 +426,7 @@ export default function ImageLightbox({
           aria-label={showThumbnails ? "Hide thumbnails" : "Show thumbnails"}
           data-tooltip={showThumbnails ? "Hide thumbnails" : "Show thumbnails"}
         >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <rect x="3" y="3" width="7" height="7"></rect>
-            <rect x="14" y="3" width="7" height="7"></rect>
-            <rect x="3" y="14" width="7" height="7"></rect>
-            <rect x="14" y="14" width="7" height="7"></rect>
-          </svg>
+          <IconLayoutGrid size={18} />
         </button>
         <button
           className="lightbox-control-btn with-tooltip"
@@ -471,20 +434,7 @@ export default function ImageLightbox({
           aria-label={showInfo ? "Hide info" : "Show info"}
           data-tooltip={showInfo ? "Hide info" : "Show info"}
         >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="16" x2="12" y2="12"></line>
-            <line x1="12" y1="8" x2="12.01" y2="8"></line>
-          </svg>
+          <IconInfoCircle size={18} />
         </button>
         {/* <button
           className="lightbox-control-btn with-tooltip"
@@ -519,7 +469,7 @@ export default function ImageLightbox({
             type="checkbox"
             checked={isDarkMode}
             onChange={(e) => {
-              setIsDarkMode(!isDarkMode);
+              toggleTheme();
               e.currentTarget.blur();
             }}
             aria-label="Toggle dark mode"
@@ -533,31 +483,9 @@ export default function ImageLightbox({
           data-tooltip={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
         >
           {isFullscreen ? (
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>
-            </svg>
+            <IconMinimize size={18} />
           ) : (
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
-            </svg>
+            <IconMaximize size={18} />
           )}
         </button>
       </div>

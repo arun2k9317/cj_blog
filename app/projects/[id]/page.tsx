@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import ProjectRenderer from "@/components/ProjectRenderer";
 import { Project } from "@/types/project";
+import { IconChevronRight, IconChevronLeft } from "@tabler/icons-react";
 
 // Hardcoded project data using Vercel Blob storage
 const BLOB_BASE =
@@ -151,33 +152,9 @@ export default function ProjectDetailPage() {
             }
           >
             {isSidebarCollapsed ? (
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              >
-                <path d="M9 18l6-6-6-6"></path>
-              </svg>
+              <IconChevronRight size={12} aria-hidden />
             ) : (
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              >
-                <path d="M15 18l-6-6 6-6"></path>
-              </svg>
+              <IconChevronLeft size={12} aria-hidden />
             )}
           </button>
           <div className="sidebar-logo">
@@ -240,33 +217,9 @@ export default function ProjectDetailPage() {
             }
           >
             {isSidebarCollapsed ? (
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              >
-                <path d="M9 18l6-6-6-6"></path>
-              </svg>
+              <IconChevronRight size={12} aria-hidden />
             ) : (
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              >
-                <path d="M15 18l-6-6 6-6"></path>
-              </svg>
+              <IconChevronLeft size={12} aria-hidden />
             )}
           </button>
           <div className="sidebar-logo">
