@@ -348,7 +348,7 @@ body {
   font-size: 17px;
   font-weight: 700;
   color: var(--gray-900);
-  margin-bottom: 40px;
+  margin-bottom: 10px;
   text-transform: uppercase;
   letter-spacing: 2px;
   line-height: 1.2;
@@ -1303,7 +1303,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: #ffffff;
+  background: var(--background);
   z-index: 9999;
   display: flex;
   flex-direction: column;
@@ -1326,22 +1326,22 @@ body {
   grid-auto-rows: 180px; /* fixed row height to avoid cascading */
   gap: 12px;
   padding: 24px;
-  background: rgba(200, 200, 200, 0.85);
-  backdrop-filter: blur(16px) saturate(180%);
+  background: inherit;
+  backdrop-filter: none;
   border-radius: 10px;
   overflow: auto;
   z-index: 10002;
   transition: background-color 0.3s ease, backdrop-filter 0.3s ease;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
   /* Custom scrollbar (Firefox & WebKit) */
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.35) transparent;
 }
 
 .image-lightbox.dark-mode .lightbox-thumb-grid {
-  background: rgba(50, 50, 50, 0.85);
-  backdrop-filter: blur(16px) saturate(180%);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  background: inherit;
+  backdrop-filter: none;
+  box-shadow: none;
   scrollbar-color: rgba(255, 255, 255, 0.5) transparent;
 }
 
@@ -1513,18 +1513,20 @@ body {
   top: 60px;
   left: 20px;
   right: 80px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  padding: 20px;
-  border-radius: 8px;
-  max-width: 400px;
+  background: var(--background);
+  backdrop-filter: none;
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid var(--gray-300);
+  max-width: 380px;
   z-index: 10000;
   animation: slideDown 0.3s ease;
 }
 
 .image-lightbox.dark-mode .lightbox-info-panel {
-  background: rgba(0, 0, 0, 0.8);
+  background: var(--background);
   color: #ffffff;
+  border-color: var(--gray-700);
 }
 
 @keyframes slideDown {
@@ -1543,18 +1545,19 @@ body {
 }
 
 .lightbox-info-title {
-  font-size: 18px;
-  font-weight: 700;
-  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.06em;
 }
 
 .lightbox-info-description {
   font-size: 14px;
-  line-height: 1.6;
-  margin-bottom: 8px;
+  line-height: 1.55;
+  margin-bottom: 6px;
   color: var(--gray-700);
+  letter-spacing: 0.01em;
 }
 
 .image-lightbox.dark-mode .lightbox-info-description {
@@ -1876,6 +1879,7 @@ body {
   transform: rotate(-90deg);
   transform-origin: right center; /* keep right edge fixed */
   background: transparent;
+  accent-color: #606060;
 }
 
 .zoom-slider:focus {
@@ -1884,7 +1888,7 @@ body {
 
 .zoom-slider::-webkit-slider-runnable-track {
   height: 3px;
-  background: var(--gray-400);
+  background: rgba(96, 96, 96, 0.45);
   border-radius: 9999px;
 }
 
@@ -1895,45 +1899,50 @@ body {
   height: 12px;
   /* center the knob over the 3px track (12-3)/2 ≈ 4.5 */
   margin-top: -4.5px;
-  background: var(--gray-900);
+  background-color: #606060; /* ensure gray fill, not black */
   border-radius: 50%;
-  border: 2px solid #ffffff;
+  border: 2px solid rgba(255, 255, 255, 0.7);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
 .image-lightbox.dark-mode .zoom-slider::-webkit-slider-runnable-track {
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(192, 192, 192, 0.45);
 }
 
 .image-lightbox.dark-mode .zoom-slider::-webkit-slider-thumb {
-  background: #ffffff;
+  background-color: #c0c0c0;
   border-color: rgba(0, 0, 0, 0.6);
 }
 
 /* Firefox */
 .zoom-slider::-moz-range-track {
   height: 3px;
-  background: var(--gray-400);
+  background: rgba(96, 96, 96, 0.45);
   border-radius: 9999px;
 }
 .zoom-slider::-moz-range-thumb {
   width: 12px;
   height: 12px;
-  background: var(--gray-900);
+  background-color: #606060;
   border: 2px solid white;
   border-radius: 50%;
 }
 .image-lightbox.dark-mode .zoom-slider::-moz-range-track {
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(192, 192, 192, 0.45);
 }
 .image-lightbox.dark-mode .zoom-slider::-moz-range-thumb {
-  background: #ffffff;
+  background-color: #c0c0c0;
   border-color: #111111;
 }
 
 .image-lightbox.dark-mode .lightbox-counter {
   background: transparent;
   color: #ffffff;
+}
+
+/* Ensure accent color also follows theme for Firefox/Chromium */
+.image-lightbox.dark-mode .zoom-slider {
+  accent-color: #c0c0c0;
 }
 
 /* Mobile responsive styles for lightbox */

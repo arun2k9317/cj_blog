@@ -17,7 +17,8 @@ const projectsData = {
     title: "Behind The Tea Cup",
     location: "",
     architect: "",
-    description: "Behind The Tea Cup photo series.",
+    description:
+      "In the quiet slopes of the highlands, life unfolds between rows of green. Behind the Tea Cup looks beyond the familiar comfort of what we drink each morning — to the landscapes, the hands, and the heritage that make it possible. Through moments of stillness and labor, the series traces the unseen stories of those who live and work where tea begins.",
     images: range(10).map(
       (i) => `${BLOB_BASE}/behindTheTeaCup/behindTheTeaCup_${i}.jpg`
     ),
@@ -27,7 +28,8 @@ const projectsData = {
     title: "Coffee And The Hills",
     location: "",
     architect: "",
-    description: "Coffee And The Hills photo series.",
+    description:
+      "In the folds of the Western Ghats, coffee ripens under shifting light and mist. Coffee and the Hills traces the everyday rhythm of plantation life — from the drying yards to the silent slopes — where labor, land, and legacy are bound together. These photographs look beyond the aroma of the brew, capturing the human effort that shapes each bean long before it reaches the cup.",
     images: range(16).map(
       (i) => `${BLOB_BASE}/coffeeAndTheHills/coffeeAndTheHills_${i}.jpg`
     ),
@@ -37,7 +39,8 @@ const projectsData = {
     title: "Dusk Falls On Mountains",
     location: "",
     architect: "",
-    description: "Dusk Falls On Mountains photo series.",
+    description:
+      "As day folds into dusk, the mountains breathe in silence. Dusk Falls on Mountains follows the shifting light and shadow across highland paths, forests, and valleys — spaces where time slows and the ordinary turns ethereal. These images trace the quiet transition between labor and rest, between the seen and the fading, where nature holds its own rhythm.",
     images: range(7).map(
       (i) => `${BLOB_BASE}/duskFallsOnMountains/duskFallsOnMountains_${i}.jpg`
     ),
@@ -47,14 +50,19 @@ const projectsData = {
     title: "kalaripayattu",
     location: "",
     architect: "",
-    description: "kalaripayattu photo series.",
+    description:
+      "On the sands by the sea, the ancient martial art of Kalaripayattu unfolds — a dialogue between body, weapon, and spirit. Kalaripayattu captures moments of focus, rhythm, and tradition, tracing the continuum of an art form that has survived centuries through practice, patience, and respect. These images reflect a discipline that moves between stillness and strike, between the personal and the ancestral.",
     images: range(15).map(
       (i) => `${BLOB_BASE}/kalaripayattu/kalaripayattu_${i}.JPG`
     ),
   },
 } as const;
 
-export default function ProjectDetailClient({ projectId }: { projectId: string }) {
+export default function ProjectDetailClient({
+  projectId,
+}: {
+  projectId: string;
+}) {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -159,5 +167,3 @@ export default function ProjectDetailClient({ projectId }: { projectId: string }
     </div>
   );
 }
-
-
