@@ -58,17 +58,26 @@ export default function Home() {
   return (
     <>
       {/* Iconic Image Section */}
-      <section className="iconic-image-container">
+      <section
+        className="iconic-image-container"
+        style={{ height: "90svh", margin: 0, padding: 0, overflow: "hidden" }}
+      >
         <div
           className="iconic-image-wrapper"
           onClick={() => openGlobalLightbox(activeProject.id)}
-          style={{ cursor: "pointer" }}
+          style={{
+            cursor: "pointer",
+            position: "relative",
+            width: "100%",
+            height: "100%",
+          }}
         >
           <Image
             src={iconicImage}
             alt="NJ Photography"
-            width={1400}
-            height={900}
+            fill
+            sizes="100vw"
+            style={{ objectFit: "cover" }}
             className="iconic-image"
             priority
           />
@@ -76,35 +85,6 @@ export default function Home() {
       </section>
 
       {/* Image Lightbox handled globally */}
-
-      {/* Content Section */}
-      <section className="content-section">
-        <div className="content-text">
-          <h1>NJ Photography</h1>
-          <p>
-            <strong>NJ Photography</strong> is passionate about capturing the
-            world&apos;s diverse beauty through nature, culture, arts, and
-            places. Our work celebrates the intricate details of natural
-            landscapes, the vibrant expressions of human culture, and the
-            artistic essence found in everyday moments and extraordinary
-            destinations.
-          </p>
-          <p>
-            From the serene majesty of untouched wilderness to the bustling
-            energy of cultural festivals, we document the stories that connect
-            us to our planet and each other. Our approach blends documentary
-            authenticity with artistic vision, creating images that inspire
-            wonder and preserve memories of the world&apos;s most precious
-            moments.
-          </p>
-          <p>
-            Whether exploring remote natural wonders, immersing in local
-            traditions, or discovering hidden artistic gems in urban landscapes,
-            we bring a fresh perspective to visual storytelling that honors both
-            the grandeur and intimacy of our world.
-          </p>
-        </div>
-      </section>
     </>
   );
 }

@@ -37,6 +37,7 @@ export default function ImageLightbox({
 }: ImageLightboxProps) {
   const { theme, toggleTheme } = useTheme();
   const isDarkMode = theme === "dark";
+  const iconColor = isDarkMode ? "#c0c0c0" : "#606060"; // subtle gray per theme
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [showThumbnails, setShowThumbnails] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
@@ -72,6 +73,9 @@ export default function ImageLightbox({
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
+      // Ensure auxiliary overlays are closed when the lightbox closes
+      setShowInfo(false);
+      setShowThumbnails(false);
       if (document.fullscreenElement) {
         // Best-effort exit when closing
         document.exitFullscreen?.().catch(() => {});
@@ -283,7 +287,7 @@ export default function ImageLightbox({
         onClick={onClose}
         aria-label="Close lightbox"
       >
-        <IconX size={24} />
+        <IconX size={24} color={iconColor} />
       </button>
 
       {/* Main Image Container */}
@@ -350,14 +354,14 @@ export default function ImageLightbox({
           onClick={handlePrevious}
           aria-label="Previous image"
         >
-          <IconChevronLeft size={32} />
+          <IconChevronLeft size={32} color={iconColor} />
         </button>
         <button
           className="lightbox-nav lightbox-nav-next"
           onClick={handleNext}
           aria-label="Next image"
         >
-          <IconChevronRight size={32} />
+          <IconChevronRight size={32} color={iconColor} />
         </button>
       </div>
 
@@ -422,11 +426,17 @@ export default function ImageLightbox({
       <div className="lightbox-side-controls">
         <button
           className="lightbox-control-btn with-tooltip"
-          onClick={() => setShowThumbnails(!showThumbnails)}
+          onClick={() =>
+            setShowThumbnails((prev) => {
+              const next = !prev;
+              if (next) setShowInfo(false);
+              return next;
+            })
+          }
           aria-label={showThumbnails ? "Hide thumbnails" : "Show thumbnails"}
           data-tooltip={showThumbnails ? "Hide thumbnails" : "Show thumbnails"}
         >
-          <IconLayoutGrid size={18} />
+          <IconLayoutGrid size={18} color={iconColor} />
         </button>
         <button
           className="lightbox-control-btn with-tooltip"
@@ -434,7 +444,7 @@ export default function ImageLightbox({
           aria-label={showInfo ? "Hide info" : "Show info"}
           data-tooltip={showInfo ? "Hide info" : "Show info"}
         >
-          <IconInfoCircle size={18} />
+          <IconInfoCircle size={18} color={iconColor} />
         </button>
         {/* <button
           className="lightbox-control-btn with-tooltip"
@@ -483,9 +493,9 @@ export default function ImageLightbox({
           data-tooltip={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
         >
           {isFullscreen ? (
-            <IconMinimize size={18} />
+            <IconMinimize size={18} color={iconColor} />
           ) : (
-            <IconMaximize size={18} />
+            <IconMaximize size={18} color={iconColor} />
           )}
         </button>
       </div>
