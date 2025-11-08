@@ -8,7 +8,6 @@ import { useState } from "react";
 import {
   IconChevronRight,
   IconChevronLeft,
-  IconBrandInstagram,
   IconMail,
   IconSun,
   IconMoon,
@@ -67,14 +66,6 @@ export default function Sidebar({
               onClick={() => setIsProjectsOpen((v) => !v)}
             >
               <span className="sidebar-tab-label">Projects</span>
-              <span
-                className={`sidebar-tab-chevron ${
-                  isProjectsOpen ? "open" : ""
-                }`}
-                aria-hidden
-              >
-                <IconChevronRight size={12} />
-              </span>
             </button>
             <ul className={`sidebar-submenu ${isProjectsOpen ? "open" : ""}`}>
               {projectsSeries.map((p) => (
@@ -96,12 +87,6 @@ export default function Sidebar({
               onClick={() => setIsStoriesOpen((v) => !v)}
             >
               <span className="sidebar-tab-label">Stories</span>
-              <span
-                className={`sidebar-tab-chevron ${isStoriesOpen ? "open" : ""}`}
-                aria-hidden
-              >
-                <IconChevronRight size={12} />
-              </span>
             </button>
             <ul className={`sidebar-submenu ${isStoriesOpen ? "open" : ""}`}>
               {storiesSeries.map((s) => (
@@ -124,25 +109,10 @@ export default function Sidebar({
               About
             </Link>
           </li>
-          <li>
-            <Link
-              href="/contact"
-              className={isActive("/contact") ? "active" : undefined}
-            >
-              Contact
-            </Link>
-          </li>
         </ul>
       </nav>
 
       <div className="sidebar-social">
-        <a
-          href="https://instagram.com"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <IconBrandInstagram size={20} />
-        </a>
         <a href="mailto:contact@njphotography.com" aria-label="Email">
           <IconMail size={20} />
         </a>
