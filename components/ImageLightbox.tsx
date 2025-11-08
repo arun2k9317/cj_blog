@@ -51,10 +51,7 @@ export default function ImageLightbox({
   const [zoomFactor] = useState(2);
   const [lensSize] = useState(240);
   const imageWrapperRef = useRef<HTMLDivElement | null>(null);
-  const [zoomLevel, setZoomLevel] = useState(1);
-  const minZoom = 1;
-  const maxZoom = 3;
-  const zoomStep = 0.1;
+  const [zoomLevel] = useState(1);
   const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({
     x: 0,
     y: 0,
@@ -184,21 +181,23 @@ export default function ImageLightbox({
     setIsLensVisible(false);
   };
 
-  const clampZoom = (value: number) => {
-    return Math.max(minZoom, Math.min(maxZoom, value));
-  };
+  // Zoom utilities temporarily disabled with zoom slider UI
 
+  /* Temporarily disabled with zoom slider UI
   const handleWheelOnZoom = (e: React.WheelEvent<HTMLDivElement>) => {
     e.preventDefault();
     const delta = e.deltaY;
     const next = clampZoom(zoomLevel + (delta < 0 ? zoomStep : -zoomStep));
     setZoomLevel(parseFloat(next.toFixed(2)));
   };
+  */
 
+  /* Temporarily disabled with zoom slider UI
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = Number(e.target.value);
     setZoomLevel(clampZoom(val));
   };
+  */
 
   // Reset pan when zooming back to 1x or image changes
   useEffect(() => {
@@ -354,14 +353,22 @@ export default function ImageLightbox({
           onClick={handlePrevious}
           aria-label="Previous image"
         >
-          <IconChevronLeft size={32} color={iconColor} />
+          <IconChevronLeft
+            size={32}
+            color={iconColor}
+            style={{ opacity: 0.5 }}
+          />
         </button>
         <button
           className="lightbox-nav lightbox-nav-next"
           onClick={handleNext}
           aria-label="Next image"
         >
-          <IconChevronRight size={32} color={iconColor} />
+          <IconChevronRight
+            size={32}
+            color={iconColor}
+            style={{ opacity: 0.5 }}
+          />
         </button>
       </div>
 
@@ -500,7 +507,8 @@ export default function ImageLightbox({
         </button>
       </div>
 
-      {/* Zoom Scroller (top-right) */}
+      {/* Zoom Scroller (top-right) - temporarily disabled */}
+      {/*
       <div
         className="lightbox-zoom-control with-tooltip"
         data-tooltip={`${Math.round(
@@ -521,6 +529,7 @@ export default function ImageLightbox({
           aria-label="Zoom level"
         />
       </div>
+      */}
     </div>
   );
 }
