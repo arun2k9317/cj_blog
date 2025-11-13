@@ -1,16 +1,19 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
-import { useImageUpload } from '../hooks/useImageUpload';
-import ImageUpload from './ImageUpload';
+import { useCallback, useState } from "react";
+import type { UploadButtonConfig } from "./ImageUpload";
+import Image from "next/image";
+import { useImageUpload } from "../hooks/useImageUpload";
+import ImageUpload from "./ImageUpload";
 
 interface ImageManagerProps {
   projectId: string;
   existingImages?: string[];
   onImagesChange?: (images: string[]) => void;
   maxImages?: number;
+  showImagesGrid?: boolean;
   className?: string;
+  onUploadButtonChange?: (config: UploadButtonConfig | null) => void;
 }
 
 export default function ImageManager({
@@ -18,45 +21,52 @@ export default function ImageManager({
   existingImages = [],
   onImagesChange,
   maxImages = 20,
-  className = ''
+  showImagesGrid = true,
+  className = "",
+  onUploadButtonChange,
 }: ImageManagerProps) {
-  const [images, setImages] = useState<string[]>(existingImages);
+  const [images, setImages] = useState<string[]>([...existingImages].reverse());
   const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
 
-  const {
-    uploadState,
-    uploadedImages,
-    uploadImage,
-    deleteImage,
-    clearError
-  } = useImageUpload({
-    projectId,
-    onSuccess: (uploadedImage) => {
-      const newImages = [...images, uploadedImage.url];
-      setImages(newImages);
-      onImagesChange?.(newImages);
+  const { uploadState, uploadedImages, uploadImage, deleteImage, clearError } =
+    useImageUpload({
+      projectId,
+      onSuccess: (uploadedImage) => {
+        setImages((prev) => {
+          const updated = [uploadedImage.url, ...prev];
+          onImagesChange?.(updated);
+          return updated;
+        });
+      },
+      onError: (error) => {
+        console.error("Upload error:", error);
+      },
+    });
+
+  const handleImageUpload = useCallback(
+    async (url: string, filename: string) => {
+      // Image is already added via onSuccess callback
+      console.log("Image uploaded successfully:", filename);
+
+      // If this is a gallery upload, dispatch event to refresh thumbnails
+      if (projectId === "gallery") {
+        window.dispatchEvent(new CustomEvent("galleryImageUploaded"));
+      }
     },
-    onError: (error) => {
-      console.error('Upload error:', error);
-    }
-  });
+    [projectId]
+  );
 
-  const handleImageUpload = async (url: string, filename: string) => {
-    // Image is already added via onSuccess callback
-    console.log('Image uploaded successfully:', filename);
-  };
-
-  const handleImageUploadError = (error: string) => {
-    console.error('Upload error:', error);
-  };
+  const handleImageUploadError = useCallback((error: string) => {
+    console.error("Upload error:", error);
+  }, []);
 
   const handleDeleteImage = async (url: string) => {
-    if (confirm('Are you sure you want to delete this image?')) {
+    if (confirm("Are you sure you want to delete this image?")) {
       const success = await deleteImage(url);
       if (success) {
-        const newImages = images.filter(img => img !== url);
+        const newImages = images.filter((img) => img !== url);
         setImages(newImages);
-        setSelectedImages(prev => {
+        setSelectedImages((prev) => {
           const newSelected = new Set(prev);
           newSelected.delete(url);
           return newSelected;
@@ -67,7 +77,7 @@ export default function ImageManager({
   };
 
   const handleSelectImage = (url: string) => {
-    setSelectedImages(prev => {
+    setSelectedImages((prev) => {
       const newSelected = new Set(prev);
       if (newSelected.has(url)) {
         newSelected.delete(url);
@@ -81,12 +91,18 @@ export default function ImageManager({
   const handleDeleteSelected = async () => {
     if (selectedImages.size === 0) return;
 
-    if (confirm(`Are you sure you want to delete ${selectedImages.size} selected images?`)) {
-      const deletePromises = Array.from(selectedImages).map(url => deleteImage(url));
+    if (
+      confirm(
+        `Are you sure you want to delete ${selectedImages.size} selected images?`
+      )
+    ) {
+      const deletePromises = Array.from(selectedImages).map((url) =>
+        deleteImage(url)
+      );
       const results = await Promise.all(deletePromises);
-      
+
       // Remove successfully deleted images
-      const newImages = images.filter(img => !selectedImages.has(img));
+      const newImages = images.filter((img) => !selectedImages.has(img));
       setImages(newImages);
       setSelectedImages(new Set());
       onImagesChange?.(newImages);
@@ -100,14 +116,14 @@ export default function ImageManager({
       {/* Upload Section */}
       {canUploadMore && (
         <div className="upload-section">
-          <h3 className="section-title">Upload Images</h3>
           <ImageUpload
             projectId={projectId}
             onUploadComplete={handleImageUpload}
             onUploadError={handleImageUploadError}
             className="upload-component"
+            onUploadButtonChange={onUploadButtonChange}
           />
-          
+
           {uploadState.error && (
             <div className="error-message">
               <p>{uploadState.error}</p>
@@ -120,7 +136,7 @@ export default function ImageManager({
       )}
 
       {/* Images Grid */}
-      {images.length > 0 && (
+      {showImagesGrid && images.length > 0 && (
         <div className="images-section">
           <div className="section-header">
             <h3 className="section-title">
@@ -140,7 +156,9 @@ export default function ImageManager({
             {images.map((url, index) => (
               <div
                 key={url}
-                className={`image-item ${selectedImages.has(url) ? 'selected' : ''}`}
+                className={`image-item ${
+                  selectedImages.has(url) ? "selected" : ""
+                }`}
                 onClick={() => handleSelectImage(url)}
               >
                 <div className="image-container">
@@ -150,13 +168,13 @@ export default function ImageManager({
                     width={200}
                     height={150}
                     className="image"
-                    style={{ objectFit: 'cover' }}
+                    style={{ objectFit: "cover" }}
                   />
-                  
+
                   {/* Selection overlay */}
                   <div className="selection-overlay">
                     <div className="selection-checkbox">
-                      {selectedImages.has(url) && '✓'}
+                      {selectedImages.has(url) && "✓"}
                     </div>
                   </div>
 
@@ -179,7 +197,7 @@ export default function ImageManager({
       )}
 
       {/* No images state */}
-      {images.length === 0 && (
+      {showImagesGrid && images.length === 0 && (
         <div className="no-images">
           <p>No images uploaded yet. Upload your first image above.</p>
         </div>
@@ -205,11 +223,7 @@ export default function ImageManager({
         }
 
         .upload-section {
-          margin-bottom: 2rem;
-          padding: 1.5rem;
-          border: 1px solid #e0e0e0;
-          border-radius: 8px;
-          background-color: #fafafa;
+          width: 100%;
         }
 
         .error-message {

@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState, PropsWithChildren } from "react";
+import { usePathname } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import ImageLightbox from "@/components/ImageLightbox";
 import { BLOB_BASE, Series, projectsSeries, storiesSeries } from "@/lib/series";
 
 export default function AppShell({ children }: PropsWithChildren) {
+  const pathname = usePathname();
+  const isAdminRoute = pathname?.startsWith("/admin");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [selectedSeriesId, setSelectedSeriesId] = useState<string | null>(null);
@@ -45,6 +48,15 @@ export default function AppShell({ children }: PropsWithChildren) {
     window.addEventListener("open-series-lightbox", handler as EventListener);
     return () => window.removeEventListener("open-series-lightbox", handler as EventListener);
   }, []);
+
+  // For admin pages, render without sidebar/lightbox to provide a clean dashboard canvas
+  if (isAdminRoute) {
+    return (
+      <div className="main-layout">
+        <main className="main-content" style={{ marginLeft: 0 }}>{children}</main>
+      </div>
+    );
+  }
 
   return (
     <div className={`main-layout ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}>

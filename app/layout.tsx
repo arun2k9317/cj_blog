@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import AppShell from "@/components/AppShell";
+import { MantineProviders } from "@/components/MantineProviders";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NJ Photography Blog",
-  description: "The website and online portfolio of NJ Photography",
+  title: "Nitin Jamdar",
+  description: "Nitin Jamdar's photography",
 };
 
 export default function RootLayout({
@@ -26,10 +27,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ThemeProvider>
-          <AppShell>{children}</AppShell>
-        </ThemeProvider>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <MantineProviders>
+          <ThemeProvider>
+            <AppShell>{children}</AppShell>
+          </ThemeProvider>
+        </MantineProviders>
       </body>
     </html>
   );

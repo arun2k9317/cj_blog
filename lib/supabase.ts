@@ -109,6 +109,7 @@ export async function createProject(project: {
     featuredImage?: string;
     published?: boolean;
     tags?: string[];
+    kind?: 'project' | 'story';
 }) {
     const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
@@ -121,7 +122,10 @@ export async function createProject(project: {
             location: project.location || null,
             featured_image: project.featuredImage || null,
             published: project.published || false,
-            tags: project.tags || []
+            tags: project.tags || [],
+            // if the column doesn't exist, PostgREST will ignore unknown keys when using RPC/JSON?
+            // To be safe, we only include 'kind' if provided.
+            ...(project.kind ? { kind: project.kind } : {})
         })
         .select()
         .single();
@@ -156,6 +160,26 @@ export async function getAllProjects(publishedOnly: boolean = true) {
     return data || [];
 }
 
+// Flexible fetch with optional kind filter
+export async function getProjects(options?: {
+    publishedOnly?: boolean;
+    kind?: 'project' | 'story';
+}) {
+    const supabase = getSupabaseServerClient();
+    let query = supabase.from('projects').select('*');
+    if (options?.publishedOnly) {
+        query = query.eq('published', true);
+    }
+    if (options?.kind) {
+        // Only apply if column exists; if it doesn't, this will error.
+        // Callers should handle errors or avoid passing kind if schema lacks it.
+        query = query.eq('kind', options.kind);
+    }
+    const { data, error } = await query.order('created_at', { ascending: false });
+    if (error) throw error;
+    return data || [];
+}
+
 export async function updateProject(id: string, updates: Partial<{
     title: string;
     slug: string;
@@ -164,6 +188,7 @@ export async function updateProject(id: string, updates: Partial<{
     featuredImage: string;
     published: boolean;
     tags: string[];
+    kind: 'project' | 'story';
 }>) {
     const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
@@ -253,6 +278,17 @@ export async function getContentBlocks(projectId: string) {
         .eq('project_id', projectId)
         .order('order', { ascending: true });
 
+    if (error) throw error;
+    return data || [];
+}
+
+// Assets listing (if assets table exists)
+export async function getAssets() {
+    const supabase = getSupabaseServerClient();
+    const { data, error } = await supabase
+        .from('assets')
+        .select('*')
+        .order('created_at', { ascending: false });
     if (error) throw error;
     return data || [];
 }

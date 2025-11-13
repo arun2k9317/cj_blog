@@ -3,6 +3,17 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
+    const token = process.env.BLOB_READ_WRITE_TOKEN;
+    if (!token) {
+      return NextResponse.json(
+        {
+          error:
+            'Blob token missing. Set BLOB_READ_WRITE_TOKEN in your environment (see BLOB_SETUP.md).',
+        },
+        { status: 500 }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const projectId = formData.get('projectId') as string;
@@ -37,6 +48,7 @@ export async function POST(request: NextRequest) {
     const blob = await put(fileName, file, {
       access: 'public',
       addRandomSuffix: false, // We're handling naming ourselves
+      token,
     });
 
     return NextResponse.json({
