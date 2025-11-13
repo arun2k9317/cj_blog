@@ -28,20 +28,19 @@ export default function ImageManager({
   const [images, setImages] = useState<string[]>([...existingImages].reverse());
   const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
 
-  const { uploadState, uploadedImages, uploadImage, deleteImage, clearError } =
-    useImageUpload({
-      projectId,
-      onSuccess: (uploadedImage) => {
-        setImages((prev) => {
-          const updated = [uploadedImage.url, ...prev];
-          onImagesChange?.(updated);
-          return updated;
-        });
-      },
-      onError: (error) => {
-        console.error("Upload error:", error);
-      },
-    });
+  const { uploadState, deleteImage, clearError } = useImageUpload({
+    projectId,
+    onSuccess: (uploadedImage) => {
+      setImages((prev) => {
+        const updated = [uploadedImage.url, ...prev];
+        onImagesChange?.(updated);
+        return updated;
+      });
+    },
+    onError: (error) => {
+      console.error("Upload error:", error);
+    },
+  });
 
   const handleImageUpload = useCallback(
     async (url: string, filename: string) => {
@@ -96,12 +95,24 @@ export default function ImageManager({
         `Are you sure you want to delete ${selectedImages.size} selected images?`
       )
     ) {
-      const deletePromises = Array.from(selectedImages).map((url) =>
-        deleteImage(url)
+      const urlsToDelete = Array.from(selectedImages);
+      const deletionResults = await Promise.all(
+        urlsToDelete.map((url) => deleteImage(url))
       );
-      const results = await Promise.all(deletePromises);
 
-      // Remove successfully deleted images
+      const failures = urlsToDelete.filter(
+        (_, index) => !deletionResults[index]
+      );
+
+      if (failures.length > 0) {
+        alert(
+          `Failed to delete ${failures.length} ${
+            failures.length === 1 ? "image" : "images"
+          }. Please try again.`
+        );
+        return;
+      }
+
       const newImages = images.filter((img) => !selectedImages.has(img));
       setImages(newImages);
       setSelectedImages(new Set());

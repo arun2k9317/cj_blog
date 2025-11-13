@@ -1,73 +1,91 @@
 "use client";
 
-import { useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, ReactNode, useCallback } from "react";
 import Image from "next/image";
 import { IconTrash, IconX } from "@tabler/icons-react";
 import { Button, Group, Text, SimpleGrid, ScrollArea } from "@mantine/core";
 
+interface GalleryImage {
+  id?: string;
+  url: string;
+  path?: string;
+  filename?: string;
+}
+
 interface GalleryThumbnailsProps {
-  initialImages?: Array<{ id?: string; url: string; path?: string }>;
+  initialImages?: GalleryImage[];
   headerLeft?: ReactNode;
 }
+
+const filterGalleryImages = (images: GalleryImage[]): GalleryImage[] =>
+  images.filter((asset) => {
+    const pathStr = typeof asset.path === "string" ? asset.path : "";
+    const urlStr = typeof asset.url === "string" ? asset.url : "";
+    const filenameStr =
+      typeof asset.filename === "string" ? asset.filename : "";
+    return (
+      pathStr.includes("gallery") ||
+      urlStr.includes("/gallery/") ||
+      urlStr.includes("/gallery") ||
+      filenameStr.includes("gallery")
+    );
+  });
+
+const isGalleryImageArray = (value: unknown): value is GalleryImage[] =>
+  Array.isArray(value) &&
+  value.every(
+    (item) =>
+      typeof item === "object" &&
+      item !== null &&
+      typeof (item as { url?: unknown }).url === "string"
+  );
+
+const isGalleryImageResponse = (
+  value: unknown
+): value is { images: GalleryImage[] } =>
+  typeof value === "object" &&
+  value !== null &&
+  "images" in value &&
+  isGalleryImageArray((value as { images: unknown }).images);
 
 export default function GalleryThumbnails({
   initialImages = [],
   headerLeft,
 }: GalleryThumbnailsProps) {
-  const [images, setImages] = useState(initialImages);
+  const [images, setImages] = useState<GalleryImage[]>(initialImages);
   const [loading, setLoading] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
   const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
   const [deleting, setDeleting] = useState(false);
 
-  const fetchGalleryImages = async () => {
+  const fetchGalleryImages = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch all assets and filter for gallery
       const response = await fetch("/api/gallery-images");
       if (response.ok) {
-        const data = await response.json();
-        setImages(data.images || []);
+        const data = (await response.json()) as unknown;
+        if (isGalleryImageResponse(data)) {
+          setImages(data.images);
+        } else {
+          setImages(filterGalleryImages(initialImages));
+        }
       } else {
-        // Fallback: filter initial images
-        const galleryImages = (initialImages || []).filter((a: any) => {
-          const path = a?.path || "";
-          const url = a?.url || "";
-          const filename = a?.filename || "";
-          const pathStr = typeof path === "string" ? path : "";
-          const urlStr = typeof url === "string" ? url : "";
-          const filenameStr = typeof filename === "string" ? filename : "";
-          return (
-            pathStr.includes("gallery") ||
-            urlStr.includes("/gallery/") ||
-            urlStr.includes("/gallery") ||
-            filenameStr.includes("gallery")
-          );
-        });
-        setImages(galleryImages);
+        setImages(filterGalleryImages(initialImages));
       }
     } catch (error) {
       console.error("Failed to fetch gallery images:", error);
-      // Fallback to initial images filtered
-      const galleryImages = (initialImages || []).filter((a: any) => {
-        const url = a?.url || "";
-        return (
-          typeof url === "string" &&
-          (url.includes("/gallery/") || url.includes("/gallery"))
-        );
-      });
-      setImages(galleryImages);
+      setImages(filterGalleryImages(initialImages));
     } finally {
       setLoading(false);
     }
-  };
+  }, [initialImages]);
 
   // Listen for custom event when image is uploaded
   useEffect(() => {
     const handleImageUploaded = () => {
       // Refresh gallery images after a short delay to allow blob storage to update
       setTimeout(() => {
-        fetchGalleryImages();
+        void fetchGalleryImages();
       }, 1500);
     };
 
@@ -75,12 +93,12 @@ export default function GalleryThumbnails({
     return () => {
       window.removeEventListener("galleryImageUploaded", handleImageUploaded);
     };
-  }, []);
+  }, [fetchGalleryImages]);
 
   // Initial fetch
   useEffect(() => {
-    fetchGalleryImages();
-  }, []);
+    void fetchGalleryImages();
+  }, [fetchGalleryImages]);
 
   const toggleImageSelection = (url: string) => {
     if (!deleteMode) return;
@@ -236,12 +254,12 @@ export default function GalleryThumbnails({
       ) : (
         <ScrollArea offsetScrollbars style={{ flex: 1 }}>
           <SimpleGrid cols={{ base: 3, sm: 4, md: 5, lg: 6 }} spacing="xs">
-            {images.map((a: any, index: number) => {
-              const isSelected = selectedImages.has(a.url);
+            {images.map((asset, index) => {
+              const isSelected = selectedImages.has(asset.url);
               return (
                 <div
-                  key={a.id ?? a.url ?? index}
-                  onClick={() => toggleImageSelection(a.url)}
+                  key={asset.id ?? asset.url ?? index}
+                  onClick={() => toggleImageSelection(asset.url)}
                   style={{
                     position: "relative",
                     aspectRatio: "1",
@@ -285,12 +303,14 @@ export default function GalleryThumbnails({
                     }}
                   >
                     <Image
-                      src={a.url}
-                      alt={a.path || "gallery image"}
+                      src={asset.url}
+                      alt={asset.path || "gallery image"}
                       fill
                       style={{ objectFit: "cover" }}
                       sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                      unoptimized={a.url.includes("blob.vercel-storage.com")}
+                      unoptimized={asset.url.includes(
+                        "blob.vercel-storage.com"
+                      )}
                     />
                     {deleteMode && (
                       <div

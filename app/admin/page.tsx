@@ -15,15 +15,47 @@ import {
   Badge,
 } from "@mantine/core";
 
+type ProjectRow = {
+  id: string;
+  title: string;
+  slug: string;
+  featured_image?: string | null;
+  published?: boolean | null;
+  [key: string]: unknown;
+};
+
+type AssetRecord = {
+  id?: string;
+  url?: string | null;
+  path?: string | null;
+  filename?: string | null;
+  mime_type?: string | null;
+  width?: number | null;
+  height?: number | null;
+  [key: string]: unknown;
+};
+
+const isGalleryAsset = (asset: AssetRecord): boolean => {
+  const pathStr = typeof asset.path === "string" ? asset.path : "";
+  const urlStr = typeof asset.url === "string" ? asset.url : "";
+  const filenameStr = typeof asset.filename === "string" ? asset.filename : "";
+  return (
+    pathStr.includes("gallery") ||
+    urlStr.includes("/gallery/") ||
+    urlStr.includes("/gallery") ||
+    filenameStr.includes("gallery")
+  );
+};
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
   // Server-side fetch for speed and to keep keys server-only
   // Projects (kind=project) and Stories (kind=story) are optional if 'kind' column exists.
   // If 'kind' doesn't exist in your DB, remove the kind filter below.
-  let projects: any[] = [];
-  let stories: any[] = [];
-  let assets: any[] = [];
+  let projects: ProjectRow[] = [];
+  let stories: ProjectRow[] = [];
+  let assets: AssetRecord[] = [];
 
   try {
     projects = await getProjects({ publishedOnly: false, kind: "project" });
@@ -45,22 +77,15 @@ export default async function AdminDashboardPage() {
     assets = [];
   }
 
-  const galleryAssets =
-    (assets || []).filter((a: any) => {
-      const path = a?.path || "";
-      const url = a?.url || "";
-      const filename = a?.filename || "";
-      // Check if path, URL, or filename contains "gallery"
-      const pathStr = typeof path === "string" ? path : "";
-      const urlStr = typeof url === "string" ? url : "";
-      const filenameStr = typeof filename === "string" ? filename : "";
-      return (
-        pathStr.includes("gallery") ||
-        urlStr.includes("/gallery/") ||
-        urlStr.includes("/gallery") ||
-        filenameStr.includes("gallery")
-      );
-    }) || [];
+  const galleryAssets = assets
+    .filter(isGalleryAsset)
+    .map((asset) => (typeof asset.url === "string" ? { url: asset.url } : null))
+    .filter((asset): asset is { url: string } => asset !== null);
+
+  const assetsWithUrl = assets.filter(
+    (asset): asset is AssetRecord & { url: string } =>
+      typeof asset.url === "string"
+  );
 
   return (
     <Container size="xl" py="lg" px="sm" className="admin-dashboard">
@@ -105,64 +130,70 @@ export default async function AdminDashboardPage() {
             </Card>
           ) : (
             <SimpleGrid cols={{ base: 1, md: 2 }} spacing="sm">
-              {projects.map((p) => (
-                <Card
-                  key={p.id}
-                  shadow="xs"
-                  padding="md"
-                  radius="md"
-                  withBorder
-                >
-                  <Group justify="space-between" mb="xs" gap="xs">
-                    <Text fw={500} size="sm">
-                      {p.title}
+              {projects.map((p) => {
+                const featuredImage =
+                  typeof p.featured_image === "string"
+                    ? p.featured_image
+                    : null;
+                return (
+                  <Card
+                    key={p.id}
+                    shadow="xs"
+                    padding="md"
+                    radius="md"
+                    withBorder
+                  >
+                    <Group justify="space-between" mb="xs" gap="xs">
+                      <Text fw={500} size="sm">
+                        {p.title}
+                      </Text>
+                      <Badge
+                        color={p.published ? "green" : "yellow"}
+                        variant="light"
+                        size="xs"
+                      >
+                        {p.published ? "Published" : "Draft"}
+                      </Badge>
+                    </Group>
+                    <Text size="xs" c="dimmed" mb="sm">
+                      {p.slug}
                     </Text>
-                    <Badge
-                      color={p.published ? "green" : "yellow"}
-                      variant="light"
-                      size="xs"
-                    >
-                      {p.published ? "Published" : "Draft"}
-                    </Badge>
-                  </Group>
-                  <Text size="xs" c="dimmed" mb="sm">
-                    {p.slug}
-                  </Text>
-                  {p.featured_image ? (
-                    <div
-                      style={{
-                        position: "relative",
-                        marginBottom: "var(--mantine-spacing-sm)",
-                        height: "140px",
-                        width: "100%",
-                        overflow: "hidden",
-                        borderRadius: "var(--mantine-radius-md)",
-                        backgroundColor: "var(--mantine-color-gray-1)",
-                      }}
-                    >
-                      <Image
-                        src={p.featured_image}
-                        alt={p.title}
-                        fill
-                        style={{ objectFit: "cover" }}
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                      />
-                    </div>
-                  ) : null}
-                  <Group gap="xs" mt="sm">
-                    <Link href={`/admin/edit/${encodeURIComponent(p.id)}`}>
-                      <Button variant="filled" color="dark" size="xs">
-                        Edit
-                      </Button>
-                    </Link>
-                    <Link href={`/api/projects/${encodeURIComponent(p.id)}`}>
-                      <Button variant="outline" size="xs">
-                        View JSON
-                      </Button>
-                    </Link>
-                  </Group>
-                </Card>
-              ))}
+                    {featuredImage ? (
+                      <div
+                        style={{
+                          position: "relative",
+                          marginBottom: "var(--mantine-spacing-sm)",
+                          height: "140px",
+                          width: "100%",
+                          overflow: "hidden",
+                          borderRadius: "var(--mantine-radius-md)",
+                          backgroundColor: "var(--mantine-color-gray-1)",
+                        }}
+                      >
+                        <Image
+                          src={featuredImage}
+                          alt={p.title}
+                          fill
+                          style={{ objectFit: "cover" }}
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                        />
+                      </div>
+                    ) : null}
+                    <Group gap="xs" mt="sm">
+                      <Link href={`/admin/edit/${encodeURIComponent(p.id)}`}>
+                        <Button variant="filled" color="dark" size="xs">
+                          Edit
+                        </Button>
+                      </Link>
+                      <Link href={`/api/projects/${encodeURIComponent(p.id)}`}>
+                        <Button variant="outline" size="xs">
+                          View JSON
+                        </Button>
+                      </Link>
+                    </Group>
+                  </Card>
+                );
+              })}
             </SimpleGrid>
           )}
         </Paper>
@@ -186,64 +217,70 @@ export default async function AdminDashboardPage() {
             </Card>
           ) : (
             <SimpleGrid cols={{ base: 1, md: 2 }} spacing="sm">
-              {stories.map((s) => (
-                <Card
-                  key={s.id}
-                  shadow="xs"
-                  padding="md"
-                  radius="md"
-                  withBorder
-                >
-                  <Group justify="space-between" mb="xs" gap="xs">
-                    <Text fw={500} size="sm">
-                      {s.title}
+              {stories.map((s) => {
+                const featuredImage =
+                  typeof s.featured_image === "string"
+                    ? s.featured_image
+                    : null;
+                return (
+                  <Card
+                    key={s.id}
+                    shadow="xs"
+                    padding="md"
+                    radius="md"
+                    withBorder
+                  >
+                    <Group justify="space-between" mb="xs" gap="xs">
+                      <Text fw={500} size="sm">
+                        {s.title}
+                      </Text>
+                      <Badge
+                        color={s.published ? "green" : "yellow"}
+                        variant="light"
+                        size="xs"
+                      >
+                        {s.published ? "Published" : "Draft"}
+                      </Badge>
+                    </Group>
+                    <Text size="xs" c="dimmed" mb="sm">
+                      {s.slug}
                     </Text>
-                    <Badge
-                      color={s.published ? "green" : "yellow"}
-                      variant="light"
-                      size="xs"
-                    >
-                      {s.published ? "Published" : "Draft"}
-                    </Badge>
-                  </Group>
-                  <Text size="xs" c="dimmed" mb="sm">
-                    {s.slug}
-                  </Text>
-                  {s.featured_image ? (
-                    <div
-                      style={{
-                        position: "relative",
-                        marginBottom: "var(--mantine-spacing-sm)",
-                        height: "140px",
-                        width: "100%",
-                        overflow: "hidden",
-                        borderRadius: "var(--mantine-radius-md)",
-                        backgroundColor: "var(--mantine-color-gray-1)",
-                      }}
-                    >
-                      <Image
-                        src={s.featured_image}
-                        alt={s.title}
-                        fill
-                        style={{ objectFit: "cover" }}
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                      />
-                    </div>
-                  ) : null}
-                  <Group gap="xs" mt="sm">
-                    <Link href={`/admin/edit/${encodeURIComponent(s.id)}`}>
-                      <Button variant="filled" color="dark" size="xs">
-                        Edit
-                      </Button>
-                    </Link>
-                    <Link href={`/api/projects/${encodeURIComponent(s.id)}`}>
-                      <Button variant="outline" size="xs">
-                        View JSON
-                      </Button>
-                    </Link>
-                  </Group>
-                </Card>
-              ))}
+                    {featuredImage ? (
+                      <div
+                        style={{
+                          position: "relative",
+                          marginBottom: "var(--mantine-spacing-sm)",
+                          height: "140px",
+                          width: "100%",
+                          overflow: "hidden",
+                          borderRadius: "var(--mantine-radius-md)",
+                          backgroundColor: "var(--mantine-color-gray-1)",
+                        }}
+                      >
+                        <Image
+                          src={featuredImage}
+                          alt={s.title}
+                          fill
+                          style={{ objectFit: "cover" }}
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                        />
+                      </div>
+                    ) : null}
+                    <Group gap="xs" mt="sm">
+                      <Link href={`/admin/edit/${encodeURIComponent(s.id)}`}>
+                        <Button variant="filled" color="dark" size="xs">
+                          Edit
+                        </Button>
+                      </Link>
+                      <Link href={`/api/projects/${encodeURIComponent(s.id)}`}>
+                        <Button variant="outline" size="xs">
+                          View JSON
+                        </Button>
+                      </Link>
+                    </Group>
+                  </Card>
+                );
+              })}
             </SimpleGrid>
           )}
         </Paper>
@@ -267,9 +304,9 @@ export default async function AdminDashboardPage() {
             </Card>
           ) : (
             <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="sm">
-              {assets.map((a) => (
+              {assetsWithUrl.map((a) => (
                 <Card
-                  key={a.id}
+                  key={a.id ?? a.url}
                   padding="xs"
                   radius="md"
                   withBorder

@@ -2,12 +2,28 @@ import { NextResponse } from "next/server";
 import { initializeDatabase, createProject } from "@/lib/supabase";
 import { BLOB_BASE } from "@/lib/series";
 
+type SeedProject = Parameters<typeof createProject>[0];
+
+const isDuplicateError = (error: unknown): boolean => {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "message" in error &&
+    typeof (error as { message?: unknown }).message === "string"
+  ) {
+    return (error as { message: string }).message
+      .toLowerCase()
+      .includes("duplicate");
+  }
+  return false;
+};
+
 export async function POST() {
   try {
     // Ensure base schema exists (no-ops if already created)
     await initializeDatabase();
 
-    const demo = [
+    const demo: SeedProject[] = [
       {
         id: "demo-project-one",
         title: "Demo Project One",
@@ -15,9 +31,9 @@ export async function POST() {
         description: "Sample project to verify admin list rendering",
         location: "Sample Location",
         featuredImage: `${BLOB_BASE}/behindTheTeaCup/behindTheTeaCup_1.jpg`,
-        published: true as const,
+        published: true,
         tags: ["demo", "project"],
-        kind: "project" as const,
+        kind: "project",
       },
       {
         id: "demo-story-one",
@@ -26,23 +42,23 @@ export async function POST() {
         description: "Sample story to verify admin list rendering",
         location: "Sample Location",
         featuredImage: `${BLOB_BASE}/duskFallsOnMountains/duskFallsOnMountains_1.jpg`,
-        published: true as const,
+        published: true,
         tags: ["demo", "story"],
-        kind: "story" as const,
+        kind: "story",
       },
     ];
 
-    for (const p of demo) {
+    for (const project of demo) {
       try {
-        await createProject(p);
-      } catch (e: any) {
-        // Ignore unique violations so the route is idempotent
-        if (!e?.message?.toLowerCase?.().includes("duplicate")) {
-          // If some other error (e.g., 'kind' column missing), try without 'kind'
-          if (p.kind) {
-            const { kind, ...withoutKind } = p;
-            await createProject(withoutKind as any);
-          }
+        await createProject(project);
+      } catch (error) {
+        if (isDuplicateError(error)) {
+          continue;
+        }
+        if (project.kind) {
+          const { kind: _kind, ...withoutKind } = project;
+          const fallbackProject: SeedProject = { ...withoutKind };
+          await createProject(fallbackProject);
         }
       }
     }
@@ -55,7 +71,7 @@ export async function POST() {
       ];
       const body = urls.map((url) => ({
         url,
-        path: url.replace(BLOB_BASE + "/", ""),
+        path: url.replace(`${BLOB_BASE}/`, ""),
         provider: "vercel_blob",
         is_public: true,
       }));
@@ -74,9 +90,3 @@ export async function POST() {
     return NextResponse.json({ ok: false, error: "Seed failed" }, { status: 500 });
   }
 }
-
-
-
-
-
-
