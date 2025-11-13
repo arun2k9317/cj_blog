@@ -60,7 +60,8 @@ export async function PUT(
       location: projectData.location,
       featuredImage: projectData.featuredImage,
       published: projectData.published,
-      tags: projectData.tags
+      tags: projectData.tags,
+      kind: projectData.kind
     });
 
     // Update content blocks if provided

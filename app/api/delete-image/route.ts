@@ -1,5 +1,6 @@
 import { del } from '@vercel/blob';
 import { NextRequest, NextResponse } from 'next/server';
+import { initializeDatabase, getProjectsUsingImage } from '@/lib/supabase';
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -18,6 +19,21 @@ export async function DELETE(request: NextRequest) {
 
     if (!url) {
       return NextResponse.json({ error: 'Image URL is required' }, { status: 400 });
+    }
+
+    await initializeDatabase();
+    const projects = await getProjectsUsingImage(url);
+
+    if (projects.length > 0) {
+      return NextResponse.json(
+        {
+          error: 'Image is used in existing projects',
+          projects,
+          message:
+            'This image is referenced by one or more projects. Remove it from those projects before deleting.',
+        },
+        { status: 409 }
+      );
     }
 
     // Delete from Vercel Blob

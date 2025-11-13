@@ -29,6 +29,7 @@ export async function initializeDatabase() {
           description TEXT,
           location VARCHAR(255),
           featured_image VARCHAR(500),
+          kind VARCHAR(20) DEFAULT 'project',
           created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
           updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
           published BOOLEAN DEFAULT false,
@@ -40,6 +41,14 @@ export async function initializeDatabase() {
         if (projectsError) {
             console.log('Projects table might already exist:', projectsError.message);
         }
+
+        // Ensure kind column exists for legacy tables
+        await supabase.rpc('exec_sql', {
+            sql: `
+        ALTER TABLE projects
+        ADD COLUMN IF NOT EXISTS kind VARCHAR(20) DEFAULT 'project'
+      `
+        });
 
         // Create content_blocks table
         const { error: blocksError } = await supabase.rpc('exec_sql', {
@@ -92,6 +101,10 @@ export async function initializeDatabase() {
             sql: 'CREATE INDEX IF NOT EXISTS idx_projects_published ON projects(published)'
         });
 
+        await supabase.rpc('exec_sql', {
+            sql: 'CREATE INDEX IF NOT EXISTS idx_projects_kind ON projects(kind)'
+        });
+
         console.log('Database initialized successfully');
     } catch (error) {
         console.error('Error initializing database:', error);
@@ -121,11 +134,9 @@ export async function createProject(project: {
             description: project.description || null,
             location: project.location || null,
             featured_image: project.featuredImage || null,
+            kind: project.kind ?? 'project',
             published: project.published || false,
-            tags: project.tags || [],
-            // if the column doesn't exist, PostgREST will ignore unknown keys when using RPC/JSON?
-            // To be safe, we only include 'kind' if provided.
-            ...(project.kind ? { kind: project.kind } : {})
+            tags: project.tags || []
         })
         .select()
         .single();
@@ -191,10 +202,21 @@ export async function updateProject(id: string, updates: Partial<{
     kind: 'project' | 'story';
 }>) {
     const supabase = getSupabaseServerClient();
+    const mappedUpdates: Record<string, unknown> = {};
+
+    if (typeof updates.title !== 'undefined') mappedUpdates.title = updates.title;
+    if (typeof updates.slug !== 'undefined') mappedUpdates.slug = updates.slug;
+    if (typeof updates.description !== 'undefined') mappedUpdates.description = updates.description ?? null;
+    if (typeof updates.location !== 'undefined') mappedUpdates.location = updates.location ?? null;
+    if (typeof updates.featuredImage !== 'undefined') mappedUpdates.featured_image = updates.featuredImage ?? null;
+    if (typeof updates.published !== 'undefined') mappedUpdates.published = updates.published;
+    if (typeof updates.tags !== 'undefined') mappedUpdates.tags = updates.tags ?? [];
+    if (typeof updates.kind !== 'undefined') mappedUpdates.kind = updates.kind;
+
     const { data, error } = await supabase
         .from('projects')
         .update({
-            ...updates,
+            ...mappedUpdates,
             updated_at: new Date().toISOString()
         })
         .eq('id', id)
@@ -392,7 +414,102 @@ export async function getProjectWithBlocks(id: string) {
         featuredImage: project.featured_image,
         createdAt: project.created_at,
         updatedAt: project.updated_at,
+        kind: project.kind ?? 'project',
         contentBlocks
     };
+}
+
+export async function getProjectsUsingImage(imageUrl: string) {
+    if (!imageUrl) {
+        return [];
+    }
+
+    const supabase = getSupabaseServerClient();
+    const projectIds = new Set<string>();
+    const projectsMap = new Map<string, { id: string; title: string | null; slug: string | null }>();
+
+    const [{ data: singleImageBlocks, error: singleImageError }, { data: galleryBlocks, error: galleryError }] = await Promise.all([
+        supabase
+            .from('content_blocks')
+            .select('project_id')
+            .eq('src', imageUrl),
+        supabase
+            .from('content_blocks')
+            .select('project_id, images')
+            .not('images', 'is', null)
+    ]);
+
+    if (singleImageError) throw singleImageError;
+    if (galleryError) throw galleryError;
+
+    singleImageBlocks?.forEach(block => {
+        const id = typeof block.project_id === 'string' ? block.project_id : null;
+        if (id) projectIds.add(id);
+    });
+
+    galleryBlocks?.forEach(block => {
+        const id = typeof block.project_id === 'string' ? block.project_id : null;
+        if (!id) return;
+
+        let imagesData: unknown = block.images;
+        if (typeof imagesData === 'string') {
+            try {
+                imagesData = JSON.parse(imagesData);
+            } catch (error) {
+                console.warn('Failed to parse images JSON for block', block.project_id, error);
+                imagesData = null;
+            }
+        }
+        if (Array.isArray(imagesData)) {
+            const match = imagesData.some((img: unknown) => {
+                if (typeof img === 'object' && img !== null && 'src' in img) {
+                    const value = (img as { src?: unknown }).src;
+                    return typeof value === 'string' && value === imageUrl;
+                }
+                return false;
+            });
+            if (match) {
+                projectIds.add(id);
+            }
+        }
+    });
+
+    if (projectIds.size > 0) {
+        const { data: projectsData, error: projectsError } = await supabase
+            .from('projects')
+            .select('id, title, slug')
+            .in('id', Array.from(projectIds));
+
+        if (projectsError) throw projectsError;
+
+        projectsData?.forEach(project => {
+            if (typeof project.id === 'string') {
+                projectsMap.set(project.id, {
+                    id: project.id,
+                    title: project.title ?? null,
+                    slug: project.slug ?? null
+                });
+            }
+        });
+    }
+
+    const { data: featuredProjects, error: featuredError } = await supabase
+        .from('projects')
+        .select('id, title, slug')
+        .eq('featured_image', imageUrl);
+
+    if (featuredError) throw featuredError;
+
+    featuredProjects?.forEach(project => {
+        if (typeof project.id === 'string') {
+            projectsMap.set(project.id, {
+                id: project.id,
+                title: project.title ?? null,
+                slug: project.slug ?? null
+            });
+        }
+    });
+
+    return Array.from(projectsMap.values());
 }
 

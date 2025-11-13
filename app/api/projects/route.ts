@@ -299,7 +299,8 @@ export async function POST(request: NextRequest) {
       location: projectData.location,
       featuredImage: projectData.featuredImage,
       published: projectData.published || false,
-      tags: projectData.tags
+      tags: projectData.tags,
+      kind: projectData.kind
     });
 
     // Create content blocks if provided

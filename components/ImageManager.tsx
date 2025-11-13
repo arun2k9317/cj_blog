@@ -42,6 +42,42 @@ export default function ImageManager({
     },
   });
 
+  type ImageUsageProject = {
+    id: string;
+    title?: string | null;
+    slug?: string | null;
+  };
+
+  const describeProjects = useCallback(
+    (projects: ImageUsageProject[]) =>
+      projects
+        .map((project) => project.title || project.slug || project.id)
+        .filter(Boolean)
+        .join(", "),
+    []
+  );
+
+  const fetchImageUsage = useCallback(async (url: string) => {
+    try {
+      const response = await fetch(
+        `/api/image-usage?url=${encodeURIComponent(url)}`
+      );
+      if (!response.ok) {
+        console.error(
+          `Failed to check image usage. Status: ${response.status}`
+        );
+        return null;
+      }
+      const data = (await response.json()) as {
+        projects?: ImageUsageProject[];
+      };
+      return data.projects ?? [];
+    } catch (error) {
+      console.error("Failed to check image usage:", error);
+      return null;
+    }
+  }, []);
+
   const handleImageUpload = useCallback(
     async (url: string, filename: string) => {
       // Image is already added via onSuccess callback
@@ -59,21 +95,44 @@ export default function ImageManager({
     console.error("Upload error:", error);
   }, []);
 
-  const handleDeleteImage = async (url: string) => {
-    if (confirm("Are you sure you want to delete this image?")) {
-      const success = await deleteImage(url);
-      if (success) {
-        const newImages = images.filter((img) => img !== url);
-        setImages(newImages);
-        setSelectedImages((prev) => {
-          const newSelected = new Set(prev);
-          newSelected.delete(url);
-          return newSelected;
-        });
-        onImagesChange?.(newImages);
+  const handleDeleteImage = useCallback(
+    async (url: string) => {
+      const usage = await fetchImageUsage(url);
+      if (usage === null) {
+        alert(
+          "Unable to verify whether this image is used in a project. Please try again later."
+        );
+        return;
       }
-    }
-  };
+
+      if (usage.length > 0) {
+        const projectList = describeProjects(usage);
+        alert(
+          `This image is already part of ${
+            usage.length === 1 ? "a project" : "projects"
+          }: ${projectList}. Remove it from the project first, then try deleting again.`
+        );
+        return;
+      }
+
+      if (confirm("Are you sure you want to delete this image?")) {
+        const success = await deleteImage(url);
+        if (success) {
+          setImages((prev) => {
+            const updated = prev.filter((img) => img !== url);
+            onImagesChange?.(updated);
+            return updated;
+          });
+          setSelectedImages((prev) => {
+            const newSelected = new Set(prev);
+            newSelected.delete(url);
+            return newSelected;
+          });
+        }
+      }
+    },
+    [deleteImage, describeProjects, fetchImageUsage, onImagesChange]
+  );
 
   const handleSelectImage = (url: string) => {
     setSelectedImages((prev) => {
@@ -87,38 +146,94 @@ export default function ImageManager({
     });
   };
 
-  const handleDeleteSelected = async () => {
+  const handleDeleteSelected = useCallback(async () => {
     if (selectedImages.size === 0) return;
 
+    const urls = Array.from(selectedImages);
+    const usageResults = await Promise.all(
+      urls.map(async (url) => ({
+        url,
+        projects: await fetchImageUsage(url),
+      }))
+    );
+
+    if (usageResults.some((result) => result.projects === null)) {
+      alert(
+        "Unable to verify whether some images are used in projects. Please try again later."
+      );
+      return;
+    }
+
+    const blocked = usageResults.filter(
+      (result) => (result.projects?.length ?? 0) > 0
+    );
+
+    if (blocked.length > 0) {
+      const message = blocked
+        .map((result) => {
+          const projectList = describeProjects(result.projects ?? []);
+          return projectList
+            ? `• Used in: ${projectList}`
+            : "• Used in a project.";
+        })
+        .join("\n");
+      alert(
+        `The following images are already part of existing projects and cannot be deleted yet:\n${message}\nRemove them from those projects before trying again.`
+      );
+    }
+
+    const deletable = usageResults
+      .filter((result) => (result.projects?.length ?? 0) === 0)
+      .map((result) => result.url);
+
+    if (deletable.length === 0) {
+      return;
+    }
+
     if (
-      confirm(
-        `Are you sure you want to delete ${selectedImages.size} selected images?`
+      !confirm(
+        `Are you sure you want to delete ${deletable.length} selected ${
+          deletable.length === 1 ? "image" : "images"
+        }?`
       )
     ) {
-      const urlsToDelete = Array.from(selectedImages);
-      const deletionResults = await Promise.all(
-        urlsToDelete.map((url) => deleteImage(url))
-      );
-
-      const failures = urlsToDelete.filter(
-        (_, index) => !deletionResults[index]
-      );
-
-      if (failures.length > 0) {
-        alert(
-          `Failed to delete ${failures.length} ${
-            failures.length === 1 ? "image" : "images"
-          }. Please try again.`
-        );
-        return;
-      }
-
-      const newImages = images.filter((img) => !selectedImages.has(img));
-      setImages(newImages);
-      setSelectedImages(new Set());
-      onImagesChange?.(newImages);
+      return;
     }
-  };
+
+    const deletionResults = await Promise.all(
+      deletable.map((url) => deleteImage(url))
+    );
+
+    const succeeded = deletable.filter((_, index) => deletionResults[index]);
+    const failed = deletable.filter((_, index) => !deletionResults[index]);
+
+    if (succeeded.length > 0) {
+      setImages((prev) => {
+        const updated = prev.filter((img) => !succeeded.includes(img));
+        onImagesChange?.(updated);
+        return updated;
+      });
+      setSelectedImages((prev) => {
+        const next = new Set(prev);
+        succeeded.forEach((url) => next.delete(url));
+        return next;
+      });
+    }
+
+    if (failed.length > 0) {
+      alert(
+        `Failed to delete ${failed.length} ${
+          failed.length === 1 ? "image" : "images"
+        }. Please try again.`
+      );
+    }
+  }, [
+    deleteImage,
+    describeProjects,
+    fetchImageUsage,
+    onImagesChange,
+    selectedImages,
+  ]);
 
   const canUploadMore = images.length < maxImages;
 
@@ -194,7 +309,7 @@ export default function ImageManager({
                     className="delete-btn"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDeleteImage(url);
+                      void handleDeleteImage(url);
                     }}
                     title="Delete image"
                   >

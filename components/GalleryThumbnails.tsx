@@ -58,6 +58,42 @@ export default function GalleryThumbnails({
   const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
   const [deleting, setDeleting] = useState(false);
 
+  type ImageUsageProject = {
+    id: string;
+    title?: string | null;
+    slug?: string | null;
+  };
+
+  const describeProjects = useCallback(
+    (projects: ImageUsageProject[]) =>
+      projects
+        .map((project) => project.title || project.slug || project.id)
+        .filter(Boolean)
+        .join(", "),
+    []
+  );
+
+  const fetchImageUsage = useCallback(async (url: string) => {
+    try {
+      const response = await fetch(
+        `/api/image-usage?url=${encodeURIComponent(url)}`
+      );
+      if (!response.ok) {
+        console.error(
+          `Failed to check image usage. Status: ${response.status}`
+        );
+        return null;
+      }
+      const data = (await response.json()) as {
+        projects?: ImageUsageProject[];
+      };
+      return data.projects ?? [];
+    } catch (error) {
+      console.error("Failed to check image usage:", error);
+      return null;
+    }
+  }, []);
+
   const fetchGalleryImages = useCallback(async () => {
     setLoading(true);
     try {
@@ -117,16 +153,56 @@ export default function GalleryThumbnails({
   const handleDeleteSelected = async () => {
     if (selectedImages.size === 0) return;
 
+    const urls = Array.from(selectedImages);
+    const usageResults = await Promise.all(
+      urls.map(async (url) => ({
+        url,
+        projects: await fetchImageUsage(url),
+      }))
+    );
+
+    if (usageResults.some((result) => result.projects === null)) {
+      alert(
+        "Unable to verify whether some images are used in projects. Please try again later."
+      );
+      return;
+    }
+
+    const blocked = usageResults.filter(
+      (result) => (result.projects?.length ?? 0) > 0
+    );
+
+    if (blocked.length > 0) {
+      const message = blocked
+        .map((result) => {
+          const projectList = describeProjects(result.projects ?? []);
+          return projectList
+            ? `• Used in: ${projectList}`
+            : "• Used in a project.";
+        })
+        .join("\n");
+      alert(
+        `The following images are already part of existing projects and cannot be deleted yet:\n${message}\nRemove them from those projects before trying again.`
+      );
+    }
+
+    const deletable = usageResults
+      .filter((result) => (result.projects?.length ?? 0) === 0)
+      .map((result) => result.url);
+
+    if (deletable.length === 0) {
+      return;
+    }
+
     const confirmMessage = `Are you sure you want to delete ${
-      selectedImages.size
+      deletable.length
     } ${
-      selectedImages.size === 1 ? "image" : "images"
+      deletable.length === 1 ? "image" : "images"
     }? This action cannot be undone.`;
     if (!confirm(confirmMessage)) return;
 
     setDeleting(true);
-    const urlsToDelete = Array.from(selectedImages);
-    const deletePromises = urlsToDelete.map((url) =>
+    const deletePromises = deletable.map((url) =>
       fetch("/api/delete-image", {
         method: "DELETE",
         headers: {
@@ -142,7 +218,7 @@ export default function GalleryThumbnails({
 
       results.forEach((result, index) => {
         if (!result.ok) {
-          failed.push(urlsToDelete[index]);
+          failed.push(deletable[index]);
         }
       });
 
@@ -154,8 +230,12 @@ export default function GalleryThumbnails({
         );
       } else {
         // Remove deleted images from state
-        setImages((prev) => prev.filter((img) => !selectedImages.has(img.url)));
-        setSelectedImages(new Set());
+        setImages((prev) => prev.filter((img) => !deletable.includes(img.url)));
+        setSelectedImages((prev) => {
+          const next = new Set(prev);
+          deletable.forEach((url) => next.delete(url));
+          return next;
+        });
         setDeleteMode(false);
       }
     } catch (error) {
