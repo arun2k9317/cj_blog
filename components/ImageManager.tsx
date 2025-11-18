@@ -14,6 +14,8 @@ interface ImageManagerProps {
   showImagesGrid?: boolean;
   className?: string;
   onUploadButtonChange?: (config: UploadButtonConfig | null) => void;
+  availableFolders?: string[]; // Available folders for gallery uploads
+  onFoldersChange?: (folders: string[]) => void; // Callback when folders list changes
 }
 
 export default function ImageManager({
@@ -24,6 +26,8 @@ export default function ImageManager({
   showImagesGrid = true,
   className = "",
   onUploadButtonChange,
+  availableFolders = [],
+  onFoldersChange,
 }: ImageManagerProps) {
   const [images, setImages] = useState<string[]>([...existingImages].reverse());
   const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
@@ -248,6 +252,8 @@ export default function ImageManager({
             onUploadError={handleImageUploadError}
             className="upload-component"
             onUploadButtonChange={onUploadButtonChange}
+            availableFolders={availableFolders}
+            onFoldersChange={onFoldersChange}
           />
 
           {uploadState.error && (

@@ -2,9 +2,18 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
-import { IconUpload } from "@tabler/icons-react";
-import { Button, Group, SimpleGrid, Text } from "@mantine/core";
+import { IconUpload, IconFolderPlus } from "@tabler/icons-react";
+import {
+  Button,
+  Group,
+  SimpleGrid,
+  Text,
+  Select,
+  TextInput,
+  Stack,
+} from "@mantine/core";
 import type { ButtonProps } from "@mantine/core";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface ImageUploadProps {
   projectId: string;
@@ -16,6 +25,8 @@ interface ImageUploadProps {
   multiple?: boolean; // Allow multiple file selection
   maxFiles?: number; // Maximum number of files allowed
   onUploadButtonChange?: (config: UploadButtonConfig | null) => void;
+  availableFolders?: string[]; // Available folders for gallery uploads
+  onFoldersChange?: (folders: string[]) => void; // Callback when folders list changes
 }
 
 export interface UploadButtonConfig {
@@ -57,7 +68,11 @@ export default function ImageUpload({
   multiple = true,
   maxFiles = 20,
   onUploadButtonChange,
+  availableFolders = [],
+  onFoldersChange,
 }: ImageUploadProps) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const acceptedTypes = useMemo<string[]>(() => {
     return acceptedTypesProp ?? [...DEFAULT_ACCEPTED_TYPES];
   }, [acceptedTypesProp]);
@@ -69,6 +84,12 @@ export default function ImageUpload({
   const [selectedFiles, setSelectedFilesState] = useState<SelectedFile[]>([]);
   const selectedFilesRef = useRef<SelectedFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Folder selection state (only for gallery uploads)
+  const isGalleryUpload = projectId === "gallery";
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
+  const [showNewFolderInput, setShowNewFolderInput] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
 
   const setSelectedFiles = useCallback(
     (value: SelectedFile[] | ((prev: SelectedFile[]) => SelectedFile[])) => {
@@ -157,6 +178,11 @@ export default function ImageUpload({
             .replace(/[^a-zA-Z0-9]/g, "-");
           formData.append("imageName", imageName);
 
+          // Add folder parameter for gallery uploads
+          if (isGalleryUpload && selectedFolder) {
+            formData.append("folder", selectedFolder);
+          }
+
           const response = await fetch("/api/upload", {
             method: "POST",
             body: formData,
@@ -190,7 +216,15 @@ export default function ImageUpload({
         setUploadState({ uploading: false, progress: 0 });
       }, 1000);
     },
-    [onUploadComplete, onUploadError, projectId, validateFile, setSelectedFiles]
+    [
+      onUploadComplete,
+      onUploadError,
+      projectId,
+      validateFile,
+      setSelectedFiles,
+      isGalleryUpload,
+      selectedFolder,
+    ]
   );
 
   const handleDrop = (e: React.DragEvent) => {
@@ -294,6 +328,31 @@ export default function ImageUpload({
     fileInputRef.current?.click();
   }, []);
 
+  const handleCreateFolder = useCallback(() => {
+    if (!newFolderName.trim()) {
+      onUploadError?.("Folder name cannot be empty");
+      return;
+    }
+
+    const sanitized = newFolderName.trim().replace(/[^a-zA-Z0-9\s\-_]/g, "");
+    if (sanitized.length === 0 || sanitized.length > 50) {
+      onUploadError?.(
+        "Folder name must be 1-50 characters and contain only letters, numbers, spaces, hyphens, and underscores"
+      );
+      return;
+    }
+
+    // Add to available folders if not already present
+    if (!availableFolders.includes(sanitized)) {
+      const updatedFolders = [...availableFolders, sanitized].sort();
+      onFoldersChange?.(updatedFolders);
+    }
+
+    setSelectedFolder(sanitized);
+    setNewFolderName("");
+    setShowNewFolderInput(false);
+  }, [newFolderName, availableFolders, onFoldersChange, onUploadError]);
+
   const handleUploadClick = useCallback(() => {
     const currentFiles = selectedFilesRef.current;
     if (currentFiles.length > 0) {
@@ -392,6 +451,101 @@ export default function ImageUpload({
 
   return (
     <div className={`image-upload-container ${className}`}>
+      {/* Folder selection UI for gallery uploads */}
+      {isGalleryUpload && (
+        <Stack gap="xs" mb="sm">
+          <Group gap="xs" align="flex-end" wrap="nowrap">
+            <Select
+              placeholder="Select folder"
+              label="Folder"
+              data={availableFolders.map((f) => ({ value: f, label: f }))}
+              value={selectedFolder}
+              onChange={(value) => setSelectedFolder(value)}
+              style={{ flex: 1 }}
+              size="xs"
+              clearable
+              searchable
+              styles={{
+                input: {
+                  color: isDark
+                    ? "var(--mantine-color-gray-0)"
+                    : "var(--mantine-color-dark-9)",
+                  backgroundColor: isDark
+                    ? "var(--mantine-color-dark-5)"
+                    : "var(--mantine-color-white)",
+                },
+                dropdown: {
+                  backgroundColor: isDark
+                    ? "var(--mantine-color-dark-6)"
+                    : "var(--mantine-color-white)",
+                },
+                option: {
+                  color: isDark
+                    ? "var(--mantine-color-gray-0)"
+                    : "var(--mantine-color-dark-9)",
+                  backgroundColor: isDark
+                    ? "var(--mantine-color-dark-6)"
+                    : "var(--mantine-color-white)",
+                  "&:hover": {
+                    backgroundColor: isDark
+                      ? "var(--mantine-color-dark-5)"
+                      : "var(--mantine-color-gray-1)",
+                  },
+                },
+              }}
+            />
+            <Button
+              variant="outline"
+              size="xs"
+              leftSection={<IconFolderPlus size={16} />}
+              onClick={() => {
+                setShowNewFolderInput(!showNewFolderInput);
+                if (showNewFolderInput) {
+                  setNewFolderName("");
+                }
+              }}
+            >
+              New Folder
+            </Button>
+          </Group>
+          {showNewFolderInput && (
+            <Group gap="xs" align="flex-end" wrap="nowrap">
+              <TextInput
+                placeholder="Enter folder name"
+                label="Folder Name"
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleCreateFolder();
+                  }
+                }}
+                style={{ flex: 1 }}
+                size="xs"
+              />
+              <Button
+                size="xs"
+                variant="filled"
+                onClick={handleCreateFolder}
+                disabled={!newFolderName.trim()}
+              >
+                Create
+              </Button>
+              <Button
+                size="xs"
+                variant="subtle"
+                onClick={() => {
+                  setShowNewFolderInput(false);
+                  setNewFolderName("");
+                }}
+              >
+                Cancel
+              </Button>
+            </Group>
+          )}
+        </Stack>
+      )}
       <div className="upload-scrollable">
         <div
           className={`upload-area ${dragOver ? "drag-over" : ""} ${
@@ -490,7 +644,7 @@ export default function ImageUpload({
           ) : (
             <div className="upload-content">
               <div className="upload-icon">
-                <IconUpload size={48} />
+                <IconUpload size={36} />
               </div>
               <p className="upload-text">
                 {multiple
@@ -528,37 +682,47 @@ export default function ImageUpload({
         }
 
         .upload-area {
-          border: 2px dashed #d1d5db;
+          border: 2px dashed
+            ${isDark ? "var(--mantine-color-dark-4)" : "#d1d5db"};
           border-radius: 12px;
-          padding: 1.75rem 1.5rem;
+          padding: 1rem;
           text-align: center;
           cursor: pointer;
           transition: all 0.2s ease;
-          background-color: #f9fafb;
-          min-height: 100px;
+          background-color: ${isDark
+            ? "var(--mantine-color-dark-5)"
+            : "#f9fafb"};
+          min-height: 80px;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: flex-start;
           flex: 1;
-          gap: 1rem;
+          gap: 0.75rem;
         }
 
         .upload-area:hover {
-          border-color: #3b82f6;
-          background-color: #eff6ff;
+          border-color: ${isDark ? "var(--mantine-color-blue-6)" : "#3b82f6"};
+          background-color: ${isDark
+            ? "var(--mantine-color-dark-4)"
+            : "#eff6ff"};
         }
 
         .upload-area.drag-over {
-          border-color: #3b82f6;
-          background-color: #dbeafe;
+          border-color: ${isDark ? "var(--mantine-color-blue-6)" : "#3b82f6"};
+          background-color: ${isDark
+            ? "var(--mantine-color-dark-3)"
+            : "#dbeafe"};
           transform: scale(1.01);
-          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+          box-shadow: 0 4px 12px
+            ${isDark ? "rgba(59, 130, 246, 0.3)" : "rgba(59, 130, 246, 0.15)"};
         }
 
         .upload-area.uploading {
-          border-color: #3b82f6;
-          background-color: #eff6ff;
+          border-color: ${isDark ? "var(--mantine-color-blue-6)" : "#3b82f6"};
+          background-color: ${isDark
+            ? "var(--mantine-color-dark-4)"
+            : "#eff6ff"};
           cursor: not-allowed;
         }
 
@@ -566,23 +730,23 @@ export default function ImageUpload({
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 1.25rem;
+          gap: 0.75rem;
         }
 
         .upload-icon {
-          color: #6b7280;
+          color: ${isDark ? "var(--mantine-color-gray-4)" : "#6b7280"};
         }
 
         .upload-text {
-          font-size: 1rem;
+          font-size: 0.875rem;
           font-weight: 500;
-          color: #111827;
+          color: ${isDark ? "var(--mantine-color-gray-0)" : "#111827"};
           margin: 0;
         }
 
         .upload-subtext {
-          font-size: 0.875rem;
-          color: #6b7280;
+          font-size: 0.75rem;
+          color: ${isDark ? "var(--mantine-color-gray-4)" : "#6b7280"};
           margin: 0;
         }
 
@@ -666,7 +830,7 @@ export default function ImageUpload({
         .preview-count {
           font-size: 0.875rem;
           font-weight: 500;
-          color: #111827;
+          color: ${isDark ? "var(--mantine-color-gray-0)" : "#111827"};
           margin: 0;
         }
 
@@ -686,8 +850,9 @@ export default function ImageUpload({
           aspect-ratio: 1;
           border-radius: 6px;
           overflow: hidden;
-          border: 1px solid #e5e7eb;
-          background: #f9fafb;
+          border: 1px solid
+            ${isDark ? "var(--mantine-color-dark-4)" : "#e5e7eb"};
+          background: ${isDark ? "var(--mantine-color-dark-4)" : "#f9fafb"};
         }
 
         .preview-image-wrapper .preview-image {
@@ -720,7 +885,7 @@ export default function ImageUpload({
 
         .preview-filename {
           font-size: 0.7rem;
-          color: #6b7280;
+          color: ${isDark ? "var(--mantine-color-gray-4)" : "#6b7280"};
           margin: 0;
           text-align: center;
           overflow: hidden;
