@@ -291,17 +291,30 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the project
-    const newProject = await createProject({
-      id: projectData.id || projectData.slug,
-      title: projectData.title,
-      slug: projectData.slug,
-      description: projectData.description,
-      location: projectData.location,
-      featuredImage: projectData.featuredImage,
-      published: projectData.published || false,
-      tags: projectData.tags,
-      kind: projectData.kind
-    });
+    let newProject;
+    try {
+      newProject = await createProject({
+        id: projectData.id || projectData.slug,
+        title: projectData.title,
+        slug: projectData.slug,
+        description: projectData.description,
+        location: projectData.location,
+        featuredImage: projectData.featuredImage,
+        published: projectData.published || false,
+        tags: projectData.tags,
+        kind: projectData.kind
+      });
+    } catch (error: any) {
+      // Handle duplicate key error
+      if (error?.code === '23505' || error?.message?.includes('duplicate key')) {
+        const duplicateField = error?.details?.includes('slug') ? 'slug' : 'ID';
+        return NextResponse.json(
+          { error: `A project with this ${duplicateField} already exists. Please use a different slug. If you're editing, make sure you're using the correct project ID.` },
+          { status: 409 }
+        );
+      }
+      throw error;
+    }
 
     // Create content blocks if provided
     if (projectData.contentBlocks && projectData.contentBlocks.length > 0) {
@@ -326,7 +339,19 @@ export async function POST(request: NextRequest) {
           text: 'text' in block ? block.text : undefined,
           author: 'author' in block ? block.author : undefined,
           style: 'style' in block ? block.style : undefined,
-          height: 'height' in block ? block.height : undefined
+          height: 'height' in block ? block.height : undefined,
+          subtitle: 'subtitle' in block ? block.subtitle : undefined,
+          lineHeight: 'lineHeight' in block ? block.lineHeight : undefined,
+          maxWidth: 'maxWidth' in block ? block.maxWidth : undefined,
+          size: 'size' in block ? block.size : undefined,
+          aspectRatioLock: 'aspectRatioLock' in block ? block.aspectRatioLock : undefined,
+          placement: 'placement' in block ? block.placement : undefined,
+          italic: 'italic' in block ? block.italic : undefined,
+          spacingTop: 'spacingTop' in block ? block.spacingTop : undefined,
+          spacingBottom: 'spacingBottom' in block ? block.spacingBottom : undefined,
+          date: 'date' in block ? block.date : undefined,
+          credits: 'credits' in block ? block.credits : undefined,
+          pageWidth: 'pageWidth' in block ? block.pageWidth : undefined
         });
       }
     }

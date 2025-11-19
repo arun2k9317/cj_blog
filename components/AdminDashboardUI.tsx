@@ -238,6 +238,7 @@ export default function AdminDashboardUI({
                       : null
                   }
                   published={p.published ?? null}
+                  kind="project"
                 />
               ))}
             </SimpleGrid>
@@ -357,6 +358,7 @@ export default function AdminDashboardUI({
                       : null
                   }
                   published={s.published ?? null}
+                  kind="story"
                 />
               ))}
             </SimpleGrid>
