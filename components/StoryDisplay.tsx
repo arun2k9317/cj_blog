@@ -1,5 +1,6 @@
 "use client";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMemo } from "react";
 import Image from "next/image";
 import { Stack, Text, Container } from "@mantine/core";

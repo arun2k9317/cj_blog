@@ -56,6 +56,7 @@ export async function POST() {
           continue;
         }
         if (project.kind) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { kind: _kind, ...withoutKind } = project;
           const fallbackProject: SeedProject = { ...withoutKind };
           await createProject(fallbackProject);

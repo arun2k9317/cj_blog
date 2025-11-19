@@ -304,10 +304,11 @@ export async function POST(request: NextRequest) {
         tags: projectData.tags,
         kind: projectData.kind
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Handle duplicate key error
-      if (error?.code === '23505' || error?.message?.includes('duplicate key')) {
-        const duplicateField = error?.details?.includes('slug') ? 'slug' : 'ID';
+      const err = error as { code?: string; message?: string; details?: string };
+      if (err?.code === '23505' || err?.message?.includes('duplicate key')) {
+        const duplicateField = err?.details?.includes('slug') ? 'slug' : 'ID';
         return NextResponse.json(
           { error: `A project with this ${duplicateField} already exists. Please use a different slug. If you're editing, make sure you're using the correct project ID.` },
           { status: 409 }

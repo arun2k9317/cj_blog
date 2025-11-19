@@ -288,7 +288,7 @@ export default function ProjectCard({
             size="sm"
             c={isDark ? "var(--mantine-color-gray-0)" : "var(--mantine-color-dark-9)"}
           >
-            Are you sure you want to delete <strong>"{title}"</strong>? This action cannot be undone and will permanently delete:
+            Are you sure you want to delete <strong>&ldquo;{title}&rdquo;</strong>? This action cannot be undone and will permanently delete:
           </Text>
           <Stack gap="xs" pl="md">
             <Text
