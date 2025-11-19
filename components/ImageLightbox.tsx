@@ -16,6 +16,7 @@ import {
 export interface ImageLightboxProps {
   images: string[];
   currentIndex: number;
+  imageCaptions?: (string | undefined)[]; // Optional array of captions for each image
   projectInfo?: {
     title: string;
     description?: string;
@@ -30,6 +31,7 @@ export interface ImageLightboxProps {
 export default function ImageLightbox({
   images,
   currentIndex: initialIndex,
+  imageCaptions = [],
   projectInfo,
   isOpen,
   onClose,
@@ -373,17 +375,30 @@ export default function ImageLightbox({
       </div>
 
       {/* Info Panel */}
-      {showInfo && projectInfo && (
+      {showInfo && (
         <div className="lightbox-info-panel">
           <div className="lightbox-info-content">
-            <h2 className="lightbox-info-title">{projectInfo.title}</h2>
-            {projectInfo.description && (
+            {projectInfo?.description && (
               <p className="lightbox-info-description">
                 {projectInfo.description}
               </p>
             )}
-            {projectInfo.location && (
-              <p className="lightbox-info-location">{projectInfo.location}</p>
+            {/* Show current image caption if available */}
+            {imageCaptions[currentIndex] && (
+              <div className="lightbox-image-caption">
+                <p
+                  className="lightbox-info-description"
+                  style={{
+                    marginTop: projectInfo?.description ? "1rem" : "0",
+                    paddingTop: projectInfo?.description ? "1rem" : "0",
+                    borderTop: projectInfo?.description
+                      ? "1px solid rgba(255, 255, 255, 0.2)"
+                      : "none",
+                  }}
+                >
+                  {imageCaptions[currentIndex]}
+                </p>
+              </div>
             )}
           </div>
         </div>

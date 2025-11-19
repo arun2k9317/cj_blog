@@ -7,7 +7,7 @@ export default function Art404() {
       <div className="text-center">
         <Image
           src="/logo.png"
-          alt="NJ Photography Logo"
+          alt="Nitin Jamdar"
           width={120}
           height={120}
           className="mx-auto mb-4"

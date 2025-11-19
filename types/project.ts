@@ -68,6 +68,7 @@ export interface Project {
   updatedAt: string;
   published: boolean;
   tags?: string[];
+  kind?: 'project' | 'story';
 }
 
 export interface ProjectTemplate {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import Image from "next/image";
 // Lightbox is controlled globally by AppShell
 
@@ -43,8 +43,6 @@ export default function Home() {
     ],
     []
   );
-
-  const range = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
 
   const activeProject: Series = useMemo(() => projects[0], [projects]);
 

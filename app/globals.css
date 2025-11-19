@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@mantine/core/styles.css";
 
 /* EthosNova Font Face Declarations */
 @font-face {
@@ -571,6 +572,71 @@ body {
   background: var(--background);
   transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     background-color 0.3s ease;
+}
+
+/* Admin dashboard typography */
+.admin-dashboard {
+  font-family: var(--font-primary);
+  color: var(--gray-900);
+}
+
+.admin-dashboard .mantine-Title-root {
+  font-family: var(--font-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.admin-dashboard .mantine-Title-root[data-order="2"] {
+  font-size: 15px;
+}
+
+.admin-dashboard .mantine-Title-root[data-order="3"] {
+  font-size: 14px;
+}
+
+.admin-dashboard .mantine-Title-root[data-order="4"] {
+  font-size: 13px;
+}
+
+.admin-dashboard .mantine-Text-root {
+  font-family: var(--font-primary);
+  letter-spacing: 0.04em;
+  color: var(--gray-700);
+}
+
+.admin-dashboard .mantine-Text-root[data-size="xs"] {
+  font-size: 12px;
+}
+
+.admin-dashboard .mantine-Text-root[data-size="sm"] {
+  font-size: 13px;
+}
+
+.admin-dashboard .mantine-Text-root[data-size="md"] {
+  font-size: 14px;
+}
+
+.admin-dashboard .mantine-Button-root {
+  font-family: var(--font-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.admin-dashboard .mantine-Badge-root {
+  font-family: var(--font-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.admin-dashboard .mantine-Paper-root,
+.admin-dashboard .mantine-Card-root {
+  border-radius: 14px;
 }
 /* Collapsed sidebar state applied via wrapper class on layout */
 .main-layout.sidebar-collapsed .sidebar {

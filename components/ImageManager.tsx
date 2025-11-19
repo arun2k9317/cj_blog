@@ -1,16 +1,21 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
-import { useImageUpload } from '../hooks/useImageUpload';
-import ImageUpload from './ImageUpload';
+import { useCallback, useState } from "react";
+import type { UploadButtonConfig } from "./ImageUpload";
+import Image from "next/image";
+import { useImageUpload } from "../hooks/useImageUpload";
+import ImageUpload from "./ImageUpload";
 
 interface ImageManagerProps {
   projectId: string;
   existingImages?: string[];
   onImagesChange?: (images: string[]) => void;
   maxImages?: number;
+  showImagesGrid?: boolean;
   className?: string;
+  onUploadButtonChange?: (config: UploadButtonConfig | null) => void;
+  availableFolders?: string[]; // Available folders for gallery uploads
+  onFoldersChange?: (folders: string[]) => void; // Callback when folders list changes
 }
 
 export default function ImageManager({
@@ -18,56 +23,123 @@ export default function ImageManager({
   existingImages = [],
   onImagesChange,
   maxImages = 20,
-  className = ''
+  showImagesGrid = true,
+  className = "",
+  onUploadButtonChange,
+  availableFolders = [],
+  onFoldersChange,
 }: ImageManagerProps) {
-  const [images, setImages] = useState<string[]>(existingImages);
+  const [images, setImages] = useState<string[]>([...existingImages].reverse());
   const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
 
-  const {
-    uploadState,
-    uploadedImages,
-    uploadImage,
-    deleteImage,
-    clearError
-  } = useImageUpload({
+  const { uploadState, deleteImage, clearError } = useImageUpload({
     projectId,
     onSuccess: (uploadedImage) => {
-      const newImages = [...images, uploadedImage.url];
-      setImages(newImages);
-      onImagesChange?.(newImages);
+      setImages((prev) => {
+        const updated = [uploadedImage.url, ...prev];
+        onImagesChange?.(updated);
+        return updated;
+      });
     },
     onError: (error) => {
-      console.error('Upload error:', error);
-    }
+      console.error("Upload error:", error);
+    },
   });
 
-  const handleImageUpload = async (url: string, filename: string) => {
-    // Image is already added via onSuccess callback
-    console.log('Image uploaded successfully:', filename);
+  type ImageUsageProject = {
+    id: string;
+    title?: string | null;
+    slug?: string | null;
   };
 
-  const handleImageUploadError = (error: string) => {
-    console.error('Upload error:', error);
-  };
+  const describeProjects = useCallback(
+    (projects: ImageUsageProject[]) =>
+      projects
+        .map((project) => project.title || project.slug || project.id)
+        .filter(Boolean)
+        .join(", "),
+    []
+  );
 
-  const handleDeleteImage = async (url: string) => {
-    if (confirm('Are you sure you want to delete this image?')) {
-      const success = await deleteImage(url);
-      if (success) {
-        const newImages = images.filter(img => img !== url);
-        setImages(newImages);
-        setSelectedImages(prev => {
-          const newSelected = new Set(prev);
-          newSelected.delete(url);
-          return newSelected;
-        });
-        onImagesChange?.(newImages);
+  const fetchImageUsage = useCallback(async (url: string) => {
+    try {
+      const response = await fetch(
+        `/api/image-usage?url=${encodeURIComponent(url)}`
+      );
+      if (!response.ok) {
+        console.error(
+          `Failed to check image usage. Status: ${response.status}`
+        );
+        return null;
       }
+      const data = (await response.json()) as {
+        projects?: ImageUsageProject[];
+      };
+      return data.projects ?? [];
+    } catch (error) {
+      console.error("Failed to check image usage:", error);
+      return null;
     }
-  };
+  }, []);
+
+  const handleImageUpload = useCallback(
+    async (url: string, filename: string) => {
+      // Image is already added via onSuccess callback
+      console.log("Image uploaded successfully:", filename);
+
+      // If this is a gallery upload, dispatch event to refresh thumbnails
+      if (projectId === "gallery") {
+        window.dispatchEvent(new CustomEvent("galleryImageUploaded"));
+      }
+    },
+    [projectId]
+  );
+
+  const handleImageUploadError = useCallback((error: string) => {
+    console.error("Upload error:", error);
+  }, []);
+
+  const handleDeleteImage = useCallback(
+    async (url: string) => {
+      const usage = await fetchImageUsage(url);
+      if (usage === null) {
+        alert(
+          "Unable to verify whether this image is used in a project. Please try again later."
+        );
+        return;
+      }
+
+      if (usage.length > 0) {
+        const projectList = describeProjects(usage);
+        alert(
+          `This image is already part of ${
+            usage.length === 1 ? "a project" : "projects"
+          }: ${projectList}. Remove it from the project first, then try deleting again.`
+        );
+        return;
+      }
+
+      if (confirm("Are you sure you want to delete this image?")) {
+        const success = await deleteImage(url);
+        if (success) {
+          setImages((prev) => {
+            const updated = prev.filter((img) => img !== url);
+            onImagesChange?.(updated);
+            return updated;
+          });
+          setSelectedImages((prev) => {
+            const newSelected = new Set(prev);
+            newSelected.delete(url);
+            return newSelected;
+          });
+        }
+      }
+    },
+    [deleteImage, describeProjects, fetchImageUsage, onImagesChange]
+  );
 
   const handleSelectImage = (url: string) => {
-    setSelectedImages(prev => {
+    setSelectedImages((prev) => {
       const newSelected = new Set(prev);
       if (newSelected.has(url)) {
         newSelected.delete(url);
@@ -78,20 +150,94 @@ export default function ImageManager({
     });
   };
 
-  const handleDeleteSelected = async () => {
+  const handleDeleteSelected = useCallback(async () => {
     if (selectedImages.size === 0) return;
 
-    if (confirm(`Are you sure you want to delete ${selectedImages.size} selected images?`)) {
-      const deletePromises = Array.from(selectedImages).map(url => deleteImage(url));
-      const results = await Promise.all(deletePromises);
-      
-      // Remove successfully deleted images
-      const newImages = images.filter(img => !selectedImages.has(img));
-      setImages(newImages);
-      setSelectedImages(new Set());
-      onImagesChange?.(newImages);
+    const urls = Array.from(selectedImages);
+    const usageResults = await Promise.all(
+      urls.map(async (url) => ({
+        url,
+        projects: await fetchImageUsage(url),
+      }))
+    );
+
+    if (usageResults.some((result) => result.projects === null)) {
+      alert(
+        "Unable to verify whether some images are used in projects. Please try again later."
+      );
+      return;
     }
-  };
+
+    const blocked = usageResults.filter(
+      (result) => (result.projects?.length ?? 0) > 0
+    );
+
+    if (blocked.length > 0) {
+      const message = blocked
+        .map((result) => {
+          const projectList = describeProjects(result.projects ?? []);
+          return projectList
+            ? `• Used in: ${projectList}`
+            : "• Used in a project.";
+        })
+        .join("\n");
+      alert(
+        `The following images are already part of existing projects and cannot be deleted yet:\n${message}\nRemove them from those projects before trying again.`
+      );
+    }
+
+    const deletable = usageResults
+      .filter((result) => (result.projects?.length ?? 0) === 0)
+      .map((result) => result.url);
+
+    if (deletable.length === 0) {
+      return;
+    }
+
+    if (
+      !confirm(
+        `Are you sure you want to delete ${deletable.length} selected ${
+          deletable.length === 1 ? "image" : "images"
+        }?`
+      )
+    ) {
+      return;
+    }
+
+    const deletionResults = await Promise.all(
+      deletable.map((url) => deleteImage(url))
+    );
+
+    const succeeded = deletable.filter((_, index) => deletionResults[index]);
+    const failed = deletable.filter((_, index) => !deletionResults[index]);
+
+    if (succeeded.length > 0) {
+      setImages((prev) => {
+        const updated = prev.filter((img) => !succeeded.includes(img));
+        onImagesChange?.(updated);
+        return updated;
+      });
+      setSelectedImages((prev) => {
+        const next = new Set(prev);
+        succeeded.forEach((url) => next.delete(url));
+        return next;
+      });
+    }
+
+    if (failed.length > 0) {
+      alert(
+        `Failed to delete ${failed.length} ${
+          failed.length === 1 ? "image" : "images"
+        }. Please try again.`
+      );
+    }
+  }, [
+    deleteImage,
+    describeProjects,
+    fetchImageUsage,
+    onImagesChange,
+    selectedImages,
+  ]);
 
   const canUploadMore = images.length < maxImages;
 
@@ -100,14 +246,16 @@ export default function ImageManager({
       {/* Upload Section */}
       {canUploadMore && (
         <div className="upload-section">
-          <h3 className="section-title">Upload Images</h3>
           <ImageUpload
             projectId={projectId}
             onUploadComplete={handleImageUpload}
             onUploadError={handleImageUploadError}
             className="upload-component"
+            onUploadButtonChange={onUploadButtonChange}
+            availableFolders={availableFolders}
+            onFoldersChange={onFoldersChange}
           />
-          
+
           {uploadState.error && (
             <div className="error-message">
               <p>{uploadState.error}</p>
@@ -120,7 +268,7 @@ export default function ImageManager({
       )}
 
       {/* Images Grid */}
-      {images.length > 0 && (
+      {showImagesGrid && images.length > 0 && (
         <div className="images-section">
           <div className="section-header">
             <h3 className="section-title">
@@ -140,7 +288,9 @@ export default function ImageManager({
             {images.map((url, index) => (
               <div
                 key={url}
-                className={`image-item ${selectedImages.has(url) ? 'selected' : ''}`}
+                className={`image-item ${
+                  selectedImages.has(url) ? "selected" : ""
+                }`}
                 onClick={() => handleSelectImage(url)}
               >
                 <div className="image-container">
@@ -150,13 +300,13 @@ export default function ImageManager({
                     width={200}
                     height={150}
                     className="image"
-                    style={{ objectFit: 'cover' }}
+                    style={{ objectFit: "cover" }}
                   />
-                  
+
                   {/* Selection overlay */}
                   <div className="selection-overlay">
                     <div className="selection-checkbox">
-                      {selectedImages.has(url) && '✓'}
+                      {selectedImages.has(url) && "✓"}
                     </div>
                   </div>
 
@@ -165,7 +315,7 @@ export default function ImageManager({
                     className="delete-btn"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDeleteImage(url);
+                      void handleDeleteImage(url);
                     }}
                     title="Delete image"
                   >
@@ -179,7 +329,7 @@ export default function ImageManager({
       )}
 
       {/* No images state */}
-      {images.length === 0 && (
+      {showImagesGrid && images.length === 0 && (
         <div className="no-images">
           <p>No images uploaded yet. Upload your first image above.</p>
         </div>
@@ -205,11 +355,7 @@ export default function ImageManager({
         }
 
         .upload-section {
-          margin-bottom: 2rem;
-          padding: 1.5rem;
-          border: 1px solid #e0e0e0;
-          border-radius: 8px;
-          background-color: #fafafa;
+          width: 100%;
         }
 
         .error-message {

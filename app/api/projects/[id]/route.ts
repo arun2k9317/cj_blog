@@ -53,14 +53,15 @@ export async function PUT(
 
     // Update project metadata
     const { id } = await context.params;
-    const _updatedProject = await updateProject(id, {
+    await updateProject(id, {
       title: projectData.title,
       slug: projectData.slug,
       description: projectData.description,
       location: projectData.location,
       featuredImage: projectData.featuredImage,
       published: projectData.published,
-      tags: projectData.tags
+      tags: projectData.tags,
+      kind: projectData.kind
     });
 
     // Update content blocks if provided
