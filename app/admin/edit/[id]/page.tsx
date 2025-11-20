@@ -1,4 +1,5 @@
 import AdminProjectCreator from "@/components/AdminProjectCreator";
+import AdminStoryCreator from "@/components/AdminStoryCreator";
 import { getProjectWithBlocks, initializeDatabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 
@@ -19,6 +20,10 @@ export default async function AdminEditProjectPage({
   }
 
   const kind = project.kind === "story" ? "story" : "project";
+
+  if (kind === "story") {
+    return <AdminStoryCreator initialProject={project} />;
+  }
 
   return <AdminProjectCreator kind={kind} initialProject={project} />;
 }

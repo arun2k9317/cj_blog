@@ -91,7 +91,19 @@ export async function PUT(
           text: 'text' in block ? block.text : undefined,
           author: 'author' in block ? block.author : undefined,
           style: 'style' in block ? block.style : undefined,
-          height: 'height' in block ? block.height : undefined
+          height: 'height' in block ? block.height : undefined,
+          subtitle: 'subtitle' in block ? block.subtitle : undefined,
+          lineHeight: 'lineHeight' in block ? block.lineHeight : undefined,
+          maxWidth: 'maxWidth' in block ? block.maxWidth : undefined,
+          size: 'size' in block ? block.size : undefined,
+          aspectRatioLock: 'aspectRatioLock' in block ? block.aspectRatioLock : undefined,
+          placement: 'placement' in block ? block.placement : undefined,
+          italic: 'italic' in block ? block.italic : undefined,
+          spacingTop: 'spacingTop' in block ? block.spacingTop : undefined,
+          spacingBottom: 'spacingBottom' in block ? block.spacingBottom : undefined,
+          date: 'date' in block ? block.date : undefined,
+          credits: 'credits' in block ? block.credits : undefined,
+          pageWidth: 'pageWidth' in block ? block.pageWidth : undefined
         });
       }
     }

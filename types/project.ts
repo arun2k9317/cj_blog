@@ -1,6 +1,6 @@
 // Project and Content Block Types
 
-export type ContentBlockType = 'text' | 'image' | 'image-gallery' | 'quote' | 'spacer';
+export type ContentBlockType = 'text' | 'image' | 'image-gallery' | 'quote' | 'spacer' | 'title' | 'description' | 'story-image' | 'image-label' | 'divider' | 'footer';
 
 export interface BaseContentBlock {
   id: string;
@@ -49,12 +49,64 @@ export interface SpacerBlock extends BaseContentBlock {
   height: number; // in pixels or rem
 }
 
+// Story-specific content blocks
+export interface TitleBlock extends BaseContentBlock {
+  type: 'title';
+  text: string;
+  subtitle?: string;
+  fontSize?: 'small' | 'medium' | 'large' | 'xl' | '2xl' | '3xl';
+  alignment?: 'left' | 'center' | 'right';
+}
+
+export interface DescriptionBlock extends BaseContentBlock {
+  type: 'description';
+  content: string; // Rich text (HTML or markdown)
+  lineHeight?: number; // e.g., 1.5, 1.8
+  maxWidth?: number; // in pixels
+}
+
+export interface StoryImageBlock extends BaseContentBlock {
+  type: 'story-image';
+  src: string;
+  alt: string;
+  size?: 'full-width' | 'narrow' | number; // number = custom px width
+  aspectRatioLock?: boolean;
+  aspectRatio?: 'auto' | 'square' | 'landscape' | 'portrait' | 'wide' | 'tall';
+}
+
+export interface ImageLabelBlock extends BaseContentBlock {
+  type: 'image-label';
+  text: string;
+  placement?: 'below' | 'overlay';
+  italic?: boolean;
+}
+
+export interface DividerBlock extends BaseContentBlock {
+  type: 'divider';
+  spacingTop?: number; // in pixels or rem
+  spacingBottom?: number; // in pixels or rem
+}
+
+export interface FooterBlock extends BaseContentBlock {
+  type: 'footer';
+  text?: string;
+  date?: string;
+  credits?: string;
+  pageWidth?: 'full' | 'narrow' | 'medium';
+}
+
 export type ContentBlock =
   | TextBlock
   | ImageBlock
   | ImageGalleryBlock
   | QuoteBlock
-  | SpacerBlock;
+  | SpacerBlock
+  | TitleBlock
+  | DescriptionBlock
+  | StoryImageBlock
+  | ImageLabelBlock
+  | DividerBlock
+  | FooterBlock;
 
 export interface Project {
   id: string;

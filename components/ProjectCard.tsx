@@ -5,9 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button, Badge, Group, Text, Card, Modal, Stack } from "@mantine/core";
-import { IconEye, IconWorld } from "@tabler/icons-react";
+import { IconEye, IconWorld, IconTrash } from "@tabler/icons-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import ProjectPreview from "./ProjectPreview";
+import StoryPreview from "./StoryPreview";
 
 interface ProjectCardProps {
   id: string;
@@ -15,6 +16,7 @@ interface ProjectCardProps {
   slug: string;
   featuredImage?: string | null;
   published?: boolean | null;
+  kind?: "project" | "story";
 }
 
 export default function ProjectCard({
@@ -23,10 +25,13 @@ export default function ProjectCard({
   slug,
   featuredImage,
   published,
+  kind = "project",
 }: ProjectCardProps) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const router = useRouter();
   const { theme } = useTheme();
   const isDark = theme === "dark";
@@ -60,6 +65,32 @@ export default function ProjectCard({
       alert("Failed to update publish status. Please try again.");
     } finally {
       setPublishing(false);
+    }
+  };
+
+  const handleDeleteClick = () => {
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDelete = async () => {
+    try {
+      setDeleteConfirmOpen(false);
+      setDeleting(true);
+      const response = await fetch(`/api/projects/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete project");
+      }
+
+      // Refresh the page to show updated list
+      router.refresh();
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      alert("Failed to delete project. Please try again.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -143,18 +174,37 @@ export default function ProjectCard({
             leftSection={<IconWorld size={14} />}
             onClick={handlePublishClick}
             loading={publishing}
-            disabled={publishing}
+            disabled={publishing || deleting}
           >
             {published ? "Unpublish" : "Publish"}
+          </Button>
+          <Button
+            variant="outline"
+            size="xs"
+            color="red"
+            leftSection={<IconTrash size={14} />}
+            onClick={handleDeleteClick}
+            loading={deleting}
+            disabled={publishing || deleting}
+          >
+            Delete
           </Button>
         </Group>
       </Card>
 
-      <ProjectPreview
-        projectId={id}
-        isOpen={previewOpen}
-        onClose={() => setPreviewOpen(false)}
-      />
+      {kind === "story" ? (
+        <StoryPreview
+          storyId={id}
+          isOpen={previewOpen}
+          onClose={() => setPreviewOpen(false)}
+        />
+      ) : (
+        <ProjectPreview
+          projectId={id}
+          isOpen={previewOpen}
+          onClose={() => setPreviewOpen(false)}
+        />
+      )}
 
       <Modal
         opened={confirmOpen}
@@ -205,6 +255,86 @@ export default function ProjectCard({
               disabled={publishing}
             >
               {published ? "Unpublish" : "Publish"}
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
+      <Modal
+        opened={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+        title="Delete Project"
+        centered
+        styles={{
+          content: {
+            backgroundColor: isDark
+              ? "var(--mantine-color-dark-6)"
+              : "var(--mantine-color-white)",
+          },
+          header: {
+            backgroundColor: isDark
+              ? "var(--mantine-color-dark-6)"
+              : "var(--mantine-color-white)",
+          },
+          body: {
+            backgroundColor: isDark
+              ? "var(--mantine-color-dark-6)"
+              : "var(--mantine-color-white)",
+          },
+        }}
+      >
+        <Stack gap="md">
+          <Text
+            size="sm"
+            c={isDark ? "var(--mantine-color-gray-0)" : "var(--mantine-color-dark-9)"}
+          >
+            Are you sure you want to delete <strong>&ldquo;{title}&rdquo;</strong>? This action cannot be undone and will permanently delete:
+          </Text>
+          <Stack gap="xs" pl="md">
+            <Text
+              size="sm"
+              c={isDark ? "var(--mantine-color-gray-2)" : "var(--mantine-color-dark-7)"}
+            >
+              • The project and all its content
+            </Text>
+            <Text
+              size="sm"
+              c={isDark ? "var(--mantine-color-gray-2)" : "var(--mantine-color-dark-7)"}
+            >
+              • All associated content blocks
+            </Text>
+            <Text
+              size="sm"
+              c={isDark ? "var(--mantine-color-gray-2)" : "var(--mantine-color-dark-7)"}
+            >
+              • Project metadata and settings
+            </Text>
+          </Stack>
+          <Text
+            size="sm"
+            fw={500}
+            c="red"
+          >
+            This action is permanent and cannot be reversed.
+          </Text>
+          <Group justify="flex-end" gap="xs">
+            <Button
+              variant="subtle"
+              color="gray"
+              onClick={() => setDeleteConfirmOpen(false)}
+              disabled={deleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="filled"
+              color="red"
+              leftSection={<IconTrash size={16} />}
+              onClick={handleDelete}
+              loading={deleting}
+              disabled={deleting}
+            >
+              Delete Project
             </Button>
           </Group>
         </Stack>

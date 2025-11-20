@@ -56,7 +56,7 @@ export async function initializeDatabase() {
         CREATE TABLE IF NOT EXISTS content_blocks (
           id VARCHAR(255) PRIMARY KEY,
           project_id VARCHAR(255) REFERENCES projects(id) ON DELETE CASCADE,
-          type VARCHAR(50) NOT NULL CHECK (type IN ('text', 'image', 'image-gallery', 'quote', 'spacer')),
+          type VARCHAR(50) NOT NULL,
           "order" INTEGER NOT NULL,
           content TEXT,
           text_align VARCHAR(20),
@@ -74,6 +74,18 @@ export async function initializeDatabase() {
           author VARCHAR(255),
           style VARCHAR(20),
           height INTEGER,
+          subtitle TEXT,
+          line_height NUMERIC,
+          max_width INTEGER,
+          size VARCHAR(50),
+          aspect_ratio_lock BOOLEAN,
+          placement VARCHAR(20),
+          italic BOOLEAN,
+          spacing_top INTEGER,
+          spacing_bottom INTEGER,
+          date VARCHAR(255),
+          credits TEXT,
+          page_width VARCHAR(20),
           created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
           updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
         )
@@ -82,6 +94,35 @@ export async function initializeDatabase() {
 
         if (blocksError) {
             console.log('Content blocks table might already exist:', blocksError.message);
+        }
+
+        // Add new columns for story blocks if they don't exist
+        // Note: exec_sql RPC may not exist in Supabase, so we'll try to add columns
+        // If this fails, run the migration SQL manually in Supabase SQL Editor
+        const addColumnQueries = [
+            { sql: `ALTER TABLE content_blocks ADD COLUMN IF NOT EXISTS subtitle TEXT`, name: 'subtitle' },
+            { sql: `ALTER TABLE content_blocks ADD COLUMN IF NOT EXISTS line_height NUMERIC`, name: 'line_height' },
+            { sql: `ALTER TABLE content_blocks ADD COLUMN IF NOT EXISTS max_width INTEGER`, name: 'max_width' },
+            { sql: `ALTER TABLE content_blocks ADD COLUMN IF NOT EXISTS size VARCHAR(50)`, name: 'size' },
+            { sql: `ALTER TABLE content_blocks ADD COLUMN IF NOT EXISTS aspect_ratio_lock BOOLEAN`, name: 'aspect_ratio_lock' },
+            { sql: `ALTER TABLE content_blocks ADD COLUMN IF NOT EXISTS placement VARCHAR(20)`, name: 'placement' },
+            { sql: `ALTER TABLE content_blocks ADD COLUMN IF NOT EXISTS italic BOOLEAN`, name: 'italic' },
+            { sql: `ALTER TABLE content_blocks ADD COLUMN IF NOT EXISTS spacing_top INTEGER`, name: 'spacing_top' },
+            { sql: `ALTER TABLE content_blocks ADD COLUMN IF NOT EXISTS spacing_bottom INTEGER`, name: 'spacing_bottom' },
+            { sql: `ALTER TABLE content_blocks ADD COLUMN IF NOT EXISTS date VARCHAR(255)`, name: 'date' },
+            { sql: `ALTER TABLE content_blocks ADD COLUMN IF NOT EXISTS credits TEXT`, name: 'credits' },
+            { sql: `ALTER TABLE content_blocks ADD COLUMN IF NOT EXISTS page_width VARCHAR(20)`, name: 'page_width' },
+        ];
+
+        for (const query of addColumnQueries) {
+            try {
+                const { error } = await supabase.rpc('exec_sql', { sql: query.sql });
+                if (error) {
+                    console.log(`Could not add column ${query.name} via exec_sql (this is normal if exec_sql doesn't exist):`, error.message);
+                }
+            } catch (err) {
+                console.log(`Could not add column ${query.name} (exec_sql may not be available):`, err instanceof Error ? err.message : 'Unknown error');
+            }
         }
 
         // Create indexes for better performance
@@ -259,6 +300,18 @@ export async function createContentBlock(block: {
     author?: string;
     style?: string;
     height?: number;
+    subtitle?: string;
+    lineHeight?: number;
+    maxWidth?: number;
+    size?: string | number;
+    aspectRatioLock?: boolean;
+    placement?: string;
+    italic?: boolean;
+    spacingTop?: number;
+    spacingBottom?: number;
+    date?: string;
+    credits?: string;
+    pageWidth?: string;
 }) {
     const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
@@ -283,7 +336,19 @@ export async function createContentBlock(block: {
             text: block.text || null,
             author: block.author || null,
             style: block.style || null,
-            height: block.height || null
+            height: block.height || null,
+            subtitle: block.subtitle || null,
+            line_height: block.lineHeight || null,
+            max_width: block.maxWidth || null,
+            size: typeof block.size === 'number' ? block.size.toString() : (block.size || null),
+            aspect_ratio_lock: block.aspectRatioLock || null,
+            placement: block.placement || null,
+            italic: block.italic || null,
+            spacing_top: block.spacingTop || null,
+            spacing_bottom: block.spacingBottom || null,
+            date: block.date || null,
+            credits: block.credits || null,
+            page_width: block.pageWidth || null
         })
         .select()
         .single();
@@ -403,6 +468,51 @@ export async function getProjectWithBlocks(id: string) {
                 return {
                     ...baseBlock,
                     height: block.height
+                };
+            case 'title':
+                return {
+                    ...baseBlock,
+                    text: block.text,
+                    subtitle: block.subtitle,
+                    fontSize: block.font_size,
+                    alignment: block.alignment
+                };
+            case 'description':
+                return {
+                    ...baseBlock,
+                    content: block.content,
+                    lineHeight: block.line_height,
+                    maxWidth: block.max_width
+                };
+            case 'story-image':
+                return {
+                    ...baseBlock,
+                    src: block.src,
+                    alt: block.alt,
+                    size: block.size,
+                    aspectRatioLock: block.aspect_ratio_lock,
+                    aspectRatio: block.aspect_ratio
+                };
+            case 'image-label':
+                return {
+                    ...baseBlock,
+                    text: block.text,
+                    placement: block.placement,
+                    italic: block.italic
+                };
+            case 'divider':
+                return {
+                    ...baseBlock,
+                    spacingTop: block.spacing_top,
+                    spacingBottom: block.spacing_bottom
+                };
+            case 'footer':
+                return {
+                    ...baseBlock,
+                    text: block.text,
+                    date: block.date,
+                    credits: block.credits,
+                    pageWidth: block.page_width
                 };
             default:
                 return baseBlock;
