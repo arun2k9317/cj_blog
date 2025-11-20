@@ -55,6 +55,7 @@ const theme = createTheme({
       "#404040", // gray-700
       "#262626", // gray-800
       "#171717", // gray-900
+      "#000000", // gray-950 (additional required by Mantine)
     ],
   },
   other: {

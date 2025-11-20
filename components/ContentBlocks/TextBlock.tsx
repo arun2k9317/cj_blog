@@ -32,47 +32,6 @@ export default function TextBlock({
     setIsEditingText(false);
   };
 
-  const getTextAlignClass = (align?: string) => {
-    switch (align) {
-      case "center":
-        return "text-center";
-      case "right":
-        return "text-right";
-      default:
-        return "text-left";
-    }
-  };
-
-  const getFontSizeClass = (size?: string) => {
-    switch (size) {
-      case "small":
-        return "text-sm";
-      case "medium":
-        return "text-base";
-      case "large":
-        return "text-xl";
-      case "xl":
-        return "text-3xl";
-      default:
-        return "text-base";
-    }
-  };
-
-  const getFontWeightClass = (weight?: string) => {
-    switch (weight) {
-      case "light":
-        return "font-light";
-      case "normal":
-        return "font-normal";
-      case "medium":
-        return "font-medium";
-      case "bold":
-        return "font-bold";
-      default:
-        return "font-normal";
-    }
-  };
-
   if (isEditing) {
     return (
       <div className="content-block-editor border border-gray-300 rounded-lg p-4 bg-white">
@@ -208,7 +167,7 @@ export default function TextBlock({
   };
 
   return (
-    <Box className={`content-block`} style={{ textAlign: getTextAlign(block.textAlign) as any }}>
+    <Box className={`content-block`} style={{ textAlign: getTextAlign(block.textAlign) as "left" | "center" | "right" }}>
       {isEditingText ? (
         <Stack gap="sm">
           <textarea
