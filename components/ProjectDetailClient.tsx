@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { Box, Container, Stack, Title, Text, Loader } from "@mantine/core";
 import ProjectRenderer from "@/components/ProjectRenderer";
 import { Project } from "@/types/project";
 
@@ -135,35 +136,37 @@ export default function ProjectDetailClient({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="flex items-center gap-3">
-          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900"></div>
-          <p>Loading project...</p>
-        </div>
-      </div>
+      <Box style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "24rem" }}>
+        <Stack gap="md" align="center">
+          <Loader size="sm" />
+          <Text>Loading project...</Text>
+        </Stack>
+      </Box>
     );
   }
 
   if (!project) {
     return (
-      <div className="project-not-found">
-        <h1>Project Not Found</h1>
-        <p>The project you&apos;re looking for doesn&apos;t exist.</p>
-        <Link href="/projects" className="back-to-projects">
-          ← Back to Projects
-        </Link>
-      </div>
+      <Container className="project-not-found" size="xl" py="xl">
+        <Stack gap="md" align="center">
+          <Title order={1}>Project Not Found</Title>
+          <Text>The project you&apos;re looking for doesn&apos;t exist.</Text>
+          <Link href="/projects" className="back-to-projects">
+            ← Back to Projects
+          </Link>
+        </Stack>
+      </Container>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <Container maw={{ base: "100%", md: "72rem" }} mx="auto" p="md">
       <ProjectRenderer project={project} />
-      <div className="mt-8 text-center">
+      <Box mt="xl" style={{ textAlign: "center" }}>
         <Link href="/projects" className="back-to-projects">
           ← Back to Projects
         </Link>
-      </div>
-    </div>
+      </Box>
+    </Container>
   );
 }

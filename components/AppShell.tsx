@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, PropsWithChildren } from "react";
 import { usePathname } from "next/navigation";
+import { Box } from "@mantine/core";
 import Sidebar from "@/components/Sidebar";
 import ImageLightbox from "@/components/ImageLightbox";
 import { BLOB_BASE, Series, projectsSeries, storiesSeries } from "@/lib/series";
@@ -52,20 +53,20 @@ export default function AppShell({ children }: PropsWithChildren) {
   // For admin pages, render without sidebar/lightbox to provide a clean dashboard canvas
   if (isAdminRoute) {
     return (
-      <div className="main-layout">
-        <main className="main-content" style={{ marginLeft: 0 }}>{children}</main>
-      </div>
+      <Box className="main-layout">
+        <Box component="main" className="main-content" style={{ marginLeft: 0 }}>{children}</Box>
+      </Box>
     );
   }
 
   return (
-    <div className={`main-layout ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}>
+    <Box className={`main-layout ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}>
       <Sidebar
         isCollapsed={isSidebarCollapsed}
         onToggle={() => setIsSidebarCollapsed((v) => !v)}
         onOpenLightboxWithSeries={openLightboxForSeries}
       />
-      <main className="main-content">{children}</main>
+      <Box component="main" className="main-content">{children}</Box>
       <ImageLightbox
         images={projectImages}
         currentIndex={0}
@@ -73,7 +74,7 @@ export default function AppShell({ children }: PropsWithChildren) {
         isOpen={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
       />
-    </div>
+    </Box>
   );
 }
 

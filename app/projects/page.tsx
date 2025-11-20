@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { Container, Title, SimpleGrid, Card, Box, Text, Stack } from "@mantine/core";
 
 // Hardcoded projects pointing to Vercel Blob storage
 const BLOB_BASE =
@@ -28,35 +29,46 @@ const projects = [
 
 export default function ProjectsPage() {
   return (
-    <div className="projects-container">
-      <div className="projects-header">
-        <h1>Projects</h1>
-      </div>
+    <Container className="projects-container" size="xl" py="xl" px={{ base: "md", md: "xl" }}>
+      <Stack gap="xl">
+        <div className="projects-header">
+          <Title order={1}>Projects</Title>
+        </div>
 
-      <div className="projects-grid">
-        {projects.map((project) => (
-          <Link
-            key={project.id}
-            href={`/projects/${project.id}`}
-            className="project-card"
-          >
-            <div className="project-image-container">
-              <Image
-                src={project.thumbnail}
-                alt={project.title}
-                className="project-thumbnail"
-                width={600}
-                height={400}
-                style={{ objectFit: "cover" }}
-              />
-            </div>
-            <div className="project-info">
-              <h3 className="project-title">{project.title}</h3>
-              <p className="project-location">{project.location}</p>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </div>
+        <SimpleGrid
+          className="projects-grid"
+          cols={{ base: 1, sm: 2, lg: 3 }}
+          spacing={{ base: "md", md: "xl" }}
+        >
+          {projects.map((project) => (
+            <Link
+              key={project.id}
+              href={`/projects/${project.id}`}
+              className="project-card"
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              <Card className="project-card" padding={0} radius="md" withBorder>
+                <Box className="project-image-container">
+                  <Image
+                    src={project.thumbnail}
+                    alt={project.title}
+                    className="project-thumbnail"
+                    width={600}
+                    height={400}
+                    style={{ objectFit: "cover" }}
+                  />
+                </Box>
+                <Stack gap="xs" p="lg" className="project-info">
+                  <Title order={3} className="project-title">{project.title}</Title>
+                  {project.location && (
+                    <Text size="sm" className="project-location">{project.location}</Text>
+                  )}
+                </Stack>
+              </Card>
+            </Link>
+          ))}
+        </SimpleGrid>
+      </Stack>
+    </Container>
   );
 }
