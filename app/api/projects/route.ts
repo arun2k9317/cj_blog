@@ -346,8 +346,18 @@ export async function POST(request: NextRequest) {
           maxWidth: 'maxWidth' in block ? block.maxWidth : undefined,
           size: 'size' in block ? block.size : undefined,
           aspectRatioLock: 'aspectRatioLock' in block ? block.aspectRatioLock : undefined,
-          placement: 'placement' in block ? block.placement : undefined,
-          italic: 'italic' in block ? block.italic : undefined,
+          placement:
+            'captionPlacement' in block
+              ? block.captionPlacement
+              : 'placement' in block
+              ? block.placement
+              : undefined,
+          italic:
+            'captionItalic' in block
+              ? (block as any).captionItalic
+              : 'italic' in block
+              ? block.italic
+              : undefined,
           spacingTop: 'spacingTop' in block ? block.spacingTop : undefined,
           spacingBottom: 'spacingBottom' in block ? block.spacingBottom : undefined,
           date: 'date' in block ? block.date : undefined,
