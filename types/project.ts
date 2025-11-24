@@ -1,6 +1,6 @@
 // Project and Content Block Types
 
-export type ContentBlockType = 'text' | 'image' | 'image-gallery' | 'quote' | 'spacer' | 'title' | 'description' | 'story-image' | 'image-label' | 'divider' | 'footer';
+export type ContentBlockType = 'text' | 'image' | 'image-gallery' | 'quote' | 'spacer' | 'title' | 'description' | 'story-image' | 'divider' | 'footer';
 
 export interface BaseContentBlock {
   id: string;
@@ -72,13 +72,9 @@ export interface StoryImageBlock extends BaseContentBlock {
   size?: 'full-width' | 'narrow' | number; // number = custom px width
   aspectRatioLock?: boolean;
   aspectRatio?: 'auto' | 'square' | 'landscape' | 'portrait' | 'wide' | 'tall';
-}
-
-export interface ImageLabelBlock extends BaseContentBlock {
-  type: 'image-label';
-  text: string;
-  placement?: 'below' | 'overlay';
-  italic?: boolean;
+  caption?: string;
+  captionPlacement?: 'below' | 'overlay';
+  captionItalic?: boolean;
 }
 
 export interface DividerBlock extends BaseContentBlock {
@@ -104,7 +100,6 @@ export type ContentBlock =
   | TitleBlock
   | DescriptionBlock
   | StoryImageBlock
-  | ImageLabelBlock
   | DividerBlock
   | FooterBlock;
 

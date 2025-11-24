@@ -97,8 +97,18 @@ export async function PUT(
           maxWidth: 'maxWidth' in block ? block.maxWidth : undefined,
           size: 'size' in block ? block.size : undefined,
           aspectRatioLock: 'aspectRatioLock' in block ? block.aspectRatioLock : undefined,
-          placement: 'placement' in block ? block.placement : undefined,
-          italic: 'italic' in block ? block.italic : undefined,
+          placement:
+            'captionPlacement' in block
+              ? (block.captionPlacement as string | undefined)
+              : 'placement' in block
+              ? (block.placement as string | undefined)
+              : undefined,
+          italic:
+            'captionItalic' in block
+              ? (block.captionItalic as boolean | undefined)
+              : 'italic' in block
+              ? (block.italic as boolean | undefined)
+              : undefined,
           spacingTop: 'spacingTop' in block ? block.spacingTop : undefined,
           spacingBottom: 'spacingBottom' in block ? block.spacingBottom : undefined,
           date: 'date' in block ? block.date : undefined,

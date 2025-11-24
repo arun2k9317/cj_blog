@@ -1,6 +1,7 @@
 "use client";
 
 import { TextBlock as TextBlockType } from "@/types/project";
+import { Box, Text, Stack } from "@mantine/core";
 import { useState } from "react";
 
 interface TextBlockProps {
@@ -29,47 +30,6 @@ export default function TextBlock({
   const handleCancel = () => {
     setContent(block.content);
     setIsEditingText(false);
-  };
-
-  const getTextAlignClass = (align?: string) => {
-    switch (align) {
-      case "center":
-        return "text-center";
-      case "right":
-        return "text-right";
-      default:
-        return "text-left";
-    }
-  };
-
-  const getFontSizeClass = (size?: string) => {
-    switch (size) {
-      case "small":
-        return "text-sm";
-      case "medium":
-        return "text-base";
-      case "large":
-        return "text-xl";
-      case "xl":
-        return "text-3xl";
-      default:
-        return "text-base";
-    }
-  };
-
-  const getFontWeightClass = (weight?: string) => {
-    switch (weight) {
-      case "light":
-        return "font-light";
-      case "normal":
-        return "font-normal";
-      case "medium":
-        return "font-medium";
-      case "bold":
-        return "font-bold";
-      default:
-        return "font-normal";
-    }
   };
 
   if (isEditing) {
@@ -169,42 +129,108 @@ export default function TextBlock({
     );
   }
 
+  const getTextAlign = (align?: string) => {
+    switch (align) {
+      case "center":
+        return "center";
+      case "right":
+        return "right";
+      default:
+        return "left";
+    }
+  };
+
+  const getSize = (size?: string) => {
+    switch (size) {
+      case "small":
+        return "sm";
+      case "large":
+        return "lg";
+      case "xl":
+        return "xl";
+      default:
+        return "md";
+    }
+  };
+
+  const getWeight = (weight?: string) => {
+    switch (weight) {
+      case "light":
+        return 300;
+      case "medium":
+        return 500;
+      case "bold":
+        return 700;
+      default:
+        return 400;
+    }
+  };
+
   return (
-    <div className={`content-block ${getTextAlignClass(block.textAlign)}`}>
+    <Box className={`content-block`} style={{ textAlign: getTextAlign(block.textAlign) as "left" | "center" | "right" }}>
       {isEditingText ? (
-        <div className="space-y-3">
+        <Stack gap="sm">
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            style={{
+              width: "100%",
+              padding: "0.75rem",
+              border: "1px solid var(--gray-300)",
+              borderRadius: "var(--mantine-radius-md)",
+            }}
             rows={4}
             autoFocus
           />
-          <div className="flex gap-2">
+          <Box style={{ display: "flex", gap: "0.5rem" }}>
             <button
               onClick={handleSave}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              style={{
+                padding: "0.5rem 1rem",
+                backgroundColor: "#2563eb",
+                color: "white",
+                borderRadius: "var(--mantine-radius-md)",
+                border: "none",
+                cursor: "pointer",
+              }}
             >
               Save
             </button>
             <button
               onClick={handleCancel}
-              className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+              style={{
+                padding: "0.5rem 1rem",
+                backgroundColor: "var(--gray-300)",
+                color: "var(--gray-700)",
+                borderRadius: "var(--mantine-radius-md)",
+                border: "none",
+                cursor: "pointer",
+              }}
             >
               Cancel
             </button>
-          </div>
-        </div>
+          </Box>
+        </Stack>
       ) : (
-        <div
-          className={`cursor-pointer hover:bg-gray-50 p-2 rounded ${getFontSizeClass(
-            block.fontSize
-          )} ${getFontWeightClass(block.fontWeight)}`}
+        <Text
+          size={getSize(block.fontSize)}
+          fw={getWeight(block.fontWeight)}
+          style={{
+            cursor: "pointer",
+            padding: "0.5rem",
+            borderRadius: "var(--mantine-radius-sm)",
+          }}
           onClick={() => setIsEditingText(true)}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "var(--gray-100)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
         >
           {block.content || "Click to add text content..."}
-        </div>
+        </Text>
       )}
-    </div>
+    </Box>
   );
 }

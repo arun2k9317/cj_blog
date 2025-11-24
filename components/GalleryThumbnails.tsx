@@ -531,9 +531,8 @@ export default function GalleryThumbnails({
                         fill
                         style={{ objectFit: "cover" }}
                         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                        unoptimized={asset.url.includes(
-                          "blob.vercel-storage.com"
-                        )}
+                        loading={index < 12 ? "eager" : "lazy"}
+                        quality={85}
                       />
                       {deleteMode && (
                         <div

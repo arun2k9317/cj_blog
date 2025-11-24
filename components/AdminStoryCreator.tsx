@@ -1,7 +1,7 @@
 "use client";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import type { ReactNode } from "react";
 import {
   Button,
   Container,
@@ -17,6 +17,7 @@ import {
   Switch,
   ActionIcon,
   Loader,
+  Modal,
 } from "@mantine/core";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -25,37 +26,19 @@ import {
   IconArrowUp,
   IconTrash,
   IconX,
-  IconGripVertical,
 } from "@tabler/icons-react";
 import { useTheme } from "@/contexts/ThemeContext";
+import StoryPreview from "@/components/StoryPreview";
 import type {
   Project,
   ContentBlock,
   TitleBlock,
   DescriptionBlock,
   StoryImageBlock,
-  ImageLabelBlock,
   QuoteBlock,
   DividerBlock,
   FooterBlock,
 } from "@/types/project";
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 
 interface GalleryImage {
   id?: string;
@@ -80,15 +63,832 @@ const slugify = (value: string) =>
 const generateId = (prefix: string) =>
   `${prefix}-${Math.random().toString(36).slice(2, 11)}`;
 
+const BLOCK_STACK_STYLE = { paddingTop: "40px" };
+
+interface BlockShellProps {
+  children: ReactNode;
+  isDark: boolean;
+  index: number;
+  total: number;
+  blockId: string;
+  onMove: (index: number, direction: "up" | "down") => void;
+  onRemove: (blockId: string) => void;
+}
+
+const BlockShell = ({
+  children,
+  isDark,
+  index,
+  total,
+  blockId,
+  onMove,
+  onRemove,
+}: BlockShellProps) => (
+  <Paper
+    p="md"
+    withBorder
+    style={{
+      backgroundColor: isDark
+        ? "var(--mantine-color-dark-5)"
+        : "var(--mantine-color-white)",
+      borderColor: isDark
+        ? "var(--mantine-color-dark-4)"
+        : "var(--mantine-color-gray-3)",
+      position: "relative",
+    }}
+  >
+    <Group
+      gap="xs"
+      style={{
+        position: "absolute",
+        top: "8px",
+        right: "8px",
+        zIndex: 10,
+      }}
+    >
+      <ActionIcon
+        size="sm"
+        variant="subtle"
+        color={isDark ? "gray" : "dark"}
+        onClick={() => onMove(index, "up")}
+        disabled={index === 0}
+      >
+        <IconArrowUp
+          size={16}
+          color={
+            index === 0
+              ? "var(--mantine-color-gray-5)"
+              : isDark
+              ? "var(--mantine-color-gray-2)"
+              : "var(--mantine-color-dark-6)"
+          }
+        />
+      </ActionIcon>
+      <ActionIcon
+        size="sm"
+        variant="subtle"
+        color={isDark ? "gray" : "dark"}
+        onClick={() => onMove(index, "down")}
+        disabled={index === total - 1}
+      >
+        <IconArrowDown
+          size={16}
+          color={
+            index === total - 1
+              ? "var(--mantine-color-gray-5)"
+              : isDark
+              ? "var(--mantine-color-gray-2)"
+              : "var(--mantine-color-dark-6)"
+          }
+        />
+      </ActionIcon>
+      <ActionIcon
+        size="sm"
+        variant="subtle"
+        color="red"
+        onClick={() => onRemove(blockId)}
+      >
+        <IconTrash size={16} />
+      </ActionIcon>
+    </Group>
+    {children}
+  </Paper>
+);
+
+const getFieldStyles = (isDark: boolean) => ({
+  input: {
+    color: isDark
+      ? "var(--mantine-color-gray-0)"
+      : "var(--mantine-color-dark-9)",
+    backgroundColor: isDark
+      ? "var(--mantine-color-dark-5)"
+      : "var(--mantine-color-white)",
+  },
+  label: {
+    color: isDark
+      ? "var(--mantine-color-gray-2)"
+      : "var(--mantine-color-dark-7)",
+  },
+});
+
+const getSelectStyles = (isDark: boolean) => ({
+  ...getFieldStyles(isDark),
+  dropdown: {
+    backgroundColor: isDark
+      ? "var(--mantine-color-dark-6)"
+      : "var(--mantine-color-white)",
+    borderColor: isDark
+      ? "var(--mantine-color-dark-4)"
+      : "var(--mantine-color-gray-3)",
+  },
+  option: {
+    color: isDark
+      ? "var(--mantine-color-gray-0)"
+      : "var(--mantine-color-dark-9)",
+    backgroundColor: isDark
+      ? "var(--mantine-color-dark-6)"
+      : "var(--mantine-color-white)",
+    "&[data-hovered]": {
+      backgroundColor: isDark
+        ? "var(--mantine-color-dark-5)"
+        : "var(--mantine-color-gray-1)",
+    },
+    "&[data-selected]": {
+      backgroundColor: isDark
+        ? "var(--mantine-color-dark-4)"
+        : "var(--mantine-color-gray-2)",
+    },
+  },
+});
+
+const getOutlineButtonStyles = (isDark: boolean) => ({
+  root: {
+    color: isDark
+      ? "var(--mantine-color-gray-0)"
+      : "var(--mantine-color-dark-7)",
+    borderColor: isDark
+      ? "var(--mantine-color-dark-3)"
+      : "var(--mantine-color-gray-4)",
+    backgroundColor: isDark
+      ? "var(--mantine-color-dark-6)"
+      : "var(--mantine-color-gray-0)",
+  },
+});
+
+const createBlockTemplate = (
+  type: ContentBlock["type"],
+  order: number,
+  overrides?: Partial<ContentBlock>
+): ContentBlock => {
+  let base: ContentBlock;
+
+  switch (type) {
+    case "title":
+      base = {
+        id: generateId(type),
+        type: "title",
+        order,
+        text: "",
+        fontSize: "large",
+        alignment: "left",
+      };
+      break;
+    case "description":
+      base = {
+        id: generateId(type),
+        type: "description",
+        order,
+        content: "",
+        lineHeight: 1.6,
+        maxWidth: 800,
+      };
+      break;
+    case "story-image":
+      base = {
+        id: generateId(type),
+        type: "story-image",
+        order,
+        src: "",
+        alt: "",
+        size: "full-width",
+        aspectRatioLock: false,
+      };
+      break;
+    case "quote":
+      base = {
+        id: generateId(type),
+        type: "quote",
+        order,
+        text: "",
+        alignment: "center",
+      };
+      break;
+    case "divider":
+      base = {
+        id: generateId(type),
+        type: "divider",
+        order,
+        spacingTop: 20,
+        spacingBottom: 20,
+      };
+      break;
+    case "footer":
+      base = {
+        id: generateId(type),
+        type: "footer",
+        order,
+        pageWidth: "medium",
+      };
+      break;
+    default:
+      base = {
+        id: generateId(type),
+        type,
+        order,
+      } as ContentBlock;
+  }
+
+  return overrides ? ({ ...base, ...overrides } as ContentBlock) : base;
+};
+
+const BLOCK_TYPE_OPTIONS: { value: ContentBlock["type"]; label: string }[] = [
+  { value: "title", label: "Title" },
+  { value: "description", label: "Description" },
+  { value: "story-image", label: "Image" },
+  { value: "quote", label: "Quote" },
+  { value: "divider", label: "Divider" },
+  { value: "footer", label: "Footer" },
+];
+
+interface TitleBlockEditorProps {
+  block: TitleBlock;
+  isDark: boolean;
+  onChange: (updates: Partial<TitleBlock>) => void;
+}
+
+const TitleBlockEditor = ({
+  block,
+  isDark,
+  onChange,
+}: TitleBlockEditorProps) => (
+  <Stack gap="sm" style={BLOCK_STACK_STYLE}>
+    <Text size="sm" fw={500} c={isDark ? "gray.0" : "dark.9"}>
+      Title Block
+    </Text>
+    <TextInput
+      label="Title"
+      value={block.text || ""}
+      onChange={(e) => onChange({ text: e.target.value })}
+      placeholder="Enter title"
+    />
+    <TextInput
+      label="Subtitle (optional)"
+      value={block.subtitle || ""}
+      onChange={(e) => onChange({ subtitle: e.target.value })}
+      placeholder="Enter subtitle"
+    />
+    <Group>
+      <Select
+        label="Font Size"
+        value={block.fontSize || "large"}
+        onChange={(value) =>
+          onChange({
+            fontSize: (value || "large") as
+              | "small"
+              | "medium"
+              | "large"
+              | "xl"
+              | "2xl"
+              | "3xl",
+          })
+        }
+        data={[
+          { value: "small", label: "Small" },
+          { value: "medium", label: "Medium" },
+          { value: "large", label: "Large" },
+          { value: "xl", label: "Extra Large" },
+          { value: "2xl", label: "2X Large" },
+          { value: "3xl", label: "3X Large" },
+        ]}
+        styles={{
+          input: {
+            color: isDark
+              ? "var(--mantine-color-gray-0)"
+              : "var(--mantine-color-dark-9)",
+            backgroundColor: isDark
+              ? "var(--mantine-color-dark-5)"
+              : "var(--mantine-color-white)",
+          },
+          dropdown: {
+            backgroundColor: isDark
+              ? "var(--mantine-color-dark-6)"
+              : "var(--mantine-color-white)",
+          },
+          option: {
+            color: isDark
+              ? "var(--mantine-color-gray-0)"
+              : "var(--mantine-color-dark-9)",
+            backgroundColor: isDark
+              ? "var(--mantine-color-dark-6)"
+              : "var(--mantine-color-white)",
+            "&:hover": {
+              backgroundColor: isDark
+                ? "var(--mantine-color-dark-5)"
+                : "var(--mantine-color-gray-1)",
+            },
+          },
+        }}
+      />
+      <Select
+        label="Alignment"
+        value={block.alignment || "left"}
+        onChange={(value) =>
+          onChange({
+            alignment: (value || "left") as "left" | "center" | "right",
+          })
+        }
+        data={[
+          { value: "left", label: "Left" },
+          { value: "center", label: "Center" },
+          { value: "right", label: "Right" },
+        ]}
+        styles={{
+          input: {
+            color: isDark
+              ? "var(--mantine-color-gray-0)"
+              : "var(--mantine-color-dark-9)",
+            backgroundColor: isDark
+              ? "var(--mantine-color-dark-5)"
+              : "var(--mantine-color-white)",
+          },
+          dropdown: {
+            backgroundColor: isDark
+              ? "var(--mantine-color-dark-6)"
+              : "var(--mantine-color-white)",
+          },
+          option: {
+            color: isDark
+              ? "var(--mantine-color-gray-0)"
+              : "var(--mantine-color-dark-9)",
+            backgroundColor: isDark
+              ? "var(--mantine-color-dark-6)"
+              : "var(--mantine-color-white)",
+            "&:hover": {
+              backgroundColor: isDark
+                ? "var(--mantine-color-dark-5)"
+                : "var(--mantine-color-gray-1)",
+            },
+          },
+        }}
+      />
+    </Group>
+  </Stack>
+);
+
+interface DescriptionBlockEditorProps {
+  block: DescriptionBlock;
+  isDark: boolean;
+  onChange: (updates: Partial<DescriptionBlock>) => void;
+}
+
+const DescriptionBlockEditor = ({
+  block,
+  isDark,
+  onChange,
+}: DescriptionBlockEditorProps) => (
+  <Stack gap="sm" style={BLOCK_STACK_STYLE}>
+    <Text size="sm" fw={500} c={isDark ? "gray.0" : "dark.9"}>
+      Description Block
+    </Text>
+    <Textarea
+      label="Content (supports basic HTML formatting)"
+      value={block.content || ""}
+      onChange={(e) => onChange({ content: e.target.value })}
+      placeholder="Enter description text..."
+      minRows={4}
+    />
+    <Group>
+      <NumberInput
+        label="Line Height"
+        value={block.lineHeight || 1.6}
+        onChange={(value) => onChange({ lineHeight: Number(value) })}
+        min={1}
+        max={3}
+        step={0.1}
+        style={{ flex: 1 }}
+      />
+      <NumberInput
+        label="Max Width (px)"
+        value={block.maxWidth || 800}
+        onChange={(value) => onChange({ maxWidth: Number(value) })}
+        min={200}
+        max={1200}
+        style={{ flex: 1 }}
+      />
+    </Group>
+  </Stack>
+);
+
+interface StoryImageBlockEditorProps {
+  block: StoryImageBlock;
+  isDark: boolean;
+  onChange: (updates: Partial<StoryImageBlock>) => void;
+  onOpenGallery: () => void;
+}
+
+const StoryImageBlockEditor = ({
+  block,
+  isDark,
+  onChange,
+  onOpenGallery,
+}: StoryImageBlockEditorProps) => (
+  <Stack gap="sm" style={BLOCK_STACK_STYLE}>
+    <Text size="sm" fw={500} c={isDark ? "gray.0" : "dark.9"}>
+      Image Block
+    </Text>
+    {block.src && (
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          height: "200px",
+          borderRadius: "var(--mantine-radius-md)",
+          overflow: "hidden",
+          backgroundColor: isDark
+            ? "var(--mantine-color-dark-4)"
+            : "var(--mantine-color-gray-1)",
+        }}
+      >
+        <Image
+          src={block.src}
+          alt={block.alt || "Preview"}
+          fill
+          style={{ objectFit: "contain" }}
+        />
+      </div>
+    )}
+    <Button variant="outline" onClick={onOpenGallery}>
+      {block.src ? "Change Image" : "Select Image from Gallery"}
+    </Button>
+    <TextInput
+      label="Alt Text"
+      value={block.alt || ""}
+      onChange={(e) => onChange({ alt: e.target.value })}
+      placeholder="Enter alt text"
+    />
+    <Group>
+      <Select
+        label="Size"
+        value={
+          typeof block.size === "number" ? "custom" : block.size || "full-width"
+        }
+        onChange={(value) => {
+          if (value === "custom") {
+            onChange({ size: 600 });
+          } else {
+            onChange({ size: value as StoryImageBlock["size"] });
+          }
+        }}
+        data={[
+          { value: "full-width", label: "Full Width" },
+          { value: "narrow", label: "Narrow" },
+          { value: "custom", label: "Custom (px)" },
+        ]}
+        styles={{
+          input: {
+            color: isDark
+              ? "var(--mantine-color-gray-0)"
+              : "var(--mantine-color-dark-9)",
+            backgroundColor: isDark
+              ? "var(--mantine-color-dark-5)"
+              : "var(--mantine-color-white)",
+          },
+          dropdown: {
+            backgroundColor: isDark
+              ? "var(--mantine-color-dark-6)"
+              : "var(--mantine-color-white)",
+          },
+          option: {
+            color: isDark
+              ? "var(--mantine-color-gray-0)"
+              : "var(--mantine-color-dark-9)",
+            backgroundColor: isDark
+              ? "var(--mantine-color-dark-6)"
+              : "var(--mantine-color-white)",
+            "&:hover": {
+              backgroundColor: isDark
+                ? "var(--mantine-color-dark-5)"
+                : "var(--mantine-color-gray-1)",
+            },
+          },
+        }}
+      />
+      {typeof block.size === "number" && (
+        <NumberInput
+          label="Custom Width (px)"
+          value={block.size}
+          onChange={(value) => onChange({ size: Number(value) })}
+          min={200}
+          max={1200}
+          style={{ flex: 1 }}
+        />
+      )}
+    </Group>
+    <Group>
+      <Switch
+        label="Lock Aspect Ratio"
+        checked={block.aspectRatioLock || false}
+        onChange={(e) => onChange({ aspectRatioLock: e.currentTarget.checked })}
+      />
+      {block.aspectRatioLock && (
+        <Select
+          label="Aspect Ratio"
+          value={block.aspectRatio || "auto"}
+          onChange={(value) =>
+            onChange({
+              aspectRatio: (value || "auto") as
+                | "auto"
+                | "square"
+                | "landscape"
+                | "portrait"
+                | "wide"
+                | "tall",
+            })
+          }
+          data={[
+            { value: "auto", label: "Auto" },
+            { value: "square", label: "Square" },
+            { value: "landscape", label: "Landscape" },
+            { value: "portrait", label: "Portrait" },
+            { value: "wide", label: "Wide" },
+            { value: "tall", label: "Tall" },
+          ]}
+          styles={{
+            input: {
+              color: isDark
+                ? "var(--mantine-color-gray-0)"
+                : "var(--mantine-color-dark-9)",
+              backgroundColor: isDark
+                ? "var(--mantine-color-dark-5)"
+                : "var(--mantine-color-white)",
+            },
+            dropdown: {
+              backgroundColor: isDark
+                ? "var(--mantine-color-dark-6)"
+                : "var(--mantine-color-white)",
+            },
+            option: {
+              color: isDark
+                ? "var(--mantine-color-gray-0)"
+                : "var(--mantine-color-dark-9)",
+              backgroundColor: isDark
+                ? "var(--mantine-color-dark-6)"
+                : "var(--mantine-color-white)",
+              "&:hover": {
+                backgroundColor: isDark
+                  ? "var(--mantine-color-dark-5)"
+                  : "var(--mantine-color-gray-1)",
+              },
+            },
+          }}
+        />
+      )}
+    </Group>
+    <Switch
+      label="Include Caption"
+      checked={Boolean(block.caption)}
+      onChange={(e) => {
+        if (e.currentTarget.checked) {
+          onChange({
+            caption: block.caption || "",
+            captionPlacement: block.captionPlacement || "below",
+            captionItalic: block.captionItalic ?? false,
+          });
+        } else {
+          onChange({
+            caption: undefined,
+            captionPlacement: undefined,
+            captionItalic: undefined,
+          });
+        }
+      }}
+    />
+    {typeof block.caption === "string" && (
+      <Stack gap="sm">
+        <TextInput
+          label="Caption Text"
+          value={block.caption}
+          onChange={(e) => onChange({ caption: e.target.value })}
+          placeholder="Enter caption"
+        />
+        <Group>
+          <Select
+            label="Caption Placement"
+            value={block.captionPlacement || "below"}
+            onChange={(value) =>
+              onChange({
+                captionPlacement: (value || "below") as "below" | "overlay",
+              })
+            }
+            data={[
+              { value: "below", label: "Below image" },
+              { value: "overlay", label: "Overlay" },
+            ]}
+          />
+          <Switch
+            label="Italic Caption"
+            checked={block.captionItalic || false}
+            onChange={(e) =>
+              onChange({ captionItalic: e.currentTarget.checked })
+            }
+          />
+        </Group>
+      </Stack>
+    )}
+  </Stack>
+);
+
+interface QuoteBlockEditorProps {
+  block: QuoteBlock;
+  isDark: boolean;
+  onChange: (updates: Partial<QuoteBlock>) => void;
+}
+
+const QuoteBlockEditor = ({
+  block,
+  isDark,
+  onChange,
+}: QuoteBlockEditorProps) => (
+  <Stack gap="sm" style={BLOCK_STACK_STYLE}>
+    <Text size="sm" fw={500} c={isDark ? "gray.0" : "dark.9"}>
+      Quote Block
+    </Text>
+    <Textarea
+      label="Quote Text"
+      value={block.text || ""}
+      onChange={(e) => onChange({ text: e.target.value })}
+      placeholder="Enter quote text..."
+      minRows={3}
+    />
+    <TextInput
+      label="Author (optional)"
+      value={block.author || ""}
+      onChange={(e) => onChange({ author: e.target.value })}
+      placeholder="Enter author name"
+    />
+    <Select
+      label="Alignment"
+      value={block.alignment || "center"}
+      onChange={(value) =>
+        onChange({
+          alignment: (value || "center") as "left" | "center" | "right",
+        })
+      }
+      data={[
+        { value: "left", label: "Left" },
+        { value: "center", label: "Center" },
+        { value: "right", label: "Right" },
+      ]}
+      styles={{
+        input: {
+          color: isDark
+            ? "var(--mantine-color-gray-0)"
+            : "var(--mantine-color-dark-9)",
+          backgroundColor: isDark
+            ? "var(--mantine-color-dark-5)"
+            : "var(--mantine-color-white)",
+        },
+        dropdown: {
+          backgroundColor: isDark
+            ? "var(--mantine-color-dark-6)"
+            : "var(--mantine-color-white)",
+        },
+        option: {
+          color: isDark
+            ? "var(--mantine-color-gray-0)"
+            : "var(--mantine-color-dark-9)",
+          backgroundColor: isDark
+            ? "var(--mantine-color-dark-6)"
+            : "var(--mantine-color-white)",
+          "&:hover": {
+            backgroundColor: isDark
+              ? "var(--mantine-color-dark-5)"
+              : "var(--mantine-color-gray-1)",
+          },
+        },
+      }}
+    />
+  </Stack>
+);
+
+interface DividerBlockEditorProps {
+  block: DividerBlock;
+  isDark: boolean;
+  onChange: (updates: Partial<DividerBlock>) => void;
+}
+
+const DividerBlockEditor = ({
+  block,
+  isDark,
+  onChange,
+}: DividerBlockEditorProps) => (
+  <Stack gap="sm" style={BLOCK_STACK_STYLE}>
+    <Text size="sm" fw={500} c={isDark ? "gray.0" : "dark.9"}>
+      Divider Block
+    </Text>
+    <Group>
+      <NumberInput
+        label="Spacing Top (px)"
+        value={block.spacingTop || 20}
+        onChange={(value) => onChange({ spacingTop: Number(value) })}
+        min={0}
+        max={200}
+        style={{ flex: 1 }}
+      />
+      <NumberInput
+        label="Spacing Bottom (px)"
+        value={block.spacingBottom || 20}
+        onChange={(value) => onChange({ spacingBottom: Number(value) })}
+        min={0}
+        max={200}
+        style={{ flex: 1 }}
+      />
+    </Group>
+  </Stack>
+);
+
+interface FooterBlockEditorProps {
+  block: FooterBlock;
+  isDark: boolean;
+  onChange: (updates: Partial<FooterBlock>) => void;
+}
+
+const FooterBlockEditor = ({
+  block,
+  isDark,
+  onChange,
+}: FooterBlockEditorProps) => (
+  <Stack gap="sm" style={BLOCK_STACK_STYLE}>
+    <Text size="sm" fw={500} c={isDark ? "gray.0" : "dark.9"}>
+      Footer Block
+    </Text>
+    <TextInput
+      label="Text (optional)"
+      value={block.text || ""}
+      onChange={(e) => onChange({ text: e.target.value })}
+      placeholder="Enter footer text"
+    />
+    <TextInput
+      label="Date (optional)"
+      value={block.date || ""}
+      onChange={(e) => onChange({ date: e.target.value })}
+      placeholder="Enter date"
+    />
+    <TextInput
+      label="Credits (optional)"
+      value={block.credits || ""}
+      onChange={(e) => onChange({ credits: e.target.value })}
+      placeholder="Enter credits"
+    />
+    <Select
+      label="Page Width"
+      value={block.pageWidth || "medium"}
+      onChange={(value) =>
+        onChange({
+          pageWidth: (value || "medium") as "full" | "medium" | "narrow",
+        })
+      }
+      data={[
+        { value: "full", label: "Full Width" },
+        { value: "medium", label: "Medium" },
+        { value: "narrow", label: "Narrow" },
+      ]}
+      styles={{
+        input: {
+          color: isDark
+            ? "var(--mantine-color-gray-0)"
+            : "var(--mantine-color-dark-9)",
+          backgroundColor: isDark
+            ? "var(--mantine-color-dark-5)"
+            : "var(--mantine-color-white)",
+        },
+        dropdown: {
+          backgroundColor: isDark
+            ? "var(--mantine-color-dark-6)"
+            : "var(--mantine-color-white)",
+        },
+        option: {
+          color: isDark
+            ? "var(--mantine-color-gray-0)"
+            : "var(--mantine-color-dark-9)",
+          backgroundColor: isDark
+            ? "var(--mantine-color-dark-6)"
+            : "var(--mantine-color-white)",
+          "&:hover": {
+            backgroundColor: isDark
+              ? "var(--mantine-color-dark-5)"
+              : "var(--mantine-color-gray-1)",
+          },
+        },
+      }}
+    />
+  </Stack>
+);
+
 export default function AdminStoryCreator({
   initialProject,
 }: AdminStoryCreatorProps) {
   const router = useRouter();
   const { theme } = useTheme();
   const isDark = theme === "dark";
+  const [projectMeta, setProjectMeta] = useState<Project | null>(
+    initialProject ?? null
+  );
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
+  const fieldStyles = useMemo(() => getFieldStyles(isDark), [isDark]);
+  const selectStyles = useMemo(() => getSelectStyles(isDark), [isDark]);
   const [blocks, setBlocks] = useState<ContentBlock[]>([]);
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -99,36 +899,21 @@ export default function AdminStoryCreator({
   const [folders, setFolders] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showGallery, setShowGallery] = useState(false);
-  const [editingBlockIndex, setEditingBlockIndex] = useState<number | null>(
+  const [activeImageBlockId, setActiveImageBlockId] = useState<string | null>(
     null
   );
-  const [selectedBlockType, setSelectedBlockType] = useState<string | null>(
+  const [galleryTarget, setGalleryTarget] = useState<"blocks" | "draft" | null>(
     null
   );
-  const isEditing = Boolean(initialProject);
-
-  // Drag and drop sensors
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
+  const [draftBlock, setDraftBlock] = useState<ContentBlock | null>(null);
+  const [previewing, setPreviewing] = useState(false);
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [previewStoryId, setPreviewStoryId] = useState<string | null>(
+    initialProject?.id ?? null
   );
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (over && active.id !== over.id) {
-      setBlocks((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
-
-        const newItems = arrayMove(items, oldIndex, newIndex);
-        // Update order property
-        return newItems.map((block, idx) => ({ ...block, order: idx }));
-      });
-    }
-  };
+  const isEditing = Boolean(projectMeta);
 
   useEffect(() => {
     if (!slugEdited && !isEditing) {
@@ -138,12 +923,18 @@ export default function AdminStoryCreator({
 
   useEffect(() => {
     if (initialProject) {
-      setTitle(initialProject.title || "");
-      setSlug(initialProject.slug || "");
-      setSlugEdited(true);
-      setBlocks(initialProject.contentBlocks || []);
+      setProjectMeta(initialProject);
     }
   }, [initialProject]);
+
+  useEffect(() => {
+    if (projectMeta) {
+      setTitle(projectMeta.title || "");
+      setSlug(projectMeta.slug || "");
+      setSlugEdited(true);
+      setBlocks(projectMeta.contentBlocks || []);
+    }
+  }, [projectMeta]);
 
   // Fetch gallery images
   useEffect(() => {
@@ -189,135 +980,179 @@ export default function AdminStoryCreator({
     setSlug(slugify(value));
   };
 
-  const addBlock = (type: ContentBlock["type"]) => {
-    let newBlock: ContentBlock;
+  const updateBlock = useCallback(
+    (blockId: string, updates: Partial<ContentBlock>) => {
+      console.log("[AdminStoryCreator] updateBlock", blockId, updates);
+      setBlocks((prev) =>
+        prev.map((block) => {
+          if (block.id !== blockId) {
+            return block;
+          }
+          const updatedBlock = { ...block, ...updates } as ContentBlock;
+          console.log("[AdminStoryCreator] block updated", updatedBlock);
+          return updatedBlock;
+        })
+      );
+    },
+    []
+  );
 
-    // Create properly typed block based on type
-    switch (type) {
-      case "title":
-        newBlock = {
-          id: generateId(type),
-          type: "title",
-          order: blocks.length,
-          text: "",
-          fontSize: "large",
-          alignment: "left",
-        };
-        break;
-      case "description":
-        newBlock = {
-          id: generateId(type),
-          type: "description",
-          order: blocks.length,
-          content: "",
-          lineHeight: 1.6,
-          maxWidth: 800,
-        };
-        break;
-      case "story-image":
-        newBlock = {
-          id: generateId(type),
-          type: "story-image",
-          order: blocks.length,
-          src: "",
-          alt: "",
-          size: "full-width",
-          aspectRatioLock: false,
-        };
-        break;
-      case "image-label":
-        newBlock = {
-          id: generateId(type),
-          type: "image-label",
-          order: blocks.length,
-          text: "",
-          placement: "below",
-          italic: false,
-        };
-        break;
-      case "quote":
-        newBlock = {
-          id: generateId(type),
-          type: "quote",
-          order: blocks.length,
-          text: "",
-          alignment: "center",
-        };
-        break;
-      case "divider":
-        newBlock = {
-          id: generateId(type),
-          type: "divider",
-          order: blocks.length,
-          spacingTop: 20,
-          spacingBottom: 20,
-        };
-        break;
-      case "footer":
-        newBlock = {
-          id: generateId(type),
-          type: "footer",
-          order: blocks.length,
-          pageWidth: "medium",
-        };
-        break;
-      default:
-        // Fallback for other block types
-        newBlock = {
-          id: generateId(type),
-          type,
-          order: blocks.length,
-        } as ContentBlock;
-    }
+  const removeBlock = useCallback(
+    (blockId: string) => {
+      console.log("[AdminStoryCreator] removeBlock", blockId);
+      setBlocks((prev) =>
+        prev
+          .filter((block) => block.id !== blockId)
+          .map((block, idx) => ({ ...block, order: idx }))
+      );
+      if (blockId === activeImageBlockId) {
+        setActiveImageBlockId(null);
+        setShowGallery(false);
+      }
+    },
+    [activeImageBlockId, setShowGallery]
+  );
 
-    setBlocks([...blocks, newBlock]);
-    setEditingBlockIndex(blocks.length);
-    setSelectedBlockType(null); // Reset the dropdown
-  };
-
-  const updateBlock = (index: number, updates: Partial<ContentBlock>) => {
-    setBlocks(
-      (prev) =>
-        prev.map((block, idx) =>
-          idx === index ? ({ ...block, ...updates } as ContentBlock) : block
-        ) as ContentBlock[]
-    );
-  };
-
-  const removeBlock = (index: number) => {
-    setBlocks((prev) => {
-      const updated = prev.filter((_, idx) => idx !== index);
-      return updated.map((block, idx) => ({ ...block, order: idx }));
-    });
-    if (editingBlockIndex === index) {
-      setEditingBlockIndex(null);
-    } else if (editingBlockIndex !== null && editingBlockIndex > index) {
-      setEditingBlockIndex(editingBlockIndex - 1);
-    }
-  };
-
-  const moveBlock = (index: number, direction: "up" | "down") => {
+  const moveBlock = useCallback((index: number, direction: "up" | "down") => {
+    console.log("[AdminStoryCreator] moveBlock", { index, direction });
     setBlocks((prev) => {
       const newIndex = direction === "up" ? index - 1 : index + 1;
       if (newIndex < 0 || newIndex >= prev.length) return prev;
       const updated = [...prev];
       const [movedBlock] = updated.splice(index, 1);
       updated.splice(newIndex, 0, movedBlock);
+      console.log("[AdminStoryCreator] blocks after move", updated);
       return updated.map((block, idx) => ({ ...block, order: idx }));
     });
-  };
+  }, []);
 
-  const selectImageFromGallery = (image: GalleryImage) => {
-    if (editingBlockIndex !== null) {
-      const block = blocks[editingBlockIndex];
-      if (block.type === "story-image") {
-        updateBlock(editingBlockIndex, {
-          ...block,
+  const closeGallery = useCallback(() => {
+    setShowGallery(false);
+    setActiveImageBlockId(null);
+    setGalleryTarget(null);
+  }, []);
+
+  const selectImageFromGallery = useCallback(
+    (image: GalleryImage) => {
+      if (!activeImageBlockId || !galleryTarget) return;
+      console.log("[AdminStoryCreator] selectImageFromGallery", {
+        blockId: activeImageBlockId,
+        target: galleryTarget,
+        image,
+      });
+
+      if (galleryTarget === "draft") {
+        setDraftBlock((prev) =>
+          prev && prev.id === activeImageBlockId
+            ? ({
+                ...prev,
+                src: image.url,
+                alt: image.filename || image.path || "Image",
+              } as ContentBlock)
+            : prev
+        );
+      } else {
+        updateBlock(activeImageBlockId, {
           src: image.url,
           alt: image.filename || image.path || "Image",
-        } as any);
-        setShowGallery(false);
+        });
       }
+
+      closeGallery();
+    },
+    [activeImageBlockId, galleryTarget, updateBlock, closeGallery]
+  );
+
+  const openCreateModal = () => {
+    setModalMode("create");
+    setDraftBlock(null);
+    setModalOpen(true);
+  };
+
+  const openEditModal = (block: ContentBlock) => {
+    setModalMode("edit");
+    setDraftBlock({ ...block });
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setDraftBlock(null);
+    closeGallery();
+  };
+
+  const handleDraftTypeChange = (type: ContentBlock["type"]) => {
+    const order =
+      modalMode === "edit" && draftBlock ? draftBlock.order : blocks.length;
+    const overrides =
+      modalMode === "edit" && draftBlock ? { id: draftBlock.id } : undefined;
+    const template = createBlockTemplate(type, order, overrides);
+    setDraftBlock(template);
+  };
+
+  const updateDraftBlock = (updates: Partial<ContentBlock>) => {
+    setDraftBlock((prev) =>
+      prev ? ({ ...prev, ...updates } as ContentBlock) : prev
+    );
+  };
+
+  const handleModalSave = () => {
+    if (!draftBlock) return;
+    if (modalMode === "create") {
+      const newBlock = { ...draftBlock, order: blocks.length };
+      setBlocks((prev) => [...prev, newBlock]);
+    } else {
+      setBlocks((prev) =>
+        prev
+          .map((block) => (block.id === draftBlock.id ? draftBlock : block))
+          .map((block, idx) => ({ ...block, order: idx }))
+      );
+    }
+    closeModal();
+  };
+
+  const getBlockLabel = (block: ContentBlock) => {
+    switch (block.type) {
+      case "title":
+        return "Title";
+      case "description":
+        return "Description";
+      case "story-image":
+        return "Image";
+      case "quote":
+        return "Quote";
+      case "divider":
+        return "Divider";
+      case "footer":
+        return "Footer";
+      default:
+        return block.type;
+    }
+  };
+
+  const getBlockSummary = (block: ContentBlock) => {
+    switch (block.type) {
+      case "title":
+        return (block as TitleBlock).text || "No title yet";
+      case "description":
+        return ((block as DescriptionBlock).content || "No description").slice(
+          0,
+          120
+        );
+      case "story-image":
+        return (block as StoryImageBlock).src
+          ? (block as StoryImageBlock).src
+          : "No image selected";
+      case "quote":
+        return (block as QuoteBlock).text || "No quote text";
+      case "divider":
+        return `Spacing: ${(block as DividerBlock).spacingTop ?? 20}px / ${
+          (block as DividerBlock).spacingBottom ?? 20
+        }px`;
+      case "footer":
+        return (block as FooterBlock).text || "No footer text";
+      default:
+        return "No content";
     }
   };
 
@@ -344,17 +1179,13 @@ export default function AdminStoryCreator({
     return true;
   };
 
-  const handleSave = async () => {
-    setErrorMessage(null);
-    setSuccessMessage(null);
-
-    if (!validateForm()) return;
+  const buildPayload = (): Project | null => {
+    if (!validateForm()) return null;
 
     const now = new Date().toISOString();
-    const projectId =
-      (isEditing && initialProject?.id) || slug || generateId("story");
+    const projectId = projectMeta?.id || slug || generateId("story");
 
-    const payload: Project = {
+    return {
       id: projectId,
       title: title.trim(),
       slug,
@@ -363,19 +1194,31 @@ export default function AdminStoryCreator({
       featuredImage:
         blocks.find((b) => b.type === "story-image")?.src || undefined,
       contentBlocks: blocks,
-      createdAt: initialProject?.createdAt || now,
+      createdAt: projectMeta?.createdAt || now,
       updatedAt: now,
-      published: initialProject?.published ?? false,
-      tags: initialProject?.tags ?? ["story"],
+      published: projectMeta?.published ?? false,
+      tags: projectMeta?.tags ?? ["story"],
       kind: "story",
     };
+  };
+
+  const persistStory = async (options?: { showSuccess?: boolean }) => {
+    const showSuccess = options?.showSuccess ?? true;
+    const payload = buildPayload();
+    if (!payload) return null;
+
+    setErrorMessage(null);
+    if (!showSuccess) {
+      setSuccessMessage(null);
+    }
+
+    const url = projectMeta
+      ? `/api/projects/${encodeURIComponent(payload.id)}`
+      : "/api/projects";
+    const method = projectMeta ? "PUT" : "POST";
 
     try {
       setSaving(true);
-      const url = isEditing
-        ? `/api/projects/${encodeURIComponent(projectId)}`
-        : "/api/projects";
-      const method = isEditing ? "PUT" : "POST";
       const response = await fetch(url, {
         method,
         headers: {
@@ -384,762 +1227,115 @@ export default function AdminStoryCreator({
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) {
-        const data = (await response.json()) as { error?: string };
-        const errorMessage =
+      const data = (await response.json()) as {
+        project?: Project;
+        error?: string;
+      };
+
+      if (!response.ok || !data.project) {
+        const message =
           data.error ||
-          (isEditing ? "Failed to update story" : "Failed to create story");
-
-        // If it's a duplicate key error, suggest changing the slug
-        if (
-          response.status === 409 ||
-          errorMessage.includes("already exists")
-        ) {
-          throw new Error(
-            `${errorMessage} Try changing the slug to something unique.`
-          );
-        }
-
-        throw new Error(errorMessage);
+          (projectMeta ? "Failed to update story." : "Failed to create story.");
+        throw new Error(message);
       }
 
-      setSuccessMessage(
-        isEditing
-          ? "Story updated successfully. Redirecting…"
-          : "Story created successfully. Redirecting…"
-      );
-      setTimeout(() => {
-        router.refresh();
-        router.push("/admin");
-      }, 1200);
+      setProjectMeta(data.project);
+      setPreviewStoryId(data.project.id);
+      if (showSuccess) {
+        setSuccessMessage(
+          projectMeta
+            ? "Story updated successfully."
+            : "Story saved successfully."
+        );
+      }
+
+      return data.project;
     } catch (error) {
       console.error(error);
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : isEditing
-          ? "Failed to update story."
-          : "Failed to create story."
+        error instanceof Error ? error.message : "Failed to save story."
       );
+      return null;
     } finally {
       setSaving(false);
     }
   };
 
-  // Sortable block wrapper component
-  const SortableBlock = ({
-    block,
-    index,
-    children,
-  }: {
-    block: ContentBlock;
-    index: number;
-    children: React.ReactNode;
-  }) => {
-    const {
-      attributes,
-      listeners,
-      setNodeRef,
-      transform,
-      transition,
-      isDragging,
-    } = useSortable({ id: block.id });
-
-    const style = {
-      transform: CSS.Transform.toString(transform),
-      transition,
-      opacity: isDragging ? 0.5 : 1,
-    };
-
-    return (
-      <div ref={setNodeRef} style={style}>
-        <Paper
-          p="md"
-          withBorder
-          style={{
-            backgroundColor: isDark
-              ? "var(--mantine-color-dark-5)"
-              : "var(--mantine-color-white)",
-            borderColor: isDark
-              ? "var(--mantine-color-dark-4)"
-              : "var(--mantine-color-gray-3)",
-            position: "relative",
-          }}
-        >
-          <Group
-            gap="xs"
-            style={{
-              position: "absolute",
-              top: "8px",
-              right: "8px",
-              zIndex: 10,
-            }}
-          >
-            <ActionIcon
-              size="sm"
-              variant="subtle"
-              {...attributes}
-              {...listeners}
-              style={{ cursor: "grab" }}
-              title="Drag to reorder"
-            >
-              <IconGripVertical size={16} />
-            </ActionIcon>
-            <ActionIcon
-              size="sm"
-              variant="subtle"
-              onClick={() => moveBlock(index, "up")}
-              disabled={index === 0}
-            >
-              <IconArrowUp size={16} />
-            </ActionIcon>
-            <ActionIcon
-              size="sm"
-              variant="subtle"
-              onClick={() => moveBlock(index, "down")}
-              disabled={index === blocks.length - 1}
-            >
-              <IconArrowDown size={16} />
-            </ActionIcon>
-            <ActionIcon
-              size="sm"
-              variant="subtle"
-              color="red"
-              onClick={() => removeBlock(index)}
-            >
-              <IconTrash size={16} />
-            </ActionIcon>
-          </Group>
-          {children}
-        </Paper>
-      </div>
-    );
+  const handleSave = async () => {
+    const saved = await persistStory({ showSuccess: true });
+    if (saved) {
+      router.refresh();
+    }
   };
 
-  const renderBlockEditor = (block: ContentBlock, index: number) => {
+  const handlePreview = async () => {
+    setPreviewing(true);
+    const saved = await persistStory({ showSuccess: false });
+    if (saved) {
+      setPreviewModalOpen(true);
+    }
+    setPreviewing(false);
+  };
+
+  const renderDraftEditor = (block: ContentBlock) => {
+    console.log("[AdminStoryCreator] renderBlockEditor", {
+      id: block.id,
+      type: block.type,
+    });
     switch (block.type) {
       case "title":
-        const titleBlock = block as TitleBlock;
         return (
-          <Stack gap="sm" style={{ paddingTop: "40px" }}>
-            <Text size="sm" fw={500} c={isDark ? "gray.0" : "dark.9"}>
-              Title Block
-            </Text>
-            <TextInput
-              label="Title"
-              value={titleBlock.text || ""}
-              onChange={(e) =>
-                updateBlock(index, { ...titleBlock, text: e.target.value })
-              }
-              placeholder="Enter title"
-            />
-            <TextInput
-              label="Subtitle (optional)"
-              value={titleBlock.subtitle || ""}
-              onChange={(e) =>
-                updateBlock(index, {
-                  ...titleBlock,
-                  subtitle: e.target.value,
-                })
-              }
-              placeholder="Enter subtitle"
-            />
-            <Group>
-              <Select
-                label="Font Size"
-                value={titleBlock.fontSize || "large"}
-                onChange={(value) =>
-                  updateBlock(index, {
-                    ...titleBlock,
-                    fontSize: (value || "large") as
-                      | "small"
-                      | "medium"
-                      | "large"
-                      | "xl"
-                      | "2xl"
-                      | "3xl",
-                  })
-                }
-                data={[
-                  { value: "small", label: "Small" },
-                  { value: "medium", label: "Medium" },
-                  { value: "large", label: "Large" },
-                  { value: "xl", label: "Extra Large" },
-                  { value: "2xl", label: "2X Large" },
-                  { value: "3xl", label: "3X Large" },
-                ]}
-                styles={{
-                  input: {
-                    color: isDark
-                      ? "var(--mantine-color-gray-0)"
-                      : "var(--mantine-color-dark-9)",
-                    backgroundColor: isDark
-                      ? "var(--mantine-color-dark-5)"
-                      : "var(--mantine-color-white)",
-                  },
-                  dropdown: {
-                    backgroundColor: isDark
-                      ? "var(--mantine-color-dark-6)"
-                      : "var(--mantine-color-white)",
-                  },
-                  option: {
-                    color: isDark
-                      ? "var(--mantine-color-gray-0)"
-                      : "var(--mantine-color-dark-9)",
-                    backgroundColor: isDark
-                      ? "var(--mantine-color-dark-6)"
-                      : "var(--mantine-color-white)",
-                    "&:hover": {
-                      backgroundColor: isDark
-                        ? "var(--mantine-color-dark-5)"
-                        : "var(--mantine-color-gray-1)",
-                    },
-                  },
-                }}
-              />
-              <Select
-                label="Alignment"
-                value={titleBlock.alignment || "left"}
-                onChange={(value) =>
-                  updateBlock(index, {
-                    ...titleBlock,
-                    alignment: (value || "left") as "left" | "center" | "right",
-                  })
-                }
-                data={[
-                  { value: "left", label: "Left" },
-                  { value: "center", label: "Center" },
-                  { value: "right", label: "Right" },
-                ]}
-                styles={{
-                  input: {
-                    color: isDark
-                      ? "var(--mantine-color-gray-0)"
-                      : "var(--mantine-color-dark-9)",
-                    backgroundColor: isDark
-                      ? "var(--mantine-color-dark-5)"
-                      : "var(--mantine-color-white)",
-                  },
-                  dropdown: {
-                    backgroundColor: isDark
-                      ? "var(--mantine-color-dark-6)"
-                      : "var(--mantine-color-white)",
-                  },
-                  option: {
-                    color: isDark
-                      ? "var(--mantine-color-gray-0)"
-                      : "var(--mantine-color-dark-9)",
-                    backgroundColor: isDark
-                      ? "var(--mantine-color-dark-6)"
-                      : "var(--mantine-color-white)",
-                    "&:hover": {
-                      backgroundColor: isDark
-                        ? "var(--mantine-color-dark-5)"
-                        : "var(--mantine-color-gray-1)",
-                    },
-                  },
-                }}
-              />
-            </Group>
-          </Stack>
+          <TitleBlockEditor
+            block={block as TitleBlock}
+            isDark={isDark}
+            onChange={(updates) => updateDraftBlock(updates)}
+          />
         );
-
       case "description":
-        const descBlock = block as DescriptionBlock;
         return (
-          <Stack gap="sm" style={{ paddingTop: "40px" }}>
-            <Text size="sm" fw={500} c={isDark ? "gray.0" : "dark.9"}>
-              Description Block
-            </Text>
-            <Textarea
-              label="Content (supports basic HTML formatting)"
-              value={descBlock.content || ""}
-              onChange={(e) =>
-                updateBlock(index, {
-                  ...descBlock,
-                  content: e.target.value,
-                })
-              }
-              placeholder="Enter description text..."
-              minRows={4}
-            />
-            <Group>
-              <NumberInput
-                label="Line Height"
-                value={descBlock.lineHeight || 1.6}
-                onChange={(value) =>
-                  updateBlock(index, {
-                    ...block,
-                    lineHeight: Number(value),
-                  } as any)
-                }
-                min={1}
-                max={3}
-                step={0.1}
-                style={{ flex: 1 }}
-              />
-              <NumberInput
-                label="Max Width (px)"
-                value={descBlock.maxWidth || 800}
-                onChange={(value) =>
-                  updateBlock(index, {
-                    ...block,
-                    maxWidth: Number(value),
-                  } as any)
-                }
-                min={200}
-                max={1200}
-                style={{ flex: 1 }}
-              />
-            </Group>
-          </Stack>
+          <DescriptionBlockEditor
+            block={block as DescriptionBlock}
+            isDark={isDark}
+            onChange={(updates) => updateDraftBlock(updates)}
+          />
         );
-
       case "story-image":
-        const imageBlock = block as StoryImageBlock;
         return (
-          <Stack gap="sm" style={{ paddingTop: "40px" }}>
-            <Text size="sm" fw={500} c={isDark ? "gray.0" : "dark.9"}>
-              Image Block
-            </Text>
-            {imageBlock.src && (
-              <div
-                style={{
-                  position: "relative",
-                  width: "100%",
-                  height: "200px",
-                  borderRadius: "var(--mantine-radius-md)",
-                  overflow: "hidden",
-                  backgroundColor: isDark
-                    ? "var(--mantine-color-dark-4)"
-                    : "var(--mantine-color-gray-1)",
-                }}
-              >
-                <Image
-                  src={imageBlock.src}
-                  alt={imageBlock.alt || "Preview"}
-                  fill
-                  style={{ objectFit: "contain" }}
-                />
-              </div>
-            )}
-            <Button
-              variant="outline"
-              onClick={() => {
-                setEditingBlockIndex(index);
-                setShowGallery(true);
-              }}
-            >
-              {imageBlock.src ? "Change Image" : "Select Image from Gallery"}
-            </Button>
-            <TextInput
-              label="Alt Text"
-              value={imageBlock.alt || ""}
-              onChange={(e) =>
-                updateBlock(index, { ...block, alt: e.target.value } as any)
-              }
-              placeholder="Enter alt text"
-            />
-            <Group>
-              <Select
-                label="Size"
-                value={
-                  typeof imageBlock.size === "number"
-                    ? "custom"
-                    : imageBlock.size || "full-width"
-                }
-                onChange={(value) => {
-                  if (value === "custom") {
-                    updateBlock(index, { ...block, size: 600 } as any);
-                  } else {
-                    updateBlock(index, { ...block, size: value } as any);
-                  }
-                }}
-                data={[
-                  { value: "full-width", label: "Full Width" },
-                  { value: "narrow", label: "Narrow" },
-                  { value: "custom", label: "Custom (px)" },
-                ]}
-                styles={{
-                  input: {
-                    color: isDark
-                      ? "var(--mantine-color-gray-0)"
-                      : "var(--mantine-color-dark-9)",
-                    backgroundColor: isDark
-                      ? "var(--mantine-color-dark-5)"
-                      : "var(--mantine-color-white)",
-                  },
-                  dropdown: {
-                    backgroundColor: isDark
-                      ? "var(--mantine-color-dark-6)"
-                      : "var(--mantine-color-white)",
-                  },
-                  option: {
-                    color: isDark
-                      ? "var(--mantine-color-gray-0)"
-                      : "var(--mantine-color-dark-9)",
-                    backgroundColor: isDark
-                      ? "var(--mantine-color-dark-6)"
-                      : "var(--mantine-color-white)",
-                    "&:hover": {
-                      backgroundColor: isDark
-                        ? "var(--mantine-color-dark-5)"
-                        : "var(--mantine-color-gray-1)",
-                    },
-                  },
-                }}
-              />
-              {typeof imageBlock.size === "number" && (
-                <NumberInput
-                  label="Custom Width (px)"
-                  value={imageBlock.size}
-                  onChange={(value) =>
-                    updateBlock(index, {
-                      ...block,
-                      size: Number(value),
-                    } as any)
-                  }
-                  min={200}
-                  max={1200}
-                  style={{ flex: 1 }}
-                />
-              )}
-            </Group>
-            <Group>
-              <Switch
-                label="Lock Aspect Ratio"
-                checked={imageBlock.aspectRatioLock || false}
-                onChange={(e) =>
-                  updateBlock(index, {
-                    ...block,
-                    aspectRatioLock: e.currentTarget.checked,
-                  } as any)
-                }
-              />
-              {imageBlock.aspectRatioLock && (
-                <Select
-                  label="Aspect Ratio"
-                  value={imageBlock.aspectRatio || "auto"}
-                  onChange={(value) =>
-                    updateBlock(index, {
-                      ...block,
-                      aspectRatio: (value || "auto") as
-                        | "auto"
-                        | "square"
-                        | "landscape"
-                        | "portrait"
-                        | "wide"
-                        | "tall",
-                    } as any)
-                  }
-                  data={[
-                    { value: "auto", label: "Auto" },
-                    { value: "square", label: "Square" },
-                    { value: "landscape", label: "Landscape" },
-                    { value: "portrait", label: "Portrait" },
-                    { value: "wide", label: "Wide" },
-                    { value: "tall", label: "Tall" },
-                  ]}
-                  styles={{
-                    input: {
-                      color: isDark
-                        ? "var(--mantine-color-gray-0)"
-                        : "var(--mantine-color-dark-9)",
-                      backgroundColor: isDark
-                        ? "var(--mantine-color-dark-5)"
-                        : "var(--mantine-color-white)",
-                    },
-                    dropdown: {
-                      backgroundColor: isDark
-                        ? "var(--mantine-color-dark-6)"
-                        : "var(--mantine-color-white)",
-                    },
-                    option: {
-                      color: isDark
-                        ? "var(--mantine-color-gray-0)"
-                        : "var(--mantine-color-dark-9)",
-                      backgroundColor: isDark
-                        ? "var(--mantine-color-dark-6)"
-                        : "var(--mantine-color-white)",
-                      "&:hover": {
-                        backgroundColor: isDark
-                          ? "var(--mantine-color-dark-5)"
-                          : "var(--mantine-color-gray-1)",
-                      },
-                    },
-                  }}
-                />
-              )}
-            </Group>
-          </Stack>
+          <StoryImageBlockEditor
+            block={block as StoryImageBlock}
+            isDark={isDark}
+            onChange={(updates) => updateDraftBlock(updates)}
+            onOpenGallery={() => {
+              setGalleryTarget("draft");
+              setActiveImageBlockId(block.id);
+              setShowGallery(true);
+            }}
+          />
         );
-
-      case "image-label":
-        const labelBlock = block as ImageLabelBlock;
-        return (
-          <Stack gap="sm" style={{ paddingTop: "40px" }}>
-            <Text size="sm" fw={500} c={isDark ? "gray.0" : "dark.9"}>
-              Image Label Block (tied to previous image)
-            </Text>
-            <TextInput
-              label="Label Text"
-              value={labelBlock.text || ""}
-              onChange={(e) =>
-                updateBlock(index, { ...titleBlock, text: e.target.value })
-              }
-              placeholder="Enter image label/caption"
-            />
-            <Group>
-              <Select
-                label="Placement"
-                value={labelBlock.placement || "below"}
-                onChange={(value) =>
-                  updateBlock(index, {
-                    ...block,
-                    placement: (value || "below") as "below" | "overlay",
-                  })
-                }
-                data={[
-                  { value: "below", label: "Below Image" },
-                  { value: "overlay", label: "Overlay on Image" },
-                ]}
-                styles={{
-                  input: {
-                    color: isDark
-                      ? "var(--mantine-color-gray-0)"
-                      : "var(--mantine-color-dark-9)",
-                    backgroundColor: isDark
-                      ? "var(--mantine-color-dark-5)"
-                      : "var(--mantine-color-white)",
-                  },
-                  dropdown: {
-                    backgroundColor: isDark
-                      ? "var(--mantine-color-dark-6)"
-                      : "var(--mantine-color-white)",
-                  },
-                  option: {
-                    color: isDark
-                      ? "var(--mantine-color-gray-0)"
-                      : "var(--mantine-color-dark-9)",
-                    backgroundColor: isDark
-                      ? "var(--mantine-color-dark-6)"
-                      : "var(--mantine-color-white)",
-                    "&:hover": {
-                      backgroundColor: isDark
-                        ? "var(--mantine-color-dark-5)"
-                        : "var(--mantine-color-gray-1)",
-                    },
-                  },
-                }}
-              />
-              <Switch
-                label="Italic"
-                checked={labelBlock.italic || false}
-                onChange={(e) =>
-                  updateBlock(index, {
-                    ...block,
-                    italic: e.currentTarget.checked,
-                  } as any)
-                }
-              />
-            </Group>
-          </Stack>
-        );
-
       case "quote":
-        const quoteBlock = block as QuoteBlock;
         return (
-          <Stack gap="sm" style={{ paddingTop: "40px" }}>
-            <Text size="sm" fw={500} c={isDark ? "gray.0" : "dark.9"}>
-              Quote Block
-            </Text>
-            <Textarea
-              label="Quote Text"
-              value={quoteBlock.text || ""}
-              onChange={(e) =>
-                updateBlock(index, { ...titleBlock, text: e.target.value })
-              }
-              placeholder="Enter quote text..."
-              minRows={3}
-            />
-            <TextInput
-              label="Author (optional)"
-              value={quoteBlock.author || ""}
-              onChange={(e) =>
-                updateBlock(index, {
-                  ...block,
-                  author: e.target.value,
-                } as any)
-              }
-              placeholder="Enter author name"
-            />
-            <Select
-              label="Alignment"
-              value={quoteBlock.alignment || "center"}
-              onChange={(value) =>
-                updateBlock(index, {
-                  ...block,
-                  alignment: (value || "center") as "left" | "center" | "right",
-                })
-              }
-              data={[
-                { value: "left", label: "Left" },
-                { value: "center", label: "Center" },
-                { value: "right", label: "Right" },
-              ]}
-              styles={{
-                input: {
-                  color: isDark
-                    ? "var(--mantine-color-gray-0)"
-                    : "var(--mantine-color-dark-9)",
-                  backgroundColor: isDark
-                    ? "var(--mantine-color-dark-5)"
-                    : "var(--mantine-color-white)",
-                },
-                dropdown: {
-                  backgroundColor: isDark
-                    ? "var(--mantine-color-dark-6)"
-                    : "var(--mantine-color-white)",
-                },
-                option: {
-                  color: isDark
-                    ? "var(--mantine-color-gray-0)"
-                    : "var(--mantine-color-dark-9)",
-                  backgroundColor: isDark
-                    ? "var(--mantine-color-dark-6)"
-                    : "var(--mantine-color-white)",
-                  "&:hover": {
-                    backgroundColor: isDark
-                      ? "var(--mantine-color-dark-5)"
-                      : "var(--mantine-color-gray-1)",
-                  },
-                },
-              }}
-            />
-          </Stack>
+          <QuoteBlockEditor
+            block={block as QuoteBlock}
+            isDark={isDark}
+            onChange={(updates) => updateDraftBlock(updates)}
+          />
         );
-
       case "divider":
-        const dividerBlock = block as DividerBlock;
         return (
-          <Stack gap="sm" style={{ paddingTop: "40px" }}>
-            <Text size="sm" fw={500} c={isDark ? "gray.0" : "dark.9"}>
-              Divider Block
-            </Text>
-            <Group>
-              <NumberInput
-                label="Spacing Top (px)"
-                value={dividerBlock.spacingTop || 20}
-                onChange={(value) =>
-                  updateBlock(index, {
-                    ...block,
-                    spacingTop: Number(value),
-                  } as any)
-                }
-                min={0}
-                max={200}
-                style={{ flex: 1 }}
-              />
-              <NumberInput
-                label="Spacing Bottom (px)"
-                value={dividerBlock.spacingBottom || 20}
-                onChange={(value) =>
-                  updateBlock(index, {
-                    ...block,
-                    spacingBottom: Number(value),
-                  } as any)
-                }
-                min={0}
-                max={200}
-                style={{ flex: 1 }}
-              />
-            </Group>
-          </Stack>
+          <DividerBlockEditor
+            block={block as DividerBlock}
+            isDark={isDark}
+            onChange={(updates) => updateDraftBlock(updates)}
+          />
         );
-
       case "footer":
-        const footerBlock = block as FooterBlock;
         return (
-          <Stack gap="sm" style={{ paddingTop: "40px" }}>
-            <Text size="sm" fw={500} c={isDark ? "gray.0" : "dark.9"}>
-              Footer Block
-            </Text>
-            <TextInput
-              label="Text (optional)"
-              value={footerBlock.text || ""}
-              onChange={(e) =>
-                updateBlock(index, { ...titleBlock, text: e.target.value })
-              }
-              placeholder="Enter footer text"
-            />
-            <TextInput
-              label="Date (optional)"
-              value={footerBlock.date || ""}
-              onChange={(e) =>
-                updateBlock(index, { ...block, date: e.target.value } as any)
-              }
-              placeholder="Enter date"
-            />
-            <TextInput
-              label="Credits (optional)"
-              value={footerBlock.credits || ""}
-              onChange={(e) =>
-                updateBlock(index, {
-                  ...block,
-                  credits: e.target.value,
-                } as any)
-              }
-              placeholder="Enter credits"
-            />
-            <Select
-              label="Page Width"
-              value={footerBlock.pageWidth || "medium"}
-              onChange={(value) =>
-                updateBlock(index, {
-                  ...block,
-                  pageWidth: (value || "medium") as
-                    | "full"
-                    | "medium"
-                    | "narrow",
-                })
-              }
-              data={[
-                { value: "full", label: "Full Width" },
-                { value: "medium", label: "Medium" },
-                { value: "narrow", label: "Narrow" },
-              ]}
-              styles={{
-                input: {
-                  color: isDark
-                    ? "var(--mantine-color-gray-0)"
-                    : "var(--mantine-color-dark-9)",
-                  backgroundColor: isDark
-                    ? "var(--mantine-color-dark-5)"
-                    : "var(--mantine-color-white)",
-                },
-                dropdown: {
-                  backgroundColor: isDark
-                    ? "var(--mantine-color-dark-6)"
-                    : "var(--mantine-color-white)",
-                },
-                option: {
-                  color: isDark
-                    ? "var(--mantine-color-gray-0)"
-                    : "var(--mantine-color-dark-9)",
-                  backgroundColor: isDark
-                    ? "var(--mantine-color-dark-6)"
-                    : "var(--mantine-color-white)",
-                  "&:hover": {
-                    backgroundColor: isDark
-                      ? "var(--mantine-color-dark-5)"
-                      : "var(--mantine-color-gray-1)",
-                  },
-                },
-              }}
-            />
-          </Stack>
+          <FooterBlockEditor
+            block={block as FooterBlock}
+            isDark={isDark}
+            onChange={(updates) => updateDraftBlock(updates)}
+          />
         );
-
       default:
         return null;
     }
@@ -1180,6 +1376,16 @@ export default function AdminStoryCreator({
           </div>
           <Group gap="xs">
             <Button
+              variant="light"
+              size="xs"
+              color="blue"
+              onClick={handlePreview}
+              disabled={saving || previewing}
+              loading={previewing}
+            >
+              Preview
+            </Button>
+            <Button
               variant="outline"
               size="xs"
               color={isDark ? "gray" : "dark"}
@@ -1197,7 +1403,7 @@ export default function AdminStoryCreator({
               loading={saving}
               disabled={saving}
             >
-              {isEditing ? "Update Story" : "Create Story"}
+              {isEditing ? "Update Story" : "Save Story"}
             </Button>
           </Group>
         </Group>
@@ -1245,6 +1451,7 @@ export default function AdminStoryCreator({
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter story title"
               required
+              styles={fieldStyles}
             />
             <TextInput
               label="Slug"
@@ -1252,6 +1459,7 @@ export default function AdminStoryCreator({
               onChange={(e) => handleSlugChange(e.target.value)}
               placeholder="story-slug"
               required
+              styles={fieldStyles}
             />
           </Stack>
         </Paper>
@@ -1279,57 +1487,81 @@ export default function AdminStoryCreator({
               </Text>
             )}
 
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={blocks.map((b) => b.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                <Stack gap="md">
-                  {blocks.map((block, index) => (
-                    <SortableBlock key={block.id} block={block} index={index}>
-                      {renderBlockEditor(block, index)}
-                    </SortableBlock>
-                  ))}
-                </Stack>
-              </SortableContext>
-            </DndContext>
+            <Stack gap="md">
+              {blocks.map((block, index) => (
+                <BlockShell
+                  key={block.id}
+                  isDark={isDark}
+                  index={index}
+                  total={blocks.length}
+                  blockId={block.id}
+                  onMove={moveBlock}
+                  onRemove={removeBlock}
+                >
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => openEditModal(block)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        openEditModal(block);
+                      }
+                    }}
+                    style={{
+                      cursor: "pointer",
+                      paddingTop: "24px",
+                      color: isDark
+                        ? "var(--mantine-color-gray-0)"
+                        : "var(--mantine-color-dark-9)",
+                    }}
+                  >
+                    <Text size="sm" fw={600}>
+                      {getBlockLabel(block)}
+                    </Text>
+                    <Text
+                      size="xs"
+                      c={isDark ? "var(--mantine-color-gray-3)" : "dimmed"}
+                    >
+                      {getBlockSummary(block)}
+                    </Text>
+                  </div>
+                </BlockShell>
+              ))}
+            </Stack>
 
-            {/* Add Block button at the bottom */}
-            <Paper
-              p="md"
-              withBorder
-              mt="md"
-              style={{
-                backgroundColor: isDark
-                  ? "var(--mantine-color-dark-5)"
-                  : "var(--mantine-color-white)",
-                borderColor: isDark
-                  ? "var(--mantine-color-dark-4)"
-                  : "var(--mantine-color-gray-3)",
-              }}
+            <Button
+              variant="outline"
+              color={isDark ? "gray" : "dark"}
+              onClick={openCreateModal}
+              styles={getOutlineButtonStyles(isDark)}
             >
+              Add Content Block
+            </Button>
+          </Stack>
+        </Paper>
+
+        <Modal
+          opened={showGallery}
+          onClose={closeGallery}
+          title="Select Image from Gallery"
+          size="xl"
+          yOffset="5vh"
+          withinPortal
+          zIndex={2100}
+        >
+          <Stack gap="md">
+            <Group>
               <Select
-                placeholder="Add Block"
-                value={selectedBlockType}
+                placeholder="All folders"
                 data={[
-                  { value: "title", label: "Title" },
-                  { value: "description", label: "Description" },
-                  { value: "story-image", label: "Image" },
-                  { value: "image-label", label: "Image Label" },
-                  { value: "quote", label: "Quote" },
-                  { value: "divider", label: "Divider" },
-                  { value: "footer", label: "Footer" },
+                  { value: "", label: "All folders" },
+                  ...folders.map((f) => ({ value: f, label: f })),
                 ]}
-                onChange={(value) => {
-                  if (value) {
-                    addBlock(value as ContentBlock["type"]);
-                  }
-                }}
-                searchable
+                value={selectedFolder || ""}
+                onChange={(value) => setSelectedFolder(value || null)}
+                style={{ minWidth: "150px" }}
+                size="xs"
                 clearable
                 styles={{
                   input: {
@@ -1360,136 +1592,167 @@ export default function AdminStoryCreator({
                   },
                 }}
               />
-            </Paper>
-          </Stack>
-        </Paper>
-
-        {showGallery && (
-          <Paper
-            p="md"
-            withBorder
-            style={{
-              backgroundColor: isDark
-                ? "var(--mantine-color-dark-6)"
-                : "var(--mantine-color-white)",
-              borderColor: isDark
-                ? "var(--mantine-color-dark-4)"
-                : "var(--mantine-color-gray-3)",
-            }}
-          >
-            <Stack gap="md">
-              <Group justify="space-between">
-                <Text size="sm" fw={500} c={isDark ? "gray.0" : "dark.9"}>
-                  Select Image from Gallery
-                </Text>
-                <ActionIcon
-                  variant="subtle"
-                  onClick={() => {
-                    setShowGallery(false);
-                    setEditingBlockIndex(null);
-                  }}
-                >
-                  <IconX size={16} />
-                </ActionIcon>
-              </Group>
-              <Group>
-                <Select
-                  placeholder="All folders"
-                  data={[
-                    { value: "", label: "All folders" },
-                    ...folders.map((f) => ({ value: f, label: f })),
-                  ]}
-                  value={selectedFolder || ""}
-                  onChange={(value) => setSelectedFolder(value || null)}
-                  style={{ minWidth: "150px" }}
-                  size="xs"
-                  clearable
-                  styles={{
-                    input: {
-                      color: isDark
-                        ? "var(--mantine-color-gray-0)"
-                        : "var(--mantine-color-dark-9)",
-                      backgroundColor: isDark
-                        ? "var(--mantine-color-dark-5)"
-                        : "var(--mantine-color-white)",
-                    },
-                    dropdown: {
-                      backgroundColor: isDark
-                        ? "var(--mantine-color-dark-6)"
-                        : "var(--mantine-color-white)",
-                    },
-                    option: {
-                      color: isDark
-                        ? "var(--mantine-color-gray-0)"
-                        : "var(--mantine-color-dark-9)",
-                      backgroundColor: isDark
-                        ? "var(--mantine-color-dark-6)"
-                        : "var(--mantine-color-white)",
-                      "&:hover": {
-                        backgroundColor: isDark
-                          ? "var(--mantine-color-dark-5)"
-                          : "var(--mantine-color-gray-1)",
-                      },
-                    },
-                  }}
-                />
-                <TextInput
-                  placeholder="Search images..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  style={{ flex: 1 }}
-                  size="xs"
-                />
-              </Group>
-              {loadingImages ? (
+              <TextInput
+                placeholder="Search images..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ flex: 1 }}
+                size="xs"
+              />
+            </Group>
+            {loadingImages ? (
+              <Group justify="center" py="xl">
                 <Loader size="sm" />
-              ) : (
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns:
-                      "repeat(auto-fill, minmax(150px, 1fr))",
-                    gap: "var(--mantine-spacing-sm)",
-                    maxHeight: "400px",
-                    overflowY: "auto",
-                  }}
-                >
-                  {filteredGalleryImages.map((image) => (
-                    <div
-                      key={image.url}
-                      onClick={() => selectImageFromGallery(image)}
-                      style={{
-                        position: "relative",
-                        aspectRatio: "1",
-                        borderRadius: "var(--mantine-radius-md)",
-                        overflow: "hidden",
-                        cursor: "pointer",
-                        border: "2px solid transparent",
-                        transition: "border-color 0.2s",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor =
-                          "var(--mantine-color-blue-5)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = "transparent";
-                      }}
-                    >
-                      <Image
-                        src={image.url}
-                        alt={image.filename || "Gallery image"}
-                        fill
-                        style={{ objectFit: "cover" }}
-                        sizes="150px"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Stack>
-          </Paper>
-        )}
+              </Group>
+            ) : (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
+                  gap: "var(--mantine-spacing-sm)",
+                  maxHeight: "60vh",
+                  overflowY: "auto",
+                }}
+              >
+                {filteredGalleryImages.map((image) => (
+                  <div
+                    key={image.url}
+                    onClick={() => selectImageFromGallery(image)}
+                    style={{
+                      position: "relative",
+                      aspectRatio: "1",
+                      borderRadius: "var(--mantine-radius-md)",
+                      overflow: "hidden",
+                      cursor: "pointer",
+                      border: "2px solid transparent",
+                      transition: "border-color 0.2s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor =
+                        "var(--mantine-color-blue-5)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = "transparent";
+                    }}
+                  >
+                    <Image
+                      src={image.url}
+                      alt={image.filename || "Gallery image"}
+                      fill
+                      style={{ objectFit: "cover" }}
+                      sizes="150px"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </Stack>
+        </Modal>
       </Stack>
+
+      <Modal
+        opened={modalOpen}
+        onClose={closeModal}
+        title={
+          modalMode === "create" ? "Add Content Block" : "Edit Content Block"
+        }
+        size="lg"
+        classNames={{
+          content: isDark
+            ? "story-block-modal-dark"
+            : "story-block-modal-light",
+        }}
+        styles={{
+          header: {
+            backgroundColor: isDark
+              ? "var(--mantine-color-dark-6)"
+              : "var(--mantine-color-gray-0)",
+            color: isDark
+              ? "var(--mantine-color-gray-0)"
+              : "var(--mantine-color-dark-7)",
+          },
+          title: {
+            color: isDark
+              ? "var(--mantine-color-gray-0)"
+              : "var(--mantine-color-dark-7)",
+          },
+          close: {
+            color: isDark
+              ? "var(--mantine-color-gray-2)"
+              : "var(--mantine-color-dark-6)",
+          },
+        }}
+      >
+        <Stack gap="md">
+          <Select
+            label="Block Type"
+            placeholder="Select a block type"
+            data={BLOCK_TYPE_OPTIONS}
+            value={draftBlock?.type ?? null}
+            disabled={modalMode === "edit"}
+            onChange={(value) => {
+              if (value) {
+                handleDraftTypeChange(value as ContentBlock["type"]);
+              } else {
+                setDraftBlock(null);
+              }
+            }}
+            required
+            styles={selectStyles}
+          />
+
+          {draftBlock ? (
+            renderDraftEditor(draftBlock)
+          ) : (
+            <Text size="sm" c="dimmed">
+              Choose a block type to begin configuring the content.
+            </Text>
+          )}
+
+          <Group justify="flex-end">
+            <Button
+              variant="subtle"
+              color={isDark ? "gray" : "dark"}
+              onClick={closeModal}
+            >
+              Cancel
+            </Button>
+            <Button
+              color={isDark ? "gray" : "dark"}
+              onClick={handleModalSave}
+              disabled={!draftBlock}
+            >
+              {modalMode === "create" ? "Add Block" : "Save Changes"}
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+      {previewStoryId && (
+        <StoryPreview
+          storyId={previewStoryId}
+          isOpen={previewModalOpen}
+          onClose={() => setPreviewModalOpen(false)}
+        />
+      )}
+      <style jsx global>{`
+        .story-block-modal-dark {
+          background-color: var(--mantine-color-dark-6);
+          color: var(--mantine-color-gray-0);
+        }
+        .story-block-modal-dark .mantine-Input-input,
+        .story-block-modal-dark .mantine-Textarea-input,
+        .story-block-modal-dark .mantine-Select-input,
+        .story-block-modal-dark .mantine-NumberInput-input {
+          background-color: var(--mantine-color-dark-5);
+          color: var(--mantine-color-gray-0);
+        }
+        .story-block-modal-dark .mantine-InputWrapper-label {
+          color: var(--mantine-color-gray-2);
+        }
+        .story-block-modal-light .mantine-InputWrapper-label {
+          color: var(--mantine-color-dark-7);
+        }
+      `}</style>
     </Container>
   );
 }

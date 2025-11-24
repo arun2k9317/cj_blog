@@ -16,7 +16,7 @@ export default function StoryDisplay({ blocks }: StoryDisplayProps) {
   const isDark = theme === "dark";
 
   const renderedBlocks = useMemo(() => {
-    return blocks.map((block, index) => {
+    return blocks.map((block) => {
       switch (block.type) {
         case "title":
           const titleBlock = block as any;
@@ -87,13 +87,20 @@ export default function StoryDisplay({ blocks }: StoryDisplayProps) {
           const imageBlock = block as any;
           if (!imageBlock.src) return null;
 
-          const nextBlock = blocks[index + 1];
-          const hasLabelBelow =
-            nextBlock?.type === "image-label" &&
-            (nextBlock as any).placement === "below";
+          const captionText =
+            typeof imageBlock.caption === "string"
+              ? imageBlock.caption.trim()
+              : "";
+          const captionPlacement =
+            imageBlock.captionPlacement === "overlay" ? "overlay" : "below";
+          const captionItalic = Boolean(imageBlock.captionItalic);
+          const showOverlayCaption =
+            Boolean(captionText) && captionPlacement === "overlay";
+          const showCaptionBelow =
+            Boolean(captionText) && captionPlacement === "below";
 
           const containerStyle: React.CSSProperties = {
-            marginBottom: hasLabelBelow
+            marginBottom: showCaptionBelow
               ? "var(--mantine-spacing-xs)"
               : "var(--mantine-spacing-lg)",
             position: "relative",
@@ -153,6 +160,31 @@ export default function StoryDisplay({ blocks }: StoryDisplayProps) {
                     style={{ objectFit: "cover" }}
                     sizes="(max-width: 768px) 100vw, 80vw"
                   />
+                  {showOverlayCaption && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        display: "flex",
+                        alignItems: "flex-end",
+                        justifyContent: "center",
+                        padding: "var(--mantine-spacing-sm)",
+                        background:
+                          "linear-gradient(0deg, rgba(0,0,0,0.7), rgba(0,0,0,0))",
+                      }}
+                    >
+                      <Text
+                        size="xs"
+                        c="var(--mantine-color-gray-0)"
+                        style={{
+                          fontStyle: captionItalic ? "italic" : "normal",
+                          textAlign: "center",
+                        }}
+                      >
+                        {captionText}
+                      </Text>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div
@@ -177,62 +209,46 @@ export default function StoryDisplay({ blocks }: StoryDisplayProps) {
                     }}
                     sizes="(max-width: 768px) 100vw, 80vw"
                   />
+                  {showOverlayCaption && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        display: "flex",
+                        alignItems: "flex-end",
+                        justifyContent: "center",
+                        padding: "var(--mantine-spacing-sm)",
+                        background:
+                          "linear-gradient(0deg, rgba(0,0,0,0.7), rgba(0,0,0,0))",
+                      }}
+                    >
+                      <Text
+                        size="xs"
+                        c="var(--mantine-color-gray-0)"
+                        style={{
+                          fontStyle: captionItalic ? "italic" : "normal",
+                          textAlign: "center",
+                        }}
+                      >
+                        {captionText}
+                      </Text>
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
-          );
-
-        case "image-label":
-          const labelBlock = block as any;
-          const prevBlock = blocks[index - 1];
-          const isOverlay = labelBlock.placement === "overlay";
-          const isTiedToImage = prevBlock?.type === "story-image";
-
-          if (!isTiedToImage) return null;
-
-          if (isOverlay) {
-            return (
-              <div
-                key={block.id}
-                style={{
-                  position: "relative",
-                  marginTop: "-60px",
-                  marginBottom: "var(--mantine-spacing-lg)",
-                  padding: "var(--mantine-spacing-sm)",
-                  backgroundColor: isDark
-                    ? "rgba(0, 0, 0, 0.7)"
-                    : "rgba(255, 255, 255, 0.9)",
-                  color: isDark
-                    ? "var(--mantine-color-gray-0)"
-                    : "var(--mantine-color-dark-9)",
-                  textAlign: "center",
-                }}
-              >
+              {showCaptionBelow && (
                 <Text
                   size="xs"
-                  style={{ fontStyle: labelBlock.italic ? "italic" : "normal" }}
+                  c="dimmed"
+                  mt="xs"
+                  style={{
+                    textAlign: "center",
+                    fontStyle: captionItalic ? "italic" : "normal",
+                  }}
                 >
-                  {labelBlock.text || ""}
+                  {captionText}
                 </Text>
-              </div>
-            );
-          }
-
-          return (
-            <div
-              key={block.id}
-              style={{
-                textAlign: "center",
-                marginBottom: "var(--mantine-spacing-lg)",
-              }}
-            >
-              <Text
-                size="xs"
-                c="dimmed"
-                style={{ fontStyle: labelBlock.italic ? "italic" : "normal" }}
-              >
-                {labelBlock.text || ""}
-              </Text>
+              )}
             </div>
           );
 

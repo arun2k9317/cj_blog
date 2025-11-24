@@ -1,6 +1,7 @@
 "use client";
 
 import { Project } from "@/types/project";
+import { Box, Title, Text, Stack, Divider } from "@mantine/core";
 import ContentBlockComponent from "./ContentBlocks/ContentBlock";
 
 interface ProjectRendererProps {
@@ -15,28 +16,34 @@ export default function ProjectRenderer({
   const sortedBlocks = project.contentBlocks.sort((a, b) => a.order - b.order);
 
   return (
-    <div className={`project-renderer ${className}`}>
+    <Box className={`project-renderer ${className}`}>
       {/* Project Header */}
-      <div className="project-header text-left mb-8">
-        <h1 className="text-[15px] font-bold text-gray-900 mb-4">
+      <Stack className="project-header" gap="md" align="flex-start" mb="xl">
+        <Title order={1} size="xl" className="project-title" c="var(--gray-900)">
           {project.title}
-        </h1>
+        </Title>
 
         {project.location && (
-          <div className="text-[13px] text-gray-600 mb-4">
-            {project.location && <span>{project.location}</span>}
-          </div>
+          <Text size="lg" c="var(--gray-600)" mb="md">
+            {project.location}
+          </Text>
         )}
 
         {project.description && (
-          <p className="text-[13px] text-gray-700 max-w-3xl mx-auto leading-relaxed">
+          <Text
+            size="lg"
+            c="var(--gray-700)"
+            maw={{ base: "100%", md: "48rem" }}
+            mx="auto"
+            style={{ lineHeight: 1.75 }}
+          >
             {project.description}
-          </p>
+          </Text>
         )}
-      </div>
+      </Stack>
 
       {/* Content Blocks */}
-      <div className="project-content space-y-12">
+      <Stack className="project-content" gap="xl">
         {sortedBlocks.map((block) => (
           <ContentBlockComponent
             key={block.id}
@@ -44,17 +51,22 @@ export default function ProjectRenderer({
             isEditing={false}
           />
         ))}
-      </div>
+      </Stack>
 
       {/* Project Footer */}
-      <div className="project-footer mt-12 pt-8 border-t border-gray-200">
-        <div className="text-[12px] text-gray-500 text-center">
-          <p>Created: {new Date(project.createdAt).toLocaleDateString()}</p>
+      <Box className="project-footer" mt="xl" pt="md">
+        <Divider mb="md" color="var(--gray-200)" />
+        <Text size="sm" c="var(--gray-500)" ta="center">
+          <Text component="span" display="block">
+            Created: {new Date(project.createdAt).toLocaleDateString()}
+          </Text>
           {project.updatedAt !== project.createdAt && (
-            <p>Updated: {new Date(project.updatedAt).toLocaleDateString()}</p>
+            <Text component="span" display="block">
+              Updated: {new Date(project.updatedAt).toLocaleDateString()}
+            </Text>
           )}
-        </div>
-      </div>
-    </div>
+        </Text>
+      </Box>
+    </Box>
   );
 }

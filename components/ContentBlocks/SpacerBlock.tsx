@@ -1,5 +1,6 @@
 'use client';
 
+import { Box } from '@mantine/core';
 import { SpacerBlock as SpacerBlockType } from '@/types/project';
 
 interface SpacerBlockProps {
@@ -47,16 +48,28 @@ export default function SpacerBlock({ block, isEditing = false, onUpdate, onDele
   }
 
   return (
-    <div 
+    <Box 
       className="content-block"
       style={{ height: `${block.height}rem` }}
     >
       {/* Visual indicator for editing mode */}
       {isEditing && (
-        <div className="w-full h-full border-2 border-dashed border-gray-300 rounded flex items-center justify-center text-gray-500 text-sm">
+        <Box
+          style={{
+            width: "100%",
+            height: "100%",
+            border: "2px dashed var(--gray-300)",
+            borderRadius: "var(--mantine-radius-md)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "var(--gray-500)",
+            fontSize: "0.875rem",
+          }}
+        >
           Spacer ({block.height}rem)
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

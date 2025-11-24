@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import Image from "next/image";
+import { Box } from "@mantine/core";
 // Lightbox is controlled globally by AppShell
 
 export default function Home() {
@@ -56,11 +57,12 @@ export default function Home() {
   return (
     <>
       {/* Iconic Image Section */}
-      <section
+      <Box
+        component="section"
         className="iconic-image-container"
         style={{ height: "90svh", margin: 0, padding: 0, overflow: "hidden" }}
       >
-        <div
+        <Box
           className="iconic-image-wrapper"
           onClick={() => openGlobalLightbox(activeProject.id)}
           style={{
@@ -79,8 +81,8 @@ export default function Home() {
             className="iconic-image"
             priority
           />
-        </div>
-      </section>
+        </Box>
+      </Box>
 
       {/* Image Lightbox handled globally */}
     </>

@@ -489,16 +489,12 @@ export async function getProjectWithBlocks(id: string) {
                     ...baseBlock,
                     src: block.src,
                     alt: block.alt,
-                    size: block.size,
+                    size: normalizeSize(block.size),
                     aspectRatioLock: block.aspect_ratio_lock,
-                    aspectRatio: block.aspect_ratio
-                };
-            case 'image-label':
-                return {
-                    ...baseBlock,
-                    text: block.text,
-                    placement: block.placement,
-                    italic: block.italic
+                    aspectRatio: block.aspect_ratio,
+                    caption: block.caption || undefined,
+                    captionPlacement: block.placement || undefined,
+                    captionItalic: block.italic ?? undefined
                 };
             case 'divider':
                 return {
@@ -527,6 +523,19 @@ export async function getProjectWithBlocks(id: string) {
         kind: project.kind ?? 'project',
         contentBlocks
     };
+}
+
+function normalizeSize(value: unknown): string | number | undefined {
+    if (value === null || value === undefined) return undefined;
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+        if (value === 'full-width' || value === 'narrow') return value;
+        const parsed = Number(value);
+        if (!Number.isNaN(parsed)) {
+            return parsed;
+        }
+    }
+    return undefined;
 }
 
 export async function getProjectsUsingImage(imageUrl: string) {
