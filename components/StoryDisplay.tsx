@@ -16,7 +16,7 @@ export default function StoryDisplay({ blocks }: StoryDisplayProps) {
   const isDark = theme === "dark";
 
   const renderedBlocks = useMemo(() => {
-    return blocks.map((block, index) => {
+    return blocks.map((block) => {
       switch (block.type) {
         case "title":
           const titleBlock = block as any;

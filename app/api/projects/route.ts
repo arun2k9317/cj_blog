@@ -348,15 +348,15 @@ export async function POST(request: NextRequest) {
           aspectRatioLock: 'aspectRatioLock' in block ? block.aspectRatioLock : undefined,
           placement:
             'captionPlacement' in block
-              ? block.captionPlacement
+              ? (block.captionPlacement as string | undefined)
               : 'placement' in block
-              ? block.placement
+              ? (block.placement as string | undefined)
               : undefined,
           italic:
             'captionItalic' in block
-              ? (block as any).captionItalic
+              ? (block.captionItalic as boolean | undefined)
               : 'italic' in block
-              ? block.italic
+              ? (block.italic as boolean | undefined)
               : undefined,
           spacingTop: 'spacingTop' in block ? block.spacingTop : undefined,
           spacingBottom: 'spacingBottom' in block ? block.spacingBottom : undefined,
