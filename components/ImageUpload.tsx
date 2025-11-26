@@ -465,7 +465,15 @@ export default function ImageUpload({
               size="xs"
               clearable
               searchable
+              classNames={{
+                input: "folder-select-input",
+              }}
               styles={{
+                label: {
+                  color: isDark
+                    ? "var(--mantine-color-gray-2)"
+                    : "var(--mantine-color-dark-9)",
+                },
                 input: {
                   color: isDark
                     ? "var(--mantine-color-gray-0)"
@@ -503,6 +511,23 @@ export default function ImageUpload({
                 if (showNewFolderInput) {
                   setNewFolderName("");
                 }
+              }}
+              color={isDark ? "blue" : "dark"}
+              styles={{
+                root: {
+                  borderColor: isDark
+                    ? "var(--mantine-color-blue-6)"
+                    : undefined,
+                  color: isDark ? "var(--mantine-color-gray-0)" : undefined,
+                  "&:hover": {
+                    backgroundColor: isDark
+                      ? "var(--mantine-color-blue-9)"
+                      : undefined,
+                    borderColor: isDark
+                      ? "var(--mantine-color-blue-5)"
+                      : undefined,
+                  },
+                },
               }}
             >
               New Folder
@@ -644,17 +669,45 @@ export default function ImageUpload({
           ) : (
             <div className="upload-content">
               <div className="upload-icon">
-                <IconUpload size={36} />
+                <IconUpload size={30} />
               </div>
               <p className="upload-text">
                 {multiple
                   ? "Drag & drop images here or click to select multiple"
                   : "Drag & drop an image here or click to select"}
               </p>
-              <p className="upload-subtext">
+              <Button
+                variant="outline"
+                size="sm"
+                leftSection={<IconUpload size={18} />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openFileDialog();
+                }}
+                color={isDark ? "blue" : "dark"}
+                styles={{
+                  root: {
+                    borderColor: isDark
+                      ? "var(--mantine-color-blue-6)"
+                      : undefined,
+                    color: isDark ? "var(--mantine-color-gray-0)" : undefined,
+                    "&:hover": {
+                      backgroundColor: isDark
+                        ? "var(--mantine-color-blue-9)"
+                        : undefined,
+                      borderColor: isDark
+                        ? "var(--mantine-color-blue-5)"
+                        : undefined,
+                    },
+                  },
+                }}
+              >
+                Choose Files
+              </Button>
+              {/* <p className="upload-subtext">
                 Supports: JPG, PNG, WebP (Max {maxFileSize}MB
                 {multiple ? `, up to ${maxFiles} files` : ""})
-              </p>
+              </p> */}
             </div>
           )}
         </div>
@@ -675,10 +728,40 @@ export default function ImageUpload({
           height: 100%;
         }
 
+        .image-upload-container :global(.folder-select-input[data-placeholder]),
+        .image-upload-container :global(.folder-select-input::placeholder) {
+          color: ${isDark
+            ? "var(--mantine-color-gray-3)"
+            : "var(--mantine-color-gray-6)"} !important;
+        }
+
+        .image-upload-container :global([data-placeholder]) {
+          color: ${isDark
+            ? "var(--mantine-color-gray-3)"
+            : "var(--mantine-color-gray-6)"} !important;
+        }
+
+        .image-upload-container :global(input.hidden),
+        .image-upload-container input[type="file"] {
+          position: absolute !important;
+          width: 1px !important;
+          height: 1px !important;
+          padding: 0 !important;
+          margin: -1px !important;
+          overflow: hidden !important;
+          clip: rect(0, 0, 0, 0) !important;
+          white-space: nowrap !important;
+          border: 0 !important;
+          opacity: 0 !important;
+        }
+
         .upload-scrollable {
           flex: 1;
           overflow-y: auto;
+          overflow-x: hidden;
           padding-bottom: 0.5rem;
+          width: 100%;
+          box-sizing: border-box;
         }
 
         .upload-area {
@@ -699,6 +782,9 @@ export default function ImageUpload({
           justify-content: flex-start;
           flex: 1;
           gap: 0.75rem;
+          width: 100%;
+          box-sizing: border-box;
+          overflow: hidden;
         }
 
         .upload-area:hover {
@@ -731,6 +817,9 @@ export default function ImageUpload({
           flex-direction: column;
           align-items: center;
           gap: 0.75rem;
+          width: 100%;
+          max-width: 100%;
+          box-sizing: border-box;
         }
 
         .upload-icon {
@@ -809,15 +898,19 @@ export default function ImageUpload({
 
         .upload-preview-multiple {
           width: 100%;
+          max-width: 100%;
           display: flex;
           flex-direction: column;
+          box-sizing: border-box;
         }
 
         .preview-scroll {
           max-height: 240px;
           overflow-y: auto;
+          overflow-x: hidden;
           padding-right: 0.25rem;
           width: 100%;
+          box-sizing: border-box;
         }
 
         .preview-header {
@@ -825,6 +918,8 @@ export default function ImageUpload({
           justify-content: space-between;
           align-items: center;
           margin-bottom: 1rem;
+          width: 100%;
+          box-sizing: border-box;
         }
 
         .preview-count {
@@ -836,12 +931,17 @@ export default function ImageUpload({
 
         .preview-grid {
           padding: 0.25rem;
+          width: 100%;
+          box-sizing: border-box;
         }
 
         .preview-item {
           display: flex;
           flex-direction: column;
           gap: 0.35rem;
+          width: 100%;
+          max-width: 100%;
+          box-sizing: border-box;
         }
 
         .preview-image-wrapper {
