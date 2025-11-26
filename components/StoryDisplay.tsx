@@ -51,7 +51,16 @@ export default function StoryDisplay({ blocks }: StoryDisplayProps) {
                 {titleBlock.text || ""}
               </Text>
               {titleBlock.subtitle && (
-                <Text size="md" c="dimmed" mt="xs" style={{ lineHeight: 1.4 }}>
+                <Text
+                  size="md"
+                  c={
+                    isDark
+                      ? "var(--mantine-color-gray-4)"
+                      : "var(--mantine-color-dark-9)"
+                  }
+                  mt="xs"
+                  style={{ lineHeight: 1.4 }}
+                >
                   {titleBlock.subtitle}
                 </Text>
               )}
@@ -101,7 +110,7 @@ export default function StoryDisplay({ blocks }: StoryDisplayProps) {
 
           const containerStyle: React.CSSProperties = {
             marginBottom: showCaptionBelow
-              ? "var(--mantine-spacing-xs)"
+              ? "var(--mantine-spacing-md)"
               : "var(--mantine-spacing-lg)",
             position: "relative",
           };
@@ -148,9 +157,7 @@ export default function StoryDisplay({ blocks }: StoryDisplayProps) {
                     aspectRatio,
                     minHeight: "200px",
                     overflow: "hidden",
-                    backgroundColor: isDark
-                      ? "var(--mantine-color-dark-4)"
-                      : "var(--mantine-color-gray-1)",
+                    backgroundColor: "transparent",
                   }}
                 >
                   <Image
@@ -192,9 +199,7 @@ export default function StoryDisplay({ blocks }: StoryDisplayProps) {
                     position: "relative",
                     width: "100%",
                     overflow: "hidden",
-                    backgroundColor: isDark
-                      ? "var(--mantine-color-dark-4)"
-                      : "var(--mantine-color-gray-1)",
+                    backgroundColor: "transparent",
                   }}
                 >
                   <Image
@@ -239,11 +244,12 @@ export default function StoryDisplay({ blocks }: StoryDisplayProps) {
               {showCaptionBelow && (
                 <Text
                   size="xs"
-                  c="dimmed"
+                  c={isDark ? "var(--mantine-color-gray-3)" : "dimmed"}
                   mt="xs"
                   style={{
                     textAlign: "center",
                     fontStyle: captionItalic ? "italic" : "normal",
+                    color: isDark ? "var(--mantine-color-gray-3)" : undefined,
                   }}
                 >
                   {captionText}
@@ -305,7 +311,7 @@ export default function StoryDisplay({ blocks }: StoryDisplayProps) {
                 marginBottom: `${dividerBlock.spacingBottom || 20}px`,
                 borderTop: "1px solid",
                 borderColor: isDark
-                  ? "var(--mantine-color-dark-4)"
+                  ? "var(--mantine-color-gray-6)"
                   : "var(--mantine-color-gray-3)",
               }}
             />
@@ -332,23 +338,44 @@ export default function StoryDisplay({ blocks }: StoryDisplayProps) {
                 paddingTop: "var(--mantine-spacing-lg)",
                 borderTop: "1px solid",
                 borderColor: isDark
-                  ? "var(--mantine-color-dark-4)"
+                  ? "var(--mantine-color-gray-6)"
                   : "var(--mantine-color-gray-3)",
               }}
             >
               <Stack gap="xs" align="center">
                 {footerBlock.text && (
-                  <Text size="xs" c="dimmed" ta="center">
+                  <Text
+                    size="xs"
+                    c={isDark ? "var(--mantine-color-gray-3)" : "dimmed"}
+                    ta="center"
+                    style={{
+                      color: isDark ? "var(--mantine-color-gray-3)" : undefined,
+                    }}
+                  >
                     {footerBlock.text}
                   </Text>
                 )}
                 {footerBlock.date && (
-                  <Text size="xs" c="dimmed" ta="center">
+                  <Text
+                    size="xs"
+                    c={isDark ? "var(--mantine-color-gray-3)" : "dimmed"}
+                    ta="center"
+                    style={{
+                      color: isDark ? "var(--mantine-color-gray-3)" : undefined,
+                    }}
+                  >
                     {footerBlock.date}
                   </Text>
                 )}
                 {footerBlock.credits && (
-                  <Text size="xs" c="dimmed" ta="center">
+                  <Text
+                    size="xs"
+                    c={isDark ? "var(--mantine-color-gray-3)" : "dimmed"}
+                    ta="center"
+                    style={{
+                      color: isDark ? "var(--mantine-color-gray-3)" : undefined,
+                    }}
+                  >
                     {footerBlock.credits}
                   </Text>
                 )}
