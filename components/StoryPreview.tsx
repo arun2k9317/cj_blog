@@ -30,7 +30,9 @@ export default function StoryPreview({
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/api/projects/${encodeURIComponent(storyId)}`);
+        const response = await fetch(
+          `/api/projects/${encodeURIComponent(storyId)}`
+        );
         if (!response.ok) {
           throw new Error("Failed to load story");
         }
@@ -75,6 +77,16 @@ export default function StoryPreview({
             : "var(--mantine-color-gray-0)",
           padding: 0,
         },
+        close: {
+          color: isDark
+            ? "var(--mantine-color-gray-0)"
+            : "var(--mantine-color-dark-6)",
+          "&:hover": {
+            backgroundColor: isDark
+              ? "var(--mantine-color-dark-5)"
+              : "var(--mantine-color-gray-1)",
+          },
+        },
       }}
     >
       {loading && (
@@ -98,4 +110,3 @@ export default function StoryPreview({
     </Modal>
   );
 }
-

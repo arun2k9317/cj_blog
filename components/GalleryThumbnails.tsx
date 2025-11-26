@@ -3,7 +3,16 @@
 import { useState, useEffect, ReactNode, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { IconTrash, IconX, IconSearch } from "@tabler/icons-react";
-import { Button, Group, Text, SimpleGrid, ScrollArea, Select, TextInput } from "@mantine/core";
+import {
+  Button,
+  Group,
+  Text,
+  SimpleGrid,
+  ScrollArea,
+  Select,
+  TextInput,
+  Tooltip,
+} from "@mantine/core";
 import { useTheme } from "@/contexts/ThemeContext";
 
 interface GalleryImage {
@@ -105,16 +114,16 @@ export default function GalleryThumbnails({
     setLoading(true);
     try {
       // Build URL with folder filter if selected
-      const url = selectedFolder 
+      const url = selectedFolder
         ? `/api/gallery-images?folder=${encodeURIComponent(selectedFolder)}`
         : "/api/gallery-images";
-      
+
       const response = await fetch(url);
       if (response.ok) {
         const data = (await response.json()) as unknown;
         if (isGalleryImageResponse(data)) {
           let images = data.images;
-          
+
           // Sort images by upload date (timestamp in filename) - newest first
           images = images.sort((a, b) => {
             const getTimestamp = (img: GalleryImage): number => {
@@ -123,35 +132,35 @@ export default function GalleryThumbnails({
               // 2. {timestamp}-{filename}
               const filename = img.filename || img.path || img.url;
               if (!filename) return 0;
-              
+
               // Try pattern 1: {imageName}-{timestamp}.{ext}
               const match1 = filename.match(/-(\d+)\./);
               if (match1) {
                 return parseInt(match1[1], 10);
               }
-              
+
               // Try pattern 2: {timestamp}-{filename}
               const match2 = filename.match(/^(\d+)-/);
               if (match2) {
                 return parseInt(match2[1], 10);
               }
-              
+
               // Fallback: try to extract from URL path
               const urlMatch = img.url.match(/-(\d+)\./);
               if (urlMatch) {
                 return parseInt(urlMatch[1], 10);
               }
-              
+
               return 0;
             };
-            
+
             const timestampA = getTimestamp(a);
             const timestampB = getTimestamp(b);
-            
+
             // Descending order (newest first)
             return timestampB - timestampA;
           });
-          
+
           setImages(images);
           // Update folders list if available
           if (typeof data === "object" && data !== null && "folders" in data) {
@@ -204,7 +213,11 @@ export default function GalleryThumbnails({
       const filename = img.filename?.toLowerCase() || "";
       const path = img.path?.toLowerCase() || "";
       const url = img.url.toLowerCase();
-      return filename.includes(search) || path.includes(search) || url.includes(search);
+      return (
+        filename.includes(search) ||
+        path.includes(search) ||
+        url.includes(search)
+      );
     });
   }, [images, searchTerm]);
 
@@ -358,7 +371,13 @@ export default function GalleryThumbnails({
           Delete
         </Button>
       )}
-      <Text size="xs" c="dimmed">
+      <Text
+        size="xs"
+        c={isDark ? "var(--mantine-color-gray-3)" : "dimmed"}
+        style={{
+          color: isDark ? "var(--mantine-color-gray-3)" : undefined,
+        }}
+      >
         {filteredImages.length} / {images.length}{" "}
         {filteredImages.length === 1 ? "image" : "images"}
       </Text>
@@ -469,16 +488,43 @@ export default function GalleryThumbnails({
         </div>
       ) : (
         <ScrollArea offsetScrollbars style={{ flex: 1 }}>
-          <SimpleGrid cols={{ base: 3, sm: 4, md: 5, lg: 6 }} spacing="xs">
+          <SimpleGrid cols={{ base: 5, sm: 6, md: 8, lg: 10 }} spacing="xs">
             {filteredImages.map((asset, index) => {
               const isSelected = selectedImages.has(asset.url);
+              const tooltipLabel = asset.folder
+                ? `${
+                    asset.filename || asset.path?.split("/").pop() || "Image"
+                  } (${asset.folder})`
+                : asset.filename || asset.path || "Image";
+
               return (
-                <div
+                <Tooltip
                   key={asset.id ?? asset.url ?? index}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.25rem",
+                  label={tooltipLabel}
+                  position="top"
+                  withArrow
+                  offset={8}
+                  multiline
+                  w={400}
+                  styles={{
+                    tooltip: {
+                      backgroundColor: isDark
+                        ? "var(--mantine-color-dark-4)"
+                        : "var(--mantine-color-gray-9)",
+                      color: isDark
+                        ? "var(--mantine-color-gray-0)"
+                        : "var(--mantine-color-white)",
+                      padding: "0.5rem 0.75rem",
+                      fontSize: "0.75rem",
+                      fontWeight: 500,
+                      borderRadius: "var(--mantine-radius-md)",
+                      boxShadow: "var(--mantine-shadow-md)",
+                    },
+                    arrow: {
+                      backgroundColor: isDark
+                        ? "var(--mantine-color-dark-4)"
+                        : "var(--mantine-color-gray-9)",
+                    },
                   }}
                 >
                   <div
@@ -487,13 +533,10 @@ export default function GalleryThumbnails({
                       position: "relative",
                       aspectRatio: "1",
                       overflow: "hidden",
-                      border: `2px solid ${
-                        deleteMode
-                          ? isSelected
-                            ? "var(--mantine-color-blue-5)"
-                            : "var(--mantine-color-gray-3)"
-                          : "var(--mantine-color-gray-3)"
-                      }`,
+                      border:
+                        deleteMode && isSelected
+                          ? "2px solid var(--mantine-color-blue-5)"
+                          : "none",
                       cursor: deleteMode ? "pointer" : "default",
                       transition: "all 0.2s",
                       boxShadow:
@@ -501,20 +544,6 @@ export default function GalleryThumbnails({
                           ? "0 0 0 2px var(--mantine-color-blue-2)"
                           : "var(--mantine-shadow-sm)",
                       borderRadius: "var(--mantine-radius-sm)",
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!deleteMode) return;
-                      if (!isSelected) {
-                        e.currentTarget.style.borderColor =
-                          "var(--mantine-color-gray-4)";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!deleteMode) return;
-                      if (!isSelected) {
-                        e.currentTarget.style.borderColor =
-                          "var(--mantine-color-gray-3)";
-                      }
                     }}
                   >
                     <div
@@ -583,36 +612,7 @@ export default function GalleryThumbnails({
                       )}
                     </div>
                   </div>
-                  {/* Image name and folder */}
-                  <div style={{ padding: "0 0.25rem" }}>
-                    <Text
-                      size="xs"
-                      fw={500}
-                      lineClamp={1}
-                      title={asset.filename || asset.path || "Image"}
-                      style={{
-                        fontSize: "0.7rem",
-                        lineHeight: 1.2,
-                      }}
-                    >
-                      {asset.filename || 
-                       asset.path?.split("/").pop() || 
-                       "Image"}
-                    </Text>
-                    {asset.folder && (
-                      <Text
-                        size="xs"
-                        c="dimmed"
-                        style={{
-                          fontSize: "0.65rem",
-                          lineHeight: 1.2,
-                        }}
-                      >
-                        {asset.folder}
-                      </Text>
-                    )}
-                  </div>
-                </div>
+                </Tooltip>
               );
             })}
           </SimpleGrid>

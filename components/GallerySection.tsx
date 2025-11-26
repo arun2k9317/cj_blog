@@ -52,7 +52,7 @@ export default function GallerySection({ galleryAssets }: GallerySectionProps) {
             width: "100%",
             display: "flex",
             flexDirection: "column",
-            maxHeight: "calc(100vh - 100px)",
+            maxHeight: "calc(60vh)",
             overflow: "hidden",
             backgroundColor: isDark
               ? "var(--mantine-color-dark-6)"
@@ -76,7 +76,13 @@ export default function GallerySection({ galleryAssets }: GallerySectionProps) {
               >
                 Gallery Uploads
               </Title>
-              <Text size="xs" c="dimmed">
+              <Text
+                size="xs"
+                c={isDark ? "var(--mantine-color-gray-3)" : "dimmed"}
+                style={{
+                  color: isDark ? "var(--mantine-color-gray-3)" : undefined,
+                }}
+              >
                 Upload images to the &quot;gallery&quot; folder
               </Text>
             </div>
@@ -85,7 +91,7 @@ export default function GallerySection({ galleryAssets }: GallerySectionProps) {
                 onClick={uploadButtonConfig.onClick}
                 disabled={uploadButtonConfig.disabled}
                 variant={uploadButtonConfig.variant}
-                color={isDark ? "gray" : "dark"}
+                color={isDark ? "blue" : "dark"}
                 loading={uploadButtonConfig.loading}
                 title={uploadButtonConfig.title}
                 size="xs"
@@ -119,7 +125,7 @@ export default function GallerySection({ galleryAssets }: GallerySectionProps) {
             width: "100%",
             display: "flex",
             flexDirection: "column",
-            maxHeight: "calc(100vh - 120px)",
+            maxHeight: "calc(60vh)",
             overflow: "hidden",
             backgroundColor: isDark
               ? "var(--mantine-color-dark-6)"
@@ -146,7 +152,13 @@ export default function GallerySection({ galleryAssets }: GallerySectionProps) {
                   >
                     Gallery Images
                   </Title>
-                  <Text size="xs" c="dimmed">
+                  <Text
+                    size="xs"
+                    c={isDark ? "var(--mantine-color-gray-3)" : "dimmed"}
+                    style={{
+                      color: isDark ? "var(--mantine-color-gray-3)" : undefined,
+                    }}
+                  >
                     View and manage uploaded images
                   </Text>
                 </div>

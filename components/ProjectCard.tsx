@@ -161,20 +161,60 @@ export default function ProjectCard({
           <Button
             variant="outline"
             size="xs"
-            color={isDark ? "gray" : "dark"}
+            color={isDark ? "blue" : "dark"}
             leftSection={<IconEye size={14} />}
             onClick={() => setPreviewOpen(true)}
+            styles={{
+              root: {
+                borderColor: isDark
+                  ? "var(--mantine-color-blue-6)"
+                  : undefined,
+                color: isDark
+                  ? "var(--mantine-color-gray-0)"
+                  : undefined,
+                "&:hover": {
+                  backgroundColor: isDark
+                    ? "var(--mantine-color-blue-9)"
+                    : undefined,
+                  borderColor: isDark
+                    ? "var(--mantine-color-blue-5)"
+                    : undefined,
+                },
+              },
+            }}
           >
             Preview
           </Button>
           <Button
             variant={published ? "outline" : "filled"}
             size="xs"
-            color={published ? "gray" : "green"}
+            color={published ? (isDark ? "blue" : "gray") : "green"}
             leftSection={<IconWorld size={14} />}
             onClick={handlePublishClick}
             loading={publishing}
             disabled={publishing || deleting}
+            styles={
+              published
+                ? {
+                    root: {
+                      borderColor: isDark
+                        ? "var(--mantine-color-blue-6)"
+                        : undefined,
+                      color: isDark
+                        ? "var(--mantine-color-gray-0)"
+                        : undefined,
+                      "&:hover": {
+                        backgroundColor: isDark
+                          ? "var(--mantine-color-blue-9)"
+                          : undefined,
+                        borderColor: isDark
+                          ? "var(--mantine-color-blue-5)"
+                          : undefined,
+                      },
+                    },
+                  }
+                : undefined
+            }
           >
             {published ? "Unpublish" : "Publish"}
           </Button>

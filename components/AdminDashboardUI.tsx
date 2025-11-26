@@ -67,7 +67,7 @@ export default function AdminDashboardUI({
   return (
     <Container
       size="xl"
-      py="lg"
+      py="sm"
       px="sm"
       className="admin-dashboard"
       style={{
@@ -78,7 +78,7 @@ export default function AdminDashboardUI({
         borderRadius: "var(--mantine-radius-lg)",
       }}
     >
-      <Group justify="space-between" mb="lg">
+      <Group justify="space-between" mb="xs">
         <Title
           order={2}
           size="1.5rem"
@@ -96,10 +96,20 @@ export default function AdminDashboardUI({
           >
             <ActionIcon
               variant="subtle"
-              color={isDark ? "gray" : "dark"}
+              color={isDark ? "blue" : "dark"}
               onClick={toggleTheme}
               size="lg"
               aria-label="Toggle theme"
+              styles={{
+                root: {
+                  color: isDark ? "var(--mantine-color-gray-0)" : undefined,
+                  "&:hover": {
+                    backgroundColor: isDark
+                      ? "var(--mantine-color-blue-9)"
+                      : undefined,
+                  },
+                },
+              }}
             >
               {isDark ? <IconSun size={18} /> : <IconMoon size={18} />}
             </ActionIcon>
@@ -113,7 +123,15 @@ export default function AdminDashboardUI({
             <Button
               variant="outline"
               size="xs"
-              color={isDark ? "gray" : "dark"}
+              color={isDark ? "blue" : "dark"}
+              styles={{
+                root: {
+                  borderColor: isDark
+                    ? "var(--mantine-color-blue-6)"
+                    : undefined,
+                  color: isDark ? "var(--mantine-color-gray-0)" : undefined,
+                },
+              }}
             >
               New Story
             </Button>
@@ -121,14 +139,14 @@ export default function AdminDashboardUI({
         </Group>
       </Group>
 
-      <Stack gap="lg">
+      <Stack gap="md">
         {/* Gallery Uploads Section */}
         <GallerySection galleryAssets={galleryAssets} />
 
         {/* Projects Section */}
         <Paper
           shadow="xs"
-          p="lg"
+          p="md"
           radius="md"
           withBorder
           style={{
@@ -140,7 +158,7 @@ export default function AdminDashboardUI({
               : "var(--mantine-color-gray-3)",
           }}
         >
-          <Group justify="space-between" mb="md" wrap="wrap">
+          <Group justify="space-between" mb="sm" wrap="wrap">
             <Title
               order={3}
               size="1.1rem"
@@ -196,7 +214,13 @@ export default function AdminDashboardUI({
                   },
                 }}
               />
-              <Text size="xs" c="dimmed">
+              <Text
+                size="xs"
+                c={isDark ? "var(--mantine-color-gray-3)" : "dimmed"}
+                style={{
+                  color: isDark ? "var(--mantine-color-gray-3)" : undefined,
+                }}
+              >
                 {filteredProjects.length} / {projects.length}
               </Text>
             </Group>
@@ -248,7 +272,7 @@ export default function AdminDashboardUI({
         {/* Stories Section */}
         <Paper
           shadow="xs"
-          p="lg"
+          p="md"
           radius="md"
           withBorder
           style={{
@@ -260,7 +284,7 @@ export default function AdminDashboardUI({
               : "var(--mantine-color-gray-3)",
           }}
         >
-          <Group justify="space-between" mb="md" wrap="wrap">
+          <Group justify="space-between" mb="sm" wrap="wrap">
             <Title
               order={3}
               size="1.1rem"
@@ -316,7 +340,13 @@ export default function AdminDashboardUI({
                   },
                 }}
               />
-              <Text size="xs" c="dimmed">
+              <Text
+                size="xs"
+                c={isDark ? "var(--mantine-color-gray-3)" : "dimmed"}
+                style={{
+                  color: isDark ? "var(--mantine-color-gray-3)" : undefined,
+                }}
+              >
                 {filteredStories.length} / {stories.length}
               </Text>
             </Group>

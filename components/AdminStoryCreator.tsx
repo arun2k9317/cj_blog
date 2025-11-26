@@ -26,6 +26,12 @@ import {
   IconArrowUp,
   IconTrash,
   IconX,
+  IconHeading,
+  IconAlignLeft,
+  IconPhoto,
+  IconQuote,
+  IconMinus,
+  IconLayoutBottombarInactive,
 } from "@tabler/icons-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import StoryPreview from "@/components/StoryPreview";
@@ -71,6 +77,7 @@ interface BlockShellProps {
   index: number;
   total: number;
   blockId: string;
+  label: string;
   onMove: (index: number, direction: "up" | "down") => void;
   onRemove: (blockId: string) => void;
 }
@@ -81,6 +88,7 @@ const BlockShell = ({
   index,
   total,
   blockId,
+  label,
   onMove,
   onRemove,
 }: BlockShellProps) => (
@@ -94,62 +102,64 @@ const BlockShell = ({
       borderColor: isDark
         ? "var(--mantine-color-dark-4)"
         : "var(--mantine-color-gray-3)",
-      position: "relative",
     }}
   >
-    <Group
-      gap="xs"
-      style={{
-        position: "absolute",
-        top: "8px",
-        right: "8px",
-        zIndex: 10,
-      }}
-    >
-      <ActionIcon
+    <Group justify="space-between" align="center" mb="xs" gap="xs">
+      <Text
         size="sm"
-        variant="subtle"
-        color={isDark ? "gray" : "dark"}
-        onClick={() => onMove(index, "up")}
-        disabled={index === 0}
+        fw={600}
+        c={
+          isDark ? "var(--mantine-color-gray-0)" : "var(--mantine-color-dark-9)"
+        }
       >
-        <IconArrowUp
-          size={16}
-          color={
-            index === 0
-              ? "var(--mantine-color-gray-5)"
-              : isDark
-              ? "var(--mantine-color-gray-2)"
-              : "var(--mantine-color-dark-6)"
-          }
-        />
-      </ActionIcon>
-      <ActionIcon
-        size="sm"
-        variant="subtle"
-        color={isDark ? "gray" : "dark"}
-        onClick={() => onMove(index, "down")}
-        disabled={index === total - 1}
-      >
-        <IconArrowDown
-          size={16}
-          color={
-            index === total - 1
-              ? "var(--mantine-color-gray-5)"
-              : isDark
-              ? "var(--mantine-color-gray-2)"
-              : "var(--mantine-color-dark-6)"
-          }
-        />
-      </ActionIcon>
-      <ActionIcon
-        size="sm"
-        variant="subtle"
-        color="red"
-        onClick={() => onRemove(blockId)}
-      >
-        <IconTrash size={16} />
-      </ActionIcon>
+        {label}
+      </Text>
+      <Group gap="xs">
+        <ActionIcon
+          size="sm"
+          variant="subtle"
+          color={isDark ? "gray" : "dark"}
+          onClick={() => onMove(index, "up")}
+          disabled={index === 0}
+        >
+          <IconArrowUp
+            size={16}
+            color={
+              index === 0
+                ? "var(--mantine-color-gray-5)"
+                : isDark
+                ? "var(--mantine-color-gray-2)"
+                : "var(--mantine-color-dark-6)"
+            }
+          />
+        </ActionIcon>
+        <ActionIcon
+          size="sm"
+          variant="subtle"
+          color={isDark ? "gray" : "dark"}
+          onClick={() => onMove(index, "down")}
+          disabled={index === total - 1}
+        >
+          <IconArrowDown
+            size={16}
+            color={
+              index === total - 1
+                ? "var(--mantine-color-gray-5)"
+                : isDark
+                ? "var(--mantine-color-gray-2)"
+                : "var(--mantine-color-dark-6)"
+            }
+          />
+        </ActionIcon>
+        <ActionIcon
+          size="sm"
+          variant="subtle"
+          color="red"
+          onClick={() => onRemove(blockId)}
+        >
+          <IconTrash size={16} />
+        </ActionIcon>
+      </Group>
     </Group>
     {children}
   </Paper>
@@ -188,12 +198,12 @@ const getSelectStyles = (isDark: boolean) => ({
     backgroundColor: isDark
       ? "var(--mantine-color-dark-6)"
       : "var(--mantine-color-white)",
-    "&[data-hovered]": {
+    "&[dataHovered]": {
       backgroundColor: isDark
         ? "var(--mantine-color-dark-5)"
         : "var(--mantine-color-gray-1)",
     },
-    "&[data-selected]": {
+    "&[dataSelected]": {
       backgroundColor: isDark
         ? "var(--mantine-color-dark-4)"
         : "var(--mantine-color-gray-2)",
@@ -320,12 +330,52 @@ const TitleBlockEditor = ({
       value={block.text || ""}
       onChange={(e) => onChange({ text: e.target.value })}
       placeholder="Enter title"
+      styles={{
+        input: {
+          color: isDark
+            ? "var(--mantine-color-gray-0)"
+            : "var(--mantine-color-dark-9)",
+          backgroundColor: isDark
+            ? "var(--mantine-color-dark-5)"
+            : "var(--mantine-color-white)",
+          "&::placeholder": {
+            color: isDark
+              ? "var(--mantine-color-gray-3)"
+              : "var(--mantine-color-gray-6)",
+          },
+        },
+        label: {
+          color: isDark
+            ? "var(--mantine-color-gray-2)"
+            : "var(--mantine-color-dark-9)",
+        },
+      }}
     />
     <TextInput
       label="Subtitle (optional)"
       value={block.subtitle || ""}
       onChange={(e) => onChange({ subtitle: e.target.value })}
       placeholder="Enter subtitle"
+      styles={{
+        input: {
+          color: isDark
+            ? "var(--mantine-color-gray-0)"
+            : "var(--mantine-color-dark-9)",
+          backgroundColor: isDark
+            ? "var(--mantine-color-dark-5)"
+            : "var(--mantine-color-white)",
+          "&::placeholder": {
+            color: isDark
+              ? "var(--mantine-color-gray-4)"
+              : "var(--mantine-color-gray-6)",
+          },
+        },
+        label: {
+          color: isDark
+            ? "var(--mantine-color-gray-2)"
+            : "var(--mantine-color-dark-9)",
+        },
+      }}
     />
     <Group>
       <Select
@@ -1069,6 +1119,14 @@ export default function AdminStoryCreator({
     setModalOpen(true);
   };
 
+  const openCreateModalWithType = (type: ContentBlock["type"]) => {
+    setModalMode("create");
+    const order = blocks.length;
+    const template = createBlockTemplate(type, order);
+    setDraftBlock(template);
+    setModalOpen(true);
+  };
+
   const openEditModal = (block: ContentBlock) => {
     setModalMode("edit");
     setDraftBlock({ ...block });
@@ -1140,9 +1198,12 @@ export default function AdminStoryCreator({
           120
         );
       case "story-image":
-        return (block as StoryImageBlock).src
-          ? (block as StoryImageBlock).src
-          : "No image selected";
+        const imageBlock = block as StoryImageBlock;
+        if (!imageBlock.src) return "No image selected";
+        if (imageBlock.caption && typeof imageBlock.caption === "string") {
+          return imageBlock.caption.trim() || "No caption";
+        }
+        return "";
       case "quote":
         return (block as QuoteBlock).text || "No quote text";
       case "divider":
@@ -1352,6 +1413,8 @@ export default function AdminStoryCreator({
           : "var(--mantine-color-gray-0)",
         minHeight: "100vh",
         borderRadius: "var(--mantine-radius-lg)",
+        maxWidth: "800px",
+        margin: "0 auto",
       }}
     >
       <Stack gap="lg">
@@ -1359,7 +1422,7 @@ export default function AdminStoryCreator({
           <div>
             <Title
               order={2}
-              size="1.5rem"
+              size="15px"
               c={
                 isDark
                   ? "var(--mantine-color-gray-0)"
@@ -1368,7 +1431,13 @@ export default function AdminStoryCreator({
             >
               {isEditing ? "Edit" : "New"} Story
             </Title>
-            <Text size="sm" c="dimmed">
+            <Text
+              size="sm"
+              c={isDark ? "var(--mantine-color-gray-3)" : "dimmed"}
+              style={{
+                color: isDark ? "var(--mantine-color-gray-3)" : undefined,
+              }}
+            >
               {isEditing
                 ? "Update this story with new content blocks."
                 : "Build a story using content blocks and images from the gallery."}
@@ -1388,10 +1457,26 @@ export default function AdminStoryCreator({
             <Button
               variant="outline"
               size="xs"
-              color={isDark ? "gray" : "dark"}
+              color={isDark ? "blue" : "dark"}
               leftSection={<IconX size={16} />}
               onClick={() => router.push("/admin")}
               disabled={saving}
+              styles={{
+                root: {
+                  borderColor: isDark
+                    ? "var(--mantine-color-blue-6)"
+                    : undefined,
+                  color: isDark ? "var(--mantine-color-gray-0)" : undefined,
+                  "&:hover": {
+                    backgroundColor: isDark
+                      ? "var(--mantine-color-blue-9)"
+                      : undefined,
+                    borderColor: isDark
+                      ? "var(--mantine-color-blue-5)"
+                      : undefined,
+                  },
+                },
+              }}
             >
               Cancel
             </Button>
@@ -1442,6 +1527,9 @@ export default function AdminStoryCreator({
             borderColor: isDark
               ? "var(--mantine-color-dark-4)"
               : "var(--mantine-color-gray-3)",
+            maxWidth: "800px",
+            width: "100%",
+            margin: "0 auto",
           }}
         >
           <Stack gap="md">
@@ -1474,6 +1562,9 @@ export default function AdminStoryCreator({
             borderColor: isDark
               ? "var(--mantine-color-dark-4)"
               : "var(--mantine-color-gray-3)",
+            maxWidth: "800px",
+            width: "100%",
+            margin: "0 auto",
           }}
         >
           <Stack gap="md">
@@ -1495,6 +1586,7 @@ export default function AdminStoryCreator({
                   index={index}
                   total={blocks.length}
                   blockId={block.id}
+                  label={getBlockLabel(block)}
                   onMove={moveBlock}
                   onRemove={removeBlock}
                 >
@@ -1510,34 +1602,196 @@ export default function AdminStoryCreator({
                     }}
                     style={{
                       cursor: "pointer",
-                      paddingTop: "24px",
                       color: isDark
                         ? "var(--mantine-color-gray-0)"
                         : "var(--mantine-color-dark-9)",
                     }}
                   >
-                    <Text size="sm" fw={600}>
-                      {getBlockLabel(block)}
-                    </Text>
-                    <Text
-                      size="xs"
-                      c={isDark ? "var(--mantine-color-gray-3)" : "dimmed"}
-                    >
-                      {getBlockSummary(block)}
-                    </Text>
+                    {block.type === "story-image" &&
+                    (block as StoryImageBlock).src ? (
+                      <Group gap="xs" mt="xs" align="flex-start">
+                        <div
+                          style={{
+                            position: "relative",
+                            width: "60px",
+                            height: "60px",
+                            borderRadius: "var(--mantine-radius-sm)",
+                            overflow: "hidden",
+                            flexShrink: 0,
+                            backgroundColor: isDark
+                              ? "var(--mantine-color-dark-4)"
+                              : "var(--mantine-color-gray-2)",
+                          }}
+                        >
+                          <Image
+                            src={(block as StoryImageBlock).src}
+                            alt="Image preview"
+                            fill
+                            style={{ objectFit: "cover" }}
+                            sizes="60px"
+                          />
+                        </div>
+                        <Text
+                          size="xs"
+                          c={isDark ? "var(--mantine-color-gray-3)" : "dimmed"}
+                          style={{ flex: 1, wordBreak: "break-word" }}
+                        >
+                          {getBlockSummary(block)}
+                        </Text>
+                      </Group>
+                    ) : (
+                      <Text
+                        size="xs"
+                        c={isDark ? "var(--mantine-color-gray-3)" : "dimmed"}
+                      >
+                        {getBlockSummary(block)}
+                      </Text>
+                    )}
                   </div>
                 </BlockShell>
               ))}
             </Stack>
 
-            <Button
-              variant="outline"
-              color={isDark ? "gray" : "dark"}
-              onClick={openCreateModal}
-              styles={getOutlineButtonStyles(isDark)}
-            >
-              Add Content Block
-            </Button>
+            <Group gap="sm" mt="md" wrap="wrap" justify="center">
+              <ActionIcon
+                variant="outline"
+                size="lg"
+                onClick={() => openCreateModalWithType("title")}
+                title="Add Title Block"
+                styles={{
+                  root: {
+                    borderColor: isDark
+                      ? "var(--mantine-color-blue-6)"
+                      : "var(--mantine-color-gray-4)",
+                    color: isDark
+                      ? "var(--mantine-color-gray-0)"
+                      : "var(--mantine-color-dark-9)",
+                    "&:hover": {
+                      backgroundColor: isDark
+                        ? "var(--mantine-color-blue-9)"
+                        : "var(--mantine-color-gray-1)",
+                    },
+                  },
+                }}
+              >
+                <IconHeading size={20} />
+              </ActionIcon>
+              <ActionIcon
+                variant="outline"
+                size="lg"
+                onClick={() => openCreateModalWithType("description")}
+                title="Add Description Block"
+                styles={{
+                  root: {
+                    borderColor: isDark
+                      ? "var(--mantine-color-blue-6)"
+                      : "var(--mantine-color-gray-4)",
+                    color: isDark
+                      ? "var(--mantine-color-gray-0)"
+                      : "var(--mantine-color-dark-9)",
+                    "&:hover": {
+                      backgroundColor: isDark
+                        ? "var(--mantine-color-blue-9)"
+                        : "var(--mantine-color-gray-1)",
+                    },
+                  },
+                }}
+              >
+                <IconAlignLeft size={20} />
+              </ActionIcon>
+              <ActionIcon
+                variant="outline"
+                size="lg"
+                onClick={() => openCreateModalWithType("story-image")}
+                title="Add Image Block"
+                styles={{
+                  root: {
+                    borderColor: isDark
+                      ? "var(--mantine-color-blue-6)"
+                      : "var(--mantine-color-gray-4)",
+                    color: isDark
+                      ? "var(--mantine-color-gray-0)"
+                      : "var(--mantine-color-dark-9)",
+                    "&:hover": {
+                      backgroundColor: isDark
+                        ? "var(--mantine-color-blue-9)"
+                        : "var(--mantine-color-gray-1)",
+                    },
+                  },
+                }}
+              >
+                <IconPhoto size={20} />
+              </ActionIcon>
+              <ActionIcon
+                variant="outline"
+                size="lg"
+                onClick={() => openCreateModalWithType("quote")}
+                title="Add Quote Block"
+                styles={{
+                  root: {
+                    borderColor: isDark
+                      ? "var(--mantine-color-blue-6)"
+                      : "var(--mantine-color-gray-4)",
+                    color: isDark
+                      ? "var(--mantine-color-gray-0)"
+                      : "var(--mantine-color-dark-9)",
+                    "&:hover": {
+                      backgroundColor: isDark
+                        ? "var(--mantine-color-blue-9)"
+                        : "var(--mantine-color-gray-1)",
+                    },
+                  },
+                }}
+              >
+                <IconQuote size={20} />
+              </ActionIcon>
+              <ActionIcon
+                variant="outline"
+                size="lg"
+                onClick={() => openCreateModalWithType("divider")}
+                title="Add Divider Block"
+                styles={{
+                  root: {
+                    borderColor: isDark
+                      ? "var(--mantine-color-blue-6)"
+                      : "var(--mantine-color-gray-4)",
+                    color: isDark
+                      ? "var(--mantine-color-gray-0)"
+                      : "var(--mantine-color-dark-9)",
+                    "&:hover": {
+                      backgroundColor: isDark
+                        ? "var(--mantine-color-blue-9)"
+                        : "var(--mantine-color-gray-1)",
+                    },
+                  },
+                }}
+              >
+                <IconMinus size={20} />
+              </ActionIcon>
+              <ActionIcon
+                variant="outline"
+                size="lg"
+                onClick={() => openCreateModalWithType("footer")}
+                title="Add Footer Block"
+                styles={{
+                  root: {
+                    borderColor: isDark
+                      ? "var(--mantine-color-blue-6)"
+                      : "var(--mantine-color-gray-4)",
+                    color: isDark
+                      ? "var(--mantine-color-gray-0)"
+                      : "var(--mantine-color-dark-9)",
+                    "&:hover": {
+                      backgroundColor: isDark
+                        ? "var(--mantine-color-blue-9)"
+                        : "var(--mantine-color-gray-1)",
+                    },
+                  },
+                }}
+              >
+                <IconLayoutBottombarInactive size={20} />
+              </ActionIcon>
+            </Group>
           </Stack>
         </Paper>
 
@@ -1684,22 +1938,24 @@ export default function AdminStoryCreator({
         }}
       >
         <Stack gap="md">
-          <Select
-            label="Block Type"
-            placeholder="Select a block type"
-            data={BLOCK_TYPE_OPTIONS}
-            value={draftBlock?.type ?? null}
-            disabled={modalMode === "edit"}
-            onChange={(value) => {
-              if (value) {
-                handleDraftTypeChange(value as ContentBlock["type"]);
-              } else {
-                setDraftBlock(null);
-              }
-            }}
-            required
-            styles={selectStyles}
-          />
+          {draftBlock && modalMode === "create" ? null : (
+            <Select
+              label="Block Type"
+              placeholder="Select a block type"
+              data={BLOCK_TYPE_OPTIONS}
+              value={draftBlock?.type ?? null}
+              disabled={modalMode === "edit"}
+              onChange={(value) => {
+                if (value) {
+                  handleDraftTypeChange(value as ContentBlock["type"]);
+                } else {
+                  setDraftBlock(null);
+                }
+              }}
+              required
+              styles={selectStyles}
+            />
+          )}
 
           {draftBlock ? (
             renderDraftEditor(draftBlock)
@@ -1712,8 +1968,18 @@ export default function AdminStoryCreator({
           <Group justify="flex-end">
             <Button
               variant="subtle"
-              color={isDark ? "gray" : "dark"}
+              color={isDark ? "blue" : "dark"}
               onClick={closeModal}
+              styles={{
+                root: {
+                  color: isDark ? "var(--mantine-color-gray-0)" : undefined,
+                  "&:hover": {
+                    backgroundColor: isDark
+                      ? "var(--mantine-color-blue-9)"
+                      : undefined,
+                  },
+                },
+              }}
             >
               Cancel
             </Button>
