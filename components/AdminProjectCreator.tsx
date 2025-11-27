@@ -16,6 +16,7 @@ import {
   TextInput,
   Textarea,
   Title,
+  Tooltip,
 } from "@mantine/core";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -411,6 +412,7 @@ export default function AdminProjectCreator({
           ? "var(--mantine-color-dark-7)"
           : "var(--mantine-color-gray-0)",
         minHeight: "100vh",
+        borderRadius: "var(--mantine-radius-lg)",
       }}
     >
       <Stack gap="lg">
@@ -418,7 +420,7 @@ export default function AdminProjectCreator({
           <div>
             <Title
               order={2}
-              size="1.5rem"
+              size="15px"
               c={
                 isDark
                   ? "var(--mantine-color-gray-0)"
@@ -428,7 +430,10 @@ export default function AdminProjectCreator({
               {isEditing ? "Edit" : "New"}{" "}
               {kind === "story" ? "Story" : "Project"}
             </Title>
-            <Text size="sm" c="dimmed">
+            <Text
+              size="sm"
+              c={isDark ? "var(--mantine-color-gray-3)" : "dimmed"}
+            >
               {isEditing
                 ? `Update this ${kind} with new details or images.`
                 : `Build a ${kind} using images already uploaded to the gallery.`}
@@ -438,20 +443,42 @@ export default function AdminProjectCreator({
             <Button
               variant="outline"
               size="xs"
-              color={isDark ? "gray" : "dark"}
+              color={isDark ? "blue" : "dark"}
               leftSection={<IconX size={16} />}
               onClick={() => router.push("/admin")}
               disabled={saving}
+              styles={{
+                root: {
+                  borderColor: isDark
+                    ? "var(--mantine-color-blue-6)"
+                    : undefined,
+                  color: isDark ? "var(--mantine-color-gray-0)" : undefined,
+                  "&:hover": {
+                    backgroundColor: isDark
+                      ? "var(--mantine-color-blue-9)"
+                      : "var(--mantine-color-gray-1)",
+                  },
+                },
+              }}
             >
               Cancel
             </Button>
             <Button
               variant="filled"
-              color={isDark ? "gray" : "dark"}
+              color={isDark ? "blue" : "dark"}
               size="xs"
               leftSection={<IconListCheck size={16} />}
               onClick={handleSave}
               loading={saving}
+              styles={{
+                root: {
+                  "&:hover": {
+                    backgroundColor: isDark
+                      ? "var(--mantine-color-blue-7)"
+                      : undefined,
+                  },
+                },
+              }}
             >
               {isEditing ? "Update" : "Save"}{" "}
               {kind === "story" ? "Story" : "Project"}
@@ -562,7 +589,10 @@ export default function AdminProjectCreator({
                     >
                       Project Details
                     </Title>
-                    <Text size="xs" c="dimmed">
+                    <Text
+                      size="xs"
+                      c={isDark ? "var(--mantine-color-gray-3)" : "dimmed"}
+                    >
                       Set a title and basic information for this {kind}.
                     </Text>
                   </div>
@@ -574,6 +604,26 @@ export default function AdminProjectCreator({
                     onChange={(event) => setTitle(event.currentTarget.value)}
                     required
                     size="sm"
+                    styles={{
+                      label: {
+                        color: isDark
+                          ? "var(--mantine-color-gray-2)"
+                          : "var(--mantine-color-dark-9)",
+                      },
+                      input: {
+                        color: isDark
+                          ? "var(--mantine-color-gray-0)"
+                          : "var(--mantine-color-dark-9)",
+                        backgroundColor: isDark
+                          ? "var(--mantine-color-dark-5)"
+                          : "var(--mantine-color-white)",
+                        "&::placeholder": {
+                          color: isDark
+                            ? "var(--mantine-color-gray-3)"
+                            : "var(--mantine-color-gray-6)",
+                        },
+                      },
+                    }}
                   />
 
                   <TextInput
@@ -585,6 +635,31 @@ export default function AdminProjectCreator({
                       handleSlugChange(event.currentTarget.value)
                     }
                     size="sm"
+                    styles={{
+                      label: {
+                        color: isDark
+                          ? "var(--mantine-color-gray-2)"
+                          : "var(--mantine-color-dark-9)",
+                      },
+                      description: {
+                        color: isDark
+                          ? "var(--mantine-color-gray-3)"
+                          : "dimmed",
+                      },
+                      input: {
+                        color: isDark
+                          ? "var(--mantine-color-gray-0)"
+                          : "var(--mantine-color-dark-9)",
+                        backgroundColor: isDark
+                          ? "var(--mantine-color-dark-5)"
+                          : "var(--mantine-color-white)",
+                        "&::placeholder": {
+                          color: isDark
+                            ? "var(--mantine-color-gray-3)"
+                            : "var(--mantine-color-gray-6)",
+                        },
+                      },
+                    }}
                   />
 
                   <Textarea
@@ -597,6 +672,31 @@ export default function AdminProjectCreator({
                       setDescription(event.currentTarget.value)
                     }
                     size="sm"
+                    styles={{
+                      label: {
+                        color: isDark
+                          ? "var(--mantine-color-gray-2)"
+                          : "var(--mantine-color-dark-9)",
+                      },
+                      description: {
+                        color: isDark
+                          ? "var(--mantine-color-gray-3)"
+                          : "dimmed",
+                      },
+                      input: {
+                        color: isDark
+                          ? "var(--mantine-color-gray-0)"
+                          : "var(--mantine-color-dark-9)",
+                        backgroundColor: isDark
+                          ? "var(--mantine-color-dark-5)"
+                          : "var(--mantine-color-white)",
+                        "&::placeholder": {
+                          color: isDark
+                            ? "var(--mantine-color-gray-3)"
+                            : "var(--mantine-color-gray-6)",
+                        },
+                      },
+                    }}
                   />
 
                   <TextInput
@@ -605,12 +705,40 @@ export default function AdminProjectCreator({
                     value={location}
                     onChange={(event) => setLocation(event.currentTarget.value)}
                     size="sm"
+                    styles={{
+                      label: {
+                        color: isDark
+                          ? "var(--mantine-color-gray-2)"
+                          : "var(--mantine-color-dark-9)",
+                      },
+                      input: {
+                        color: isDark
+                          ? "var(--mantine-color-gray-0)"
+                          : "var(--mantine-color-dark-9)",
+                        backgroundColor: isDark
+                          ? "var(--mantine-color-dark-5)"
+                          : "var(--mantine-color-white)",
+                        "&::placeholder": {
+                          color: isDark
+                            ? "var(--mantine-color-gray-3)"
+                            : "var(--mantine-color-gray-6)",
+                        },
+                      },
+                    }}
                   />
 
-                  <Text size="xs" c="dimmed">
+                  <Text
+                    size="xs"
+                    c={isDark ? "var(--mantine-color-gray-3)" : "dimmed"}
+                  >
                     Need to upload more images? Head back to the{" "}
-                    <Anchor href="/admin">admin dashboard</Anchor> to add them
-                    to the gallery first.
+                    <Anchor
+                      href="/admin"
+                      c={isDark ? "var(--mantine-color-blue-4)" : undefined}
+                    >
+                      admin dashboard
+                    </Anchor>{" "}
+                    to add them to the gallery first.
                   </Text>
                 </Stack>
               </Paper>
@@ -641,7 +769,17 @@ export default function AdminProjectCreator({
                   >
                     Selected Images
                   </Title>
-                  <Badge color={isDark ? "gray" : "dark"} variant="light">
+                  <Badge
+                    color={isDark ? "blue" : "dark"}
+                    variant="light"
+                    styles={{
+                      root: {
+                        color: isDark
+                          ? "var(--mantine-color-gray-0)"
+                          : undefined,
+                      },
+                    }}
+                  >
                     {selectedImages.length} selected
                   </Badge>
                 </Group>
@@ -651,9 +789,17 @@ export default function AdminProjectCreator({
                     <IconPhotoPlus
                       size={36}
                       stroke={1.5}
-                      color="var(--mantine-color-gray-5)"
+                      color={
+                        isDark
+                          ? "var(--mantine-color-gray-4)"
+                          : "var(--mantine-color-gray-5)"
+                      }
                     />
-                    <Text size="sm" c="dimmed" ta="center">
+                    <Text
+                      size="sm"
+                      c={isDark ? "var(--mantine-color-gray-3)" : "dimmed"}
+                      ta="center"
+                    >
                       Pick images from the gallery to include them in this{" "}
                       {kind}.
                     </Text>
@@ -701,7 +847,18 @@ export default function AdminProjectCreator({
                           </div>
                           <Stack gap={6} style={{ flex: 1 }}>
                             <Group gap={6} justify="space-between">
-                              <Badge variant="light" size="xs">
+                              <Badge
+                                variant="light"
+                                size="xs"
+                                color={isDark ? "blue" : "dark"}
+                                styles={{
+                                  root: {
+                                    color: isDark
+                                      ? "var(--mantine-color-gray-0)"
+                                      : undefined,
+                                  },
+                                }}
+                              >
                                 #{index + 1}
                               </Badge>
                               <Group gap={4}>
@@ -710,7 +867,36 @@ export default function AdminProjectCreator({
                                   size="compact-xs"
                                   disabled={index === 0}
                                   onClick={() => moveSelectedImage(index, "up")}
-                                  leftSection={<IconArrowUp size={14} />}
+                                  leftSection={
+                                    <IconArrowUp
+                                      size={14}
+                                      color={
+                                        index === 0
+                                          ? "var(--mantine-color-gray-5)"
+                                          : isDark
+                                          ? "var(--mantine-color-gray-0)"
+                                          : "var(--mantine-color-dark-6)"
+                                      }
+                                    />
+                                  }
+                                  color={isDark ? "blue" : "dark"}
+                                  styles={{
+                                    root: {
+                                      color: isDark
+                                        ? "var(--mantine-color-gray-0)"
+                                        : undefined,
+                                      "&:hover": {
+                                        backgroundColor: isDark
+                                          ? "var(--mantine-color-blue-9)"
+                                          : "var(--mantine-color-gray-1)",
+                                      },
+                                      "&:disabled": {
+                                        color: isDark
+                                          ? "var(--mantine-color-gray-0)"
+                                          : undefined,
+                                      },
+                                    },
+                                  }}
                                 >
                                   Up
                                 </Button>
@@ -721,7 +907,36 @@ export default function AdminProjectCreator({
                                   onClick={() =>
                                     moveSelectedImage(index, "down")
                                   }
-                                  leftSection={<IconArrowDown size={14} />}
+                                  leftSection={
+                                    <IconArrowDown
+                                      size={14}
+                                      color={
+                                        index === selectedImages.length - 1
+                                          ? "var(--mantine-color-gray-5)"
+                                          : isDark
+                                          ? "var(--mantine-color-gray-0)"
+                                          : "var(--mantine-color-dark-6)"
+                                      }
+                                    />
+                                  }
+                                  color={isDark ? "blue" : "dark"}
+                                  styles={{
+                                    root: {
+                                      color: isDark
+                                        ? "var(--mantine-color-gray-0)"
+                                        : undefined,
+                                      "&:hover": {
+                                        backgroundColor: isDark
+                                          ? "var(--mantine-color-blue-9)"
+                                          : "var(--mantine-color-gray-1)",
+                                      },
+                                      "&:disabled": {
+                                        color: isDark
+                                          ? "var(--mantine-color-gray-5)"
+                                          : undefined,
+                                      },
+                                    },
+                                  }}
                                 >
                                   Down
                                 </Button>
@@ -731,6 +946,15 @@ export default function AdminProjectCreator({
                                   size="compact-xs"
                                   onClick={() => removeSelectedImage(index)}
                                   leftSection={<IconTrash size={14} />}
+                                  styles={{
+                                    root: {
+                                      "&:hover": {
+                                        backgroundColor: isDark
+                                          ? "var(--mantine-color-red-9)"
+                                          : undefined,
+                                      },
+                                    },
+                                  }}
                                 >
                                   Remove
                                 </Button>
@@ -746,6 +970,26 @@ export default function AdminProjectCreator({
                               }
                               minRows={2}
                               size="xs"
+                              styles={{
+                                label: {
+                                  color: isDark
+                                    ? "var(--mantine-color-gray-2)"
+                                    : "var(--mantine-color-dark-9)",
+                                },
+                                input: {
+                                  color: isDark
+                                    ? "var(--mantine-color-gray-0)"
+                                    : "var(--mantine-color-dark-9)",
+                                  backgroundColor: isDark
+                                    ? "var(--mantine-color-dark-5)"
+                                    : "var(--mantine-color-white)",
+                                  "&::placeholder": {
+                                    color: isDark
+                                      ? "var(--mantine-color-gray-4)"
+                                      : "var(--mantine-color-gray-6)",
+                                  },
+                                },
+                              }}
                             />
                           </Stack>
                         </Group>
@@ -786,7 +1030,10 @@ export default function AdminProjectCreator({
                   >
                     Gallery Images
                   </Title>
-                  <Text size="xs" c="dimmed">
+                  <Text
+                    size="xs"
+                    c={isDark ? "var(--mantine-color-gray-3)" : "dimmed"}
+                  >
                     Click to add or remove images from this {kind}.
                   </Text>
                 </div>
@@ -810,6 +1057,11 @@ export default function AdminProjectCreator({
                         backgroundColor: isDark
                           ? "var(--mantine-color-dark-5)"
                           : "var(--mantine-color-white)",
+                        "&::placeholder": {
+                          color: isDark
+                            ? "var(--mantine-color-gray-3)"
+                            : "var(--mantine-color-gray-6)",
+                        },
                       },
                       dropdown: {
                         backgroundColor: isDark
@@ -828,6 +1080,14 @@ export default function AdminProjectCreator({
                             ? "var(--mantine-color-dark-5)"
                             : "var(--mantine-color-gray-1)",
                         },
+                        "&[dataSelected]": {
+                          backgroundColor: isDark
+                            ? "var(--mantine-color-blue-9)"
+                            : "var(--mantine-color-blue-1)",
+                          color: isDark
+                            ? "var(--mantine-color-gray-0)"
+                            : undefined,
+                        },
                       },
                     }}
                   />
@@ -839,8 +1099,33 @@ export default function AdminProjectCreator({
                       setSearchTerm(event.currentTarget.value)
                     }
                     style={{ minWidth: "200px" }}
+                    styles={{
+                      input: {
+                        color: isDark
+                          ? "var(--mantine-color-gray-0)"
+                          : "var(--mantine-color-dark-9)",
+                        backgroundColor: isDark
+                          ? "var(--mantine-color-dark-5)"
+                          : "var(--mantine-color-white)",
+                        "&::placeholder": {
+                          color: isDark
+                            ? "var(--mantine-color-gray-3)"
+                            : "var(--mantine-color-gray-6)",
+                        },
+                      },
+                    }}
                   />
-                  <Badge variant="light">
+                  <Badge
+                    variant="light"
+                    color={isDark ? "blue" : "dark"}
+                    styles={{
+                      root: {
+                        color: isDark
+                          ? "var(--mantine-color-gray-0)"
+                          : undefined,
+                      },
+                    }}
+                  >
                     {filteredGalleryImages.length} / {galleryImages.length}
                   </Badge>
                 </Group>
@@ -848,8 +1133,11 @@ export default function AdminProjectCreator({
 
               {loadingImages ? (
                 <Stack align="center" justify="center" py="xl">
-                  <Loader color="dark" />
-                  <Text size="sm" c="dimmed">
+                  <Loader color={isDark ? "blue" : "dark"} />
+                  <Text
+                    size="sm"
+                    c={isDark ? "var(--mantine-color-gray-3)" : "dimmed"}
+                  >
                     Loading gallery images…
                   </Text>
                 </Stack>
@@ -858,9 +1146,17 @@ export default function AdminProjectCreator({
                   <IconPhotoPlus
                     size={48}
                     stroke={1.3}
-                    color="var(--mantine-color-gray-5)"
+                    color={
+                      isDark
+                        ? "var(--mantine-color-gray-4)"
+                        : "var(--mantine-color-gray-5)"
+                    }
                   />
-                  <Text size="sm" c="dimmed" ta="center">
+                  <Text
+                    size="sm"
+                    c={isDark ? "var(--mantine-color-gray-3)" : "dimmed"}
+                    ta="center"
+                  >
                     No images in the gallery yet.
                   </Text>
                   <Button
@@ -868,6 +1164,19 @@ export default function AdminProjectCreator({
                     href="/admin"
                     variant="subtle"
                     size="xs"
+                    color={isDark ? "blue" : "dark"}
+                    styles={{
+                      root: {
+                        color: isDark
+                          ? "var(--mantine-color-gray-0)"
+                          : undefined,
+                        "&:hover": {
+                          backgroundColor: isDark
+                            ? "var(--mantine-color-blue-9)"
+                            : "var(--mantine-color-gray-1)",
+                        },
+                      },
+                    }}
                   >
                     Upload images in the dashboard
                   </Button>
@@ -877,9 +1186,17 @@ export default function AdminProjectCreator({
                   <IconPhotoPlus
                     size={48}
                     stroke={1.3}
-                    color="var(--mantine-color-gray-5)"
+                    color={
+                      isDark
+                        ? "var(--mantine-color-gray-4)"
+                        : "var(--mantine-color-gray-5)"
+                    }
                   />
-                  <Text size="sm" c="dimmed" ta="center">
+                  <Text
+                    size="sm"
+                    c={isDark ? "var(--mantine-color-gray-3)" : "dimmed"}
+                    ta="center"
+                  >
                     No images match that search. Try a different name.
                   </Text>
                 </Stack>
@@ -894,121 +1211,121 @@ export default function AdminProjectCreator({
                 >
                   {filteredGalleryImages.map((image) => {
                     const isSelected = selectedUrls.has(image.url);
+                    const tooltipLabel = image.folder
+                      ? `${
+                          image.filename ||
+                          image.path?.split("/").pop() ||
+                          "Image"
+                        } (${image.folder})`
+                      : image.filename ||
+                        image.path?.split("/").pop() ||
+                        "Image";
+
                     return (
-                      <button
+                      <Tooltip
                         key={image.url}
-                        type="button"
-                        onClick={() => toggleImageSelection(image)}
-                        className="gallery-image-button"
-                        aria-pressed={isSelected}
-                        style={{
-                          position: "relative",
-                          border: `1px solid ${
-                            isDark
-                              ? isSelected
-                                ? "var(--mantine-color-blue-6)"
-                                : "var(--mantine-color-dark-4)"
-                              : "var(--mantine-color-gray-3)"
-                          }`,
-                          borderRadius: "var(--mantine-radius-md)",
-                          overflow: "hidden",
-                          padding: 0,
-                          cursor: "pointer",
-                          outline: "none",
-                          backgroundColor: isSelected
-                            ? isDark
-                              ? "var(--mantine-color-blue-9)"
-                              : "var(--mantine-color-blue-1)"
-                            : isDark
-                            ? "var(--mantine-color-dark-5)"
-                            : "var(--mantine-color-gray-0)",
-                          transition:
-                            "border-color 120ms ease, transform 120ms ease",
-                          transform: isSelected ? "scale(0.98)" : "scale(1)",
-                        }}
-                      >
-                        <div
-                          style={{
-                            position: "relative",
-                            width: "100%",
-                            paddingBottom: "68%",
+                        label={tooltipLabel}
+                        position="top"
+                        withArrow
+                        offset={8}
+                        multiline
+                        w={400}
+                        styles={{
+                          tooltip: {
                             backgroundColor: isDark
                               ? "var(--mantine-color-dark-4)"
-                              : "var(--mantine-color-gray-2)",
-                          }}
-                        >
-                          <Image
-                            src={image.url}
-                            alt={image.filename || "Gallery image"}
-                            fill
-                            style={{ objectFit: "cover" }}
-                            sizes="160px"
-                          />
-                          {isSelected && (
-                            <div
-                              style={{
-                                position: "absolute",
-                                inset: 0,
-                                background:
-                                  "linear-gradient(180deg, rgba(17,17,17,0.05) 0%, rgba(17,17,17,0.4) 100%)",
-                              }}
-                            />
-                          )}
-                        </div>
-                        <div
-                          style={{
-                            padding: "0.4rem 0.5rem",
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "0.2rem",
-                            fontSize: "0.75rem",
+                              : "var(--mantine-color-gray-9)",
                             color: isDark
-                              ? "var(--mantine-color-gray-2)"
-                              : "var(--mantine-color-gray-7)",
+                              ? "var(--mantine-color-gray-0)"
+                              : "var(--mantine-color-white)",
+                            padding: "0.5rem 0.75rem",
+                            fontSize: "0.75rem",
+                            fontWeight: 500,
+                            borderRadius: "var(--mantine-radius-md)",
+                            boxShadow: "var(--mantine-shadow-md)",
+                          },
+                          arrow: {
+                            backgroundColor: isDark
+                              ? "var(--mantine-color-dark-4)"
+                              : "var(--mantine-color-gray-9)",
+                          },
+                        }}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => toggleImageSelection(image)}
+                          className="gallery-image-button"
+                          aria-pressed={isSelected}
+                          style={{
+                            position: "relative",
+                            border: `1px solid ${
+                              isDark
+                                ? isSelected
+                                  ? "var(--mantine-color-blue-6)"
+                                  : "var(--mantine-color-dark-4)"
+                                : "var(--mantine-color-gray-3)"
+                            }`,
+                            borderRadius: "var(--mantine-radius-md)",
+                            overflow: "hidden",
+                            padding: 0,
+                            cursor: "pointer",
+                            outline: "none",
+                            backgroundColor: isSelected
+                              ? isDark
+                                ? "var(--mantine-color-blue-9)"
+                                : "var(--mantine-color-blue-1)"
+                              : isDark
+                              ? "var(--mantine-color-dark-5)"
+                              : "var(--mantine-color-gray-0)",
+                            transition:
+                              "border-color 120ms ease, transform 120ms ease",
+                            transform: isSelected ? "scale(0.98)" : "scale(1)",
                           }}
                         >
                           <div
                             style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
+                              position: "relative",
                               width: "100%",
+                              paddingBottom: "68%",
+                              backgroundColor: isDark
+                                ? "var(--mantine-color-dark-4)"
+                                : "var(--mantine-color-gray-2)",
                             }}
                           >
-                            <span
-                              style={{
-                                flex: 1,
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              {image.filename ||
-                                image.path?.split("/").pop() ||
-                                "Gallery image"}
-                            </span>
+                            <Image
+                              src={image.url}
+                              alt={image.filename || "Gallery image"}
+                              fill
+                              style={{ objectFit: "cover" }}
+                              sizes="160px"
+                            />
                             {isSelected && (
-                              <Badge
-                                size="xs"
-                                color="blue"
-                                variant="filled"
-                                ml="xs"
-                              >
-                                Added
-                              </Badge>
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  inset: 0,
+                                  background:
+                                    "linear-gradient(180deg, rgba(17,17,17,0.05) 0%, rgba(17,17,17,0.4) 100%)",
+                                }}
+                              />
                             )}
                           </div>
-                          {image.folder && (
-                            <Text
-                              size="xs"
-                              c="dimmed"
-                              style={{ fontSize: "0.7rem" }}
+                          {isSelected && (
+                            <div
+                              style={{
+                                padding: "0.4rem 0.5rem",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                              }}
                             >
-                              {image.folder}
-                            </Text>
+                              <Badge size="xs" color="blue" variant="filled">
+                                Added
+                              </Badge>
+                            </div>
                           )}
-                        </div>
-                      </button>
+                        </button>
+                      </Tooltip>
                     );
                   })}
                 </div>
