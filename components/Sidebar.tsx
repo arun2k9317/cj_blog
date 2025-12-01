@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/contexts/ThemeContext";
-import { projectsSeries, storiesSeries } from "@/lib/series";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   IconChevronRight,
   IconChevronLeft,
@@ -12,6 +11,12 @@ import {
   IconSun,
   IconMoon,
 } from "@tabler/icons-react";
+
+type ProjectItem = {
+  id: string;
+  slug: string;
+  title: string;
+};
 
 type SidebarProps = {
   isCollapsed: boolean;
@@ -28,6 +33,24 @@ export default function Sidebar({
   const { theme, toggleTheme } = useTheme();
   const [isProjectsOpen, setIsProjectsOpen] = useState(false);
   const [isStoriesOpen, setIsStoriesOpen] = useState(false);
+  const [projects, setProjects] = useState<ProjectItem[]>([]);
+  const [stories, setStories] = useState<ProjectItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Fetch published projects and stories from database
+    fetch('/api/projects-list')
+      .then(res => res.json())
+      .then(data => {
+        setProjects(data.projects || []);
+        setStories(data.stories || []);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching projects/stories:', error);
+        setLoading(false);
+      });
+  }, []);
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -68,16 +91,31 @@ export default function Sidebar({
               <span className="sidebar-tab-label">Projects</span>
             </button>
             <ul className={`sidebar-submenu ${isProjectsOpen ? "open" : ""}`}>
-              {projectsSeries.map((p) => (
-                <li key={p.id}>
-                  <button
-                    className="sidebar-submenu-item"
-                    onClick={() => onOpenLightboxWithSeries(p.id)}
-                  >
-                    {p.title}
-                  </button>
+              {loading ? (
+                <li>
+                  <span className="sidebar-submenu-item" style={{ opacity: 0.6 }}>
+                    Loading...
+                  </span>
                 </li>
-              ))}
+              ) : projects.length === 0 ? (
+                <li>
+                  <span className="sidebar-submenu-item" style={{ opacity: 0.6 }}>
+                    No projects
+                  </span>
+                </li>
+              ) : (
+                projects.map((p) => (
+                  <li key={p.id}>
+                    <Link
+                      href={`/view/project/${p.slug || p.id}`}
+                      className={`sidebar-submenu-item ${isActive(`/view/project/${p.slug || p.id}`) ? "active" : ""}`}
+                      onClick={() => setIsProjectsOpen(false)}
+                    >
+                      {p.title || 'Untitled Project'}
+                    </Link>
+                  </li>
+                ))
+              )}
             </ul>
           </li>
           <li>
@@ -89,16 +127,31 @@ export default function Sidebar({
               <span className="sidebar-tab-label">Stories</span>
             </button>
             <ul className={`sidebar-submenu ${isStoriesOpen ? "open" : ""}`}>
-              {storiesSeries.map((s) => (
-                <li key={s.id}>
-                  <button
-                    className="sidebar-submenu-item"
-                    onClick={() => onOpenLightboxWithSeries(s.id)}
-                  >
-                    {s.title}
-                  </button>
+              {loading ? (
+                <li>
+                  <span className="sidebar-submenu-item" style={{ opacity: 0.6 }}>
+                    Loading...
+                  </span>
                 </li>
-              ))}
+              ) : stories.length === 0 ? (
+                <li>
+                  <span className="sidebar-submenu-item" style={{ opacity: 0.6 }}>
+                    No stories
+                  </span>
+                </li>
+              ) : (
+                stories.map((s) => (
+                  <li key={s.id}>
+                    <Link
+                      href={`/view/story/${s.slug || s.id}`}
+                      className={`sidebar-submenu-item ${isActive(`/view/story/${s.slug || s.id}`) ? "active" : ""}`}
+                      onClick={() => setIsStoriesOpen(false)}
+                    >
+                      {s.title || 'Untitled Story'}
+                    </Link>
+                  </li>
+                ))
+              )}
             </ul>
           </li>
           <li>
