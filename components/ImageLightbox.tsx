@@ -43,6 +43,7 @@ export default function ImageLightbox({
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [showThumbnails, setShowThumbnails] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const [hoveredThumbnailIndex, setHoveredThumbnailIndex] = useState<number | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isMagnifierOn] = useState(false);
   const [isLensVisible, setIsLensVisible] = useState(false);
@@ -75,6 +76,7 @@ export default function ImageLightbox({
       // Ensure auxiliary overlays are closed when the lightbox closes
       setShowInfo(false);
       setShowThumbnails(false);
+      setHoveredThumbnailIndex(null);
       if (document.fullscreenElement) {
         // Best-effort exit when closing
         document.exitFullscreen?.().catch(() => {});
@@ -387,14 +389,9 @@ export default function ImageLightbox({
             {imageCaptions[currentIndex] && (
               <div className="lightbox-image-caption">
                 <p
-                  className="lightbox-info-description"
-                  style={{
-                    marginTop: projectInfo?.description ? "1rem" : "0",
-                    paddingTop: projectInfo?.description ? "1rem" : "0",
-                    borderTop: projectInfo?.description
-                      ? "1px solid rgba(255, 255, 255, 0.2)"
-                      : "none",
-                  }}
+                  className={`lightbox-info-description ${
+                    projectInfo?.description ? "lightbox-caption-divider" : ""
+                  }`}
                 >
                   {imageCaptions[currentIndex]}
                 </p>
@@ -406,35 +403,52 @@ export default function ImageLightbox({
 
       {/* Thumbnails Grid Overlay */}
       {showThumbnails && (
-        <div
-          className="lightbox-thumb-grid"
-          role="dialog"
-          aria-label="Thumbnails grid"
-        >
-          {images.map((img, index) => (
-            <button
-              key={index}
-              className={`thumb-grid-item ${
-                index === currentIndex ? "active" : ""
-              }`}
-              onClick={() => {
-                setCurrentIndex(index);
-                onImageChange?.(index);
-                setShowThumbnails(false);
-              }}
-              aria-label={`Open image ${index + 1}`}
-            >
-              <Image
-                src={img}
-                alt={`Thumbnail ${index + 1}`}
-                fill
-                className="thumb-grid-image"
-                sizes="(max-width: 1200px) 33vw, 280px"
-                priority={index < 6}
-              />
-            </button>
-          ))}
-        </div>
+        <>
+          <div
+            className="lightbox-thumb-grid"
+            role="dialog"
+            aria-label="Thumbnails grid"
+          >
+            {images.map((img, index) => (
+              <button
+                key={index}
+                className={`thumb-grid-item ${
+                  index === currentIndex ? "active" : ""
+                }`}
+                onClick={() => {
+                  setCurrentIndex(index);
+                  onImageChange?.(index);
+                  setShowThumbnails(false);
+                  setHoveredThumbnailIndex(null);
+                }}
+                onMouseEnter={() => setHoveredThumbnailIndex(index)}
+                onMouseLeave={() => setHoveredThumbnailIndex(null)}
+                aria-label={`Open image ${index + 1}`}
+              >
+                <Image
+                  src={img}
+                  alt={`Thumbnail ${index + 1}`}
+                  fill
+                  className="thumb-grid-image"
+                  sizes="(max-width: 1200px) 33vw, 280px"
+                  priority={index < 6}
+                />
+              </button>
+            ))}
+          </div>
+          
+          {/* Thumbnail Hover Info Panel - appears at bottom when hovering */}
+          {hoveredThumbnailIndex !== null && 
+           imageCaptions[hoveredThumbnailIndex] && (
+            <div className="lightbox-thumb-hover-info">
+              <div className="lightbox-info-content">
+                <p className="lightbox-info-description">
+                  {imageCaptions[hoveredThumbnailIndex]}
+                </p>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Control Bar removed */}
@@ -448,13 +462,17 @@ export default function ImageLightbox({
       <div className="lightbox-side-controls">
         <button
           className="lightbox-control-btn with-tooltip"
-          onClick={() =>
-            setShowThumbnails((prev) => {
-              const next = !prev;
-              if (next) setShowInfo(false);
-              return next;
-            })
-          }
+          onClick={() => {
+            const next = !showThumbnails;
+            setShowThumbnails(next);
+            // Always close info panel when opening thumbnails
+            if (next) {
+              setShowInfo(false);
+            } else {
+              // Reset hover state when closing thumbnails
+              setHoveredThumbnailIndex(null);
+            }
+          }}
           aria-label={showThumbnails ? "Hide thumbnails" : "Show thumbnails"}
           data-tooltip={showThumbnails ? "Hide thumbnails" : "Show thumbnails"}
         >
@@ -462,9 +480,17 @@ export default function ImageLightbox({
         </button>
         <button
           className="lightbox-control-btn with-tooltip"
-          onClick={() => setShowInfo(!showInfo)}
+          onClick={() => {
+            if (showThumbnails) return; // Prevent toggling info when thumbnails are active
+            setShowInfo(!showInfo);
+          }}
           aria-label={showInfo ? "Hide info" : "Show info"}
-          data-tooltip={showInfo ? "Hide info" : "Show info"}
+          data-tooltip={showThumbnails ? "Close thumbnails to view info" : showInfo ? "Hide info" : "Show info"}
+          disabled={showThumbnails}
+          style={{
+            opacity: showThumbnails ? 0.5 : 1,
+            cursor: showThumbnails ? "not-allowed" : "pointer",
+          }}
         >
           <IconInfoCircle size={18} color={iconColor} />
         </button>
