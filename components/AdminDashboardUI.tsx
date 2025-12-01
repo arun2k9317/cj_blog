@@ -5,7 +5,7 @@ import Link from "next/link";
 import GallerySection from "@/components/GallerySection";
 import ProjectCard from "@/components/ProjectCard";
 import { useTheme } from "@/contexts/ThemeContext";
-import { IconSun, IconMoon } from "@tabler/icons-react";
+import { IconSun, IconMoon, IconLogout } from "@tabler/icons-react";
 import {
   Container,
   Title,
@@ -47,6 +47,15 @@ export default function AdminDashboardUI({
   const isDark = theme === "dark";
   const [projectFilter, setProjectFilter] = useState<FilterOption>("all");
   const [storyFilter, setStoryFilter] = useState<FilterOption>("all");
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      window.location.href = "/admin/login";
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
 
   const filteredProjects = useMemo(() => {
     if (projectFilter === "all") return projects;
@@ -112,6 +121,29 @@ export default function AdminDashboardUI({
               }}
             >
               {isDark ? <IconSun size={18} /> : <IconMoon size={18} />}
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label="Logout">
+            <ActionIcon
+              variant="subtle"
+              color="red"
+              onClick={handleLogout}
+              size="lg"
+              aria-label="Logout"
+              styles={{
+                root: {
+                  color: isDark
+                    ? "var(--mantine-color-red-4)"
+                    : "var(--mantine-color-red-6)",
+                  "&:hover": {
+                    backgroundColor: isDark
+                      ? "var(--mantine-color-red-9)"
+                      : "var(--mantine-color-red-1)",
+                  },
+                },
+              }}
+            >
+              <IconLogout size={18} />
             </ActionIcon>
           </Tooltip>
           <Link href="/admin/new?kind=project">
