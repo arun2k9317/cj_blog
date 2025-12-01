@@ -1468,13 +1468,39 @@ body {
   object-fit: cover;
 }
 
-.image-lightbox.dark-mode {
-  background: #111111; /* very dark grey instead of pure black */
+/* Thumbnail hover info panel - appears at bottom when hovering over thumbnails */
+.lightbox-thumb-hover-info {
+  position: absolute;
+  bottom: 20px;
+  left: 6%;
+  right: 6%;
+  background: transparent;
+  padding: 16px 24px;
+  border: none;
+  z-index: 10003;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.lightbox-thumb-hover-info .lightbox-info-description {
+  color: #111111;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  font-weight: 400;
+}
+
+.image-lightbox.dark-mode .lightbox-thumb-hover-info {
+  background: transparent;
+}
+
+.image-lightbox.dark-mode .lightbox-thumb-hover-info .lightbox-info-description {
   color: #ffffff;
 }
 
-.image-lightbox.fullscreen {
-  /* Fullscreen styles handled by browser */
+.image-lightbox.dark-mode {
+  background: #111111; /* very dark grey instead of pure black */
+  color: #ffffff;
 }
 
 .lightbox-close {
@@ -1578,20 +1604,20 @@ body {
   top: 60px;
   left: 20px;
   right: 80px;
-  background: var(--background);
-  backdrop-filter: none;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(8px);
   padding: 16px;
   border-radius: 6px;
-  border: 1px solid var(--gray-300);
+  border: none;
   max-width: 380px;
   z-index: 10000;
   animation: slideDown 0.3s ease;
 }
 
 .image-lightbox.dark-mode .lightbox-info-panel {
-  background: var(--background);
+  background: rgba(17, 17, 17, 0.75);
   color: #ffffff;
-  border-color: var(--gray-700);
+  border: none;
 }
 
 @keyframes slideDown {
@@ -1615,18 +1641,34 @@ body {
   margin-bottom: 6px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  color: #111111;
+}
+
+.image-lightbox.dark-mode .lightbox-info-title {
+  color: #ffffff;
 }
 
 .lightbox-info-description {
   font-size: 14px;
   line-height: 1.55;
   margin-bottom: 6px;
-  color: var(--gray-700);
+  color: #111111;
   letter-spacing: 0.01em;
+  font-weight: 400;
 }
 
 .image-lightbox.dark-mode .lightbox-info-description {
-  color: rgba(255, 255, 255, 0.8);
+  color: #ffffff;
+}
+
+.lightbox-caption-divider {
+  margin-top: 1rem !important;
+  padding-top: 1rem !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.15) !important;
+}
+
+.image-lightbox.dark-mode .lightbox-caption-divider {
+  border-top-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 .lightbox-info-location {
@@ -2073,6 +2115,15 @@ body {
     left: 10px;
     padding: 5px 10px;
     font-size: 10px;
+  }
+
+  .lightbox-thumb-hover-info {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    padding: 12px 16px;
+    max-height: 100px;
+    font-size: 12px;
   }
 }
 
