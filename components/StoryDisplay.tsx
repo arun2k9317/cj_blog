@@ -390,7 +390,15 @@ export default function StoryDisplay({ blocks }: StoryDisplayProps) {
   }, [blocks, isDark]);
 
   return (
-    <Container size="lg" py="xl" px="md">
+    <Container
+      size="lg"
+      py="xl"
+      px="md"
+      style={{
+        backgroundColor: "transparent",
+        minHeight: "100vh",
+      }}
+    >
       <Stack gap={0}>{renderedBlocks}</Stack>
     </Container>
   );
