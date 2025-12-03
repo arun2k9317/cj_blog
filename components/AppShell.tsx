@@ -10,6 +10,7 @@ import { BLOB_BASE, Series, projectsSeries, storiesSeries } from "@/lib/series";
 export default function AppShell({ children }: PropsWithChildren) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith("/admin");
+  const isViewingProjectOrStory = pathname?.startsWith("/view/project/") || pathname?.startsWith("/view/story/");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [selectedSeriesId, setSelectedSeriesId] = useState<string | null>(null);
@@ -108,6 +109,15 @@ export default function AppShell({ children }: PropsWithChildren) {
 
   // For admin pages, render without sidebar/lightbox to provide a clean dashboard canvas
   if (isAdminRoute) {
+    return (
+      <Box className="main-layout">
+        <Box component="main" className="main-content" style={{ marginLeft: 0 }}>{children}</Box>
+      </Box>
+    );
+  }
+
+  // For project/story viewer pages, render without sidebar (fullscreen view)
+  if (isViewingProjectOrStory) {
     return (
       <Box className="main-layout">
         <Box component="main" className="main-content" style={{ marginLeft: 0 }}>{children}</Box>
