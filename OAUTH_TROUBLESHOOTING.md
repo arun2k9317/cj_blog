@@ -24,9 +24,16 @@ After attempting to log in, check your terminal/console for error messages. The 
 3. Under **Redirect URLs**, add:
    - `http://localhost:3000/api/auth/callback` (for development)
    - `https://nitinjamdar.in/api/auth/callback` (for production)
+   - `https://cj-blog-ncpbpttyk-arun-ss-projects-9a5ef14e.vercel.app/api/auth/callback` (for Vercel preview deployments)
+   - `https://*.vercel.app/api/auth/callback` (optional: wildcard for all Vercel preview URLs)
 4. Click **Save**
 
 **This is often the main cause of authentication failures!**
+
+**Note for Vercel Deployments:**
+- Each Vercel preview deployment gets a unique URL
+- You can either add each preview URL individually, or use a wildcard pattern
+- For production, use your custom domain URL
 
 ### 3. Verify Environment Variables
 
@@ -51,11 +58,18 @@ In Google Cloud Console → OAuth 2.0 Client ID:
 - ✅ `https://ncqnzkpzzcoznsdvllvx.supabase.co/auth/v1/callback` (Supabase callback)
 - ✅ `http://localhost:3000/api/auth/callback` (Next.js callback - development)
 - ✅ `https://nitinjamdar.in/api/auth/callback` (Next.js callback - production)
+- ✅ `https://cj-blog-ncpbpttyk-arun-ss-projects-9a5ef14e.vercel.app/api/auth/callback` (Vercel preview)
 
 **Authorized JavaScript origins should include:**
 - ✅ `https://ncqnzkpzzcoznsdvllvx.supabase.co`
 - ✅ `http://localhost:3000` (for development)
 - ✅ `https://nitinjamdar.in` (for production)
+- ✅ `https://cj-blog-ncpbpttyk-arun-ss-projects-9a5ef14e.vercel.app` (Vercel preview)
+
+**Important for Vercel:**
+- Each Vercel preview deployment has a unique URL
+- You need to add each preview URL to both "Authorized redirect URIs" and "Authorized JavaScript origins"
+- Alternatively, you can use wildcard patterns if Google Cloud Console supports them
 
 ### 5. Check Supabase Google Provider Settings
 
@@ -132,6 +146,41 @@ If you see errors, they will be logged with details.
 - [ ] Browser cookies cleared
 - [ ] Checked server logs for errors
 
+## Vercel Deployment Issues
+
+### Issue: "ERR_CONNECTION_REFUSED" or OAuth redirects to localhost
+
+**Cause:** The Vercel deployment URL is not configured in Google Cloud Console or Supabase.
+
+**Solution:**
+
+1. **Add Vercel URL to Google Cloud Console:**
+   - Go to [Google Cloud Console](https://console.cloud.google.com) → Your Project → APIs & Services → Credentials
+   - Click on your OAuth 2.0 Client ID
+   - Under "Authorized JavaScript origins", add:
+     - `https://cj-blog-ncpbpttyk-arun-ss-projects-9a5ef14e.vercel.app`
+   - Under "Authorized redirect URIs", add:
+     - `https://cj-blog-ncpbpttyk-arun-ss-projects-9a5ef14e.vercel.app/api/auth/callback`
+   - Click **Save**
+
+2. **Add Vercel URL to Supabase:**
+   - Go to [Supabase Dashboard](https://app.supabase.com) → Authentication → URL Configuration
+   - Under "Redirect URLs", add:
+     - `https://cj-blog-ncpbpttyk-arun-ss-projects-9a5ef14e.vercel.app/api/auth/callback`
+   - Click **Save**
+
+3. **Verify Vercel Environment Variables:**
+   - In Vercel Dashboard → Your Project → Settings → Environment Variables
+   - Ensure these are set:
+     - `NEXT_PUBLIC_SUPABASE_URL`
+     - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - Redeploy after adding/updating environment variables
+
+4. **Test the flow:**
+   - Clear browser cookies
+   - Try accessing `/admin` on your Vercel URL
+   - The OAuth flow should now redirect correctly
+
 ## Still Having Issues?
 
 1. Check the detailed error message in the login page (now shows specific errors)
@@ -139,4 +188,5 @@ If you see errors, they will be logged with details.
 3. Verify all URLs match exactly (no trailing slashes, correct protocol)
 4. Try the OAuth flow in an incognito window
 5. Check Supabase logs in the dashboard for authentication events
+6. For Vercel: Check Vercel function logs in the dashboard for server-side errors
 
