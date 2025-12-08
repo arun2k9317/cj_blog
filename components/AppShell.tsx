@@ -2,9 +2,12 @@
 
 import { useEffect, useMemo, useState, PropsWithChildren } from "react";
 import { usePathname } from "next/navigation";
-import { Box } from "@mantine/core";
+import { Box, Drawer, Burger } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import Sidebar from "@/components/Sidebar";
+import MobileSidebar from "@/components/MobileSidebar";
 import ImageLightbox from "@/components/ImageLightbox";
+import MobileImageLightbox from "@/components/MobileImageLightbox";
 import { BLOB_BASE, Series, projectsSeries, storiesSeries } from "@/lib/series";
 
 export default function AppShell({ children }: PropsWithChildren) {
@@ -14,6 +17,11 @@ export default function AppShell({ children }: PropsWithChildren) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [selectedSeriesId, setSelectedSeriesId] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  // Mobile detection (matches Mantine's sm breakpoint usually, or custom 768px)
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   const allSeries = useMemo<Series[]>(() => [...projectsSeries, ...storiesSeries], []);
 
@@ -95,6 +103,8 @@ export default function AppShell({ children }: PropsWithChildren) {
   const openLightboxForSeries = (seriesId: string | null) => {
     if (seriesId) setSelectedSeriesId(seriesId);
     setLightboxOpen(true);
+    setActiveImageIndex(0); // Reset index when opening new series
+    setMobileMenuOpen(false); // Close mobile menu if open
   };
 
   // Allow pages to open the lightbox via a DOM event without prop drilling
@@ -126,23 +136,98 @@ export default function AppShell({ children }: PropsWithChildren) {
   }
 
   return (
-    <Box className={`main-layout ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}>
-      <Sidebar
-        isCollapsed={isSidebarCollapsed}
-        onToggle={() => setIsSidebarCollapsed((v) => !v)}
-        onOpenLightboxWithSeries={openLightboxForSeries}
-      />
-      <Box component="main" className="main-content">{children}</Box>
-      <ImageLightbox
-        images={projectImages}
-        imageCaptions={imageCaptions}
-        currentIndex={0}
-        projectInfo={projectInfo}
-        isOpen={lightboxOpen}
-        onClose={() => setLightboxOpen(false)}
-      />
+    <Box className={`main-layout ${isSidebarCollapsed && !isMobile ? "sidebar-collapsed" : ""}`}>
+      {isMobile ? (
+        <>
+          {/* Mobile Header */}
+          <Box
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: "60px",
+              display: "flex",
+              alignItems: "center",
+              padding: "0 16px",
+              zIndex: 1000,
+              backgroundColor: "var(--mantine-color-body)",
+              borderBottom: "1px solid var(--mantine-color-default-border)",
+            }}
+          >
+            <Burger
+              opened={mobileMenuOpen}
+              onClick={() => setMobileMenuOpen((o) => !o)}
+              size="sm"
+            />
+            <Box style={{ flex: 1, textAlign: "center", fontWeight: 600 }}>
+              Nitin Jamdar
+            </Box>
+            <Box style={{ width: 24 }} /> {/* Spacer for balance */}
+          </Box>
+
+          {/* Mobile Navigation Drawer */}
+          <Drawer
+            opened={mobileMenuOpen}
+            onClose={() => setMobileMenuOpen(false)}
+            size="75%"
+            padding="md"
+            title="Menu"
+            zIndex={1100}
+            styles={{
+              content: { backgroundColor: "var(--mantine-color-body)" },
+              header: { backgroundColor: "var(--mantine-color-body)" },
+              title: { color: "var(--mantine-color-text)" },
+              close: { color: "var(--mantine-color-text)" }
+            }}
+          >
+            <MobileSidebar
+              onClose={() => setMobileMenuOpen(false)}
+              onOpenLightboxWithSeries={openLightboxForSeries}
+            />
+          </Drawer>
+
+          <Box
+            component="main"
+            className="main-content"
+            style={{ marginLeft: 0, marginTop: "60px", padding: 0 }}
+          >
+            {children}
+          </Box>
+        </>
+      ) : (
+        <>
+          <Sidebar
+            isCollapsed={isSidebarCollapsed}
+            onToggle={() => setIsSidebarCollapsed((v) => !v)}
+            onOpenLightboxWithSeries={openLightboxForSeries}
+          />
+          <Box component="main" className="main-content">{children}</Box>
+        </>
+      )}
+
+      {/* Image Lightbox */}
+      {isMobile ? (
+        <MobileImageLightbox
+          images={projectImages}
+          currentIndex={activeImageIndex}
+          imageCaptions={imageCaptions}
+          projectInfo={projectInfo}
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+          onImageChange={setActiveImageIndex}
+        />
+      ) : (
+        <ImageLightbox
+          images={projectImages}
+          currentIndex={activeImageIndex}
+          imageCaptions={imageCaptions}
+          projectInfo={projectInfo}
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+          onImageChange={setActiveImageIndex}
+        />
+      )}
     </Box>
   );
 }
-
-

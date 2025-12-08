@@ -3,9 +3,13 @@
 import { useMemo } from "react";
 import Image from "next/image";
 import { Box } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
+import MobileHome from "@/components/MobileHome";
 // Lightbox is controlled globally by AppShell
 
 export default function Home() {
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
   // Iconic image placeholder - will be replaced from admin module later
   const BLOB_BASE =
     "https://v96anmwogiriaihi.public.blob.vercel-storage.com/admin-uploads";
@@ -53,6 +57,10 @@ export default function Home() {
     });
     window.dispatchEvent(evt);
   };
+
+  if (isMobile) {
+    return <MobileHome />;
+  }
 
   return (
     <>
