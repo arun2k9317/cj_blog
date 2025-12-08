@@ -22,6 +22,8 @@ export default function ProjectPreview({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+   // Mobile detection
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   // Extract images and captions from project
   const { images, imageCaptions } = useMemo(() => {
@@ -134,9 +136,6 @@ export default function ProjectPreview({
       </div>
     );
   }
-
-  // Mobile detection
-  const isMobile = useMediaQuery("(max-width: 768px)");
 
   return isMobile ? (
     <MobileImageLightbox

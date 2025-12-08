@@ -13,6 +13,8 @@ interface ProjectViewerProps {
 
 export default function ProjectViewer({ project }: ProjectViewerProps) {
   const router = useRouter();
+  // Mobile detection
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   // Extract images from content blocks
   const images = useMemo(() => {
@@ -85,9 +87,6 @@ export default function ProjectViewer({ project }: ProjectViewerProps) {
       </div>
     );
   }
-
-  // Mobile detection
-  const isMobile = useMediaQuery("(max-width: 768px)");
 
   return isMobile ? (
     <MobileImageLightbox
