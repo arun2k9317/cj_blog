@@ -22,12 +22,14 @@ type SidebarProps = {
   isCollapsed: boolean;
   onToggle: () => void;
   onOpenLightboxWithSeries: (seriesId: string) => void;
+  isMobile?: boolean;
 };
 
 export default function Sidebar({
   isCollapsed,
   onToggle,
   onOpenLightboxWithSeries,
+  isMobile = false,
 }: SidebarProps) {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
@@ -58,18 +60,20 @@ export default function Sidebar({
   };
 
   return (
-    <aside className="sidebar">
-      <button
-        className="sidebar-toggle"
-        onClick={onToggle}
-        aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-      >
-        {isCollapsed ? (
-          <IconChevronRight size={12} aria-hidden />
-        ) : (
-          <IconChevronLeft size={12} aria-hidden />
-        )}
-      </button>
+    <aside className="sidebar" style={isMobile ? { width: "100%", border: "none" } : undefined}>
+      {!isMobile && (
+        <button
+          className="sidebar-toggle"
+          onClick={onToggle}
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isCollapsed ? (
+            <IconChevronRight size={12} aria-hidden />
+          ) : (
+            <IconChevronLeft size={12} aria-hidden />
+          )}
+        </button>
+      )}
 
       <div className="sidebar-logo">
         <span>Nitin Jamdar</span>

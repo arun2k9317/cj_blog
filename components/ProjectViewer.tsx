@@ -2,7 +2,9 @@
 
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useMediaQuery } from "@mantine/hooks";
 import ImageLightbox from "@/components/ImageLightbox";
+import MobileImageLightbox from "@/components/MobileImageLightbox";
 import { Project } from "@/types/project";
 
 interface ProjectViewerProps {
@@ -84,7 +86,23 @@ export default function ProjectViewer({ project }: ProjectViewerProps) {
     );
   }
 
-  return (
+  // Mobile detection
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
+  return isMobile ? (
+    <MobileImageLightbox
+      images={images}
+      currentIndex={0}
+      imageCaptions={imageCaptions}
+      projectInfo={{
+        title: project.title || 'Untitled Project',
+        description: project.description || undefined,
+        location: project.location || undefined,
+      }}
+      isOpen={true}
+      onClose={handleClose}
+    />
+  ) : (
     <ImageLightbox
       images={images}
       currentIndex={0}

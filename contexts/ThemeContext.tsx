@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useMantineColorScheme } from "@mantine/core";
 
 type Theme = "light" | "dark";
 
@@ -15,6 +16,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
   const [mounted, setMounted] = useState(false);
+  const { setColorScheme } = useMantineColorScheme();
 
   // Load theme from localStorage on mount
   useEffect(() => {
@@ -22,10 +24,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const savedTheme = localStorage.getItem("theme") as Theme | null;
     if (savedTheme && (savedTheme === "light" || savedTheme === "dark")) {
       setThemeState(savedTheme);
+      setColorScheme(savedTheme);
     } else {
       // Check system preference
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      setThemeState(prefersDark ? "dark" : "light");
+      const initialTheme = prefersDark ? "dark" : "light";
+      setThemeState(initialTheme);
+      setColorScheme(initialTheme);
     }
   }, []);
 
@@ -37,8 +42,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       html.classList.remove("light", "dark");
       html.classList.add(theme);
       localStorage.setItem("theme", theme);
+      setColorScheme(theme);
     }
-  }, [theme, mounted]);
+  }, [theme, mounted, setColorScheme]);
 
   const toggleTheme = () => {
     setThemeState((prev) => (prev === "light" ? "dark" : "light"));
@@ -64,4 +70,5 @@ export function useTheme() {
   }
   return context;
 }
+
 

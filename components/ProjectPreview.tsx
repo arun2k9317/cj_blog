@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useMemo } from "react";
 import ImageLightbox from "./ImageLightbox";
+import MobileImageLightbox from "./MobileImageLightbox";
 import type { Project } from "@/types/project";
 import { Loader } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 
 interface ProjectPreviewProps {
   projectId: string;
@@ -133,7 +135,24 @@ export default function ProjectPreview({
     );
   }
 
-  return (
+  // Mobile detection
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
+  return isMobile ? (
+    <MobileImageLightbox
+      images={images}
+      currentIndex={currentImageIndex}
+      imageCaptions={imageCaptions}
+      projectInfo={{
+        title: project.title,
+        description: project.description,
+        location: project.location,
+      }}
+      isOpen={isOpen}
+      onClose={onClose}
+      onImageChange={setCurrentImageIndex}
+    />
+  ) : (
     <ImageLightbox
       images={images}
       imageCaptions={imageCaptions}
