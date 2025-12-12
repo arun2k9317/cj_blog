@@ -6,7 +6,7 @@ import GallerySection from "@/components/GallerySection";
 import ProjectCard from "@/components/ProjectCard";
 import IconicImageSelector from "@/components/IconicImageSelector";
 import { useTheme } from "@/contexts/ThemeContext";
-import { IconSun, IconMoon, IconLogout } from "@tabler/icons-react";
+import { IconSun, IconMoon, IconLogout, IconMail, IconBrandWhatsapp } from "@tabler/icons-react";
 import {
   Container,
   Title,
@@ -445,6 +445,38 @@ export default function AdminDashboardUI({
         onClose={() => setIconicModalOpen(false)} 
         galleryAssets={galleryAssets} 
       />
+
+      <Group justify="center" mt="xl" pb="md" gap="xs">
+        <Text size="xs" c="dimmed">
+          Contact support
+        </Text>
+        <Tooltip label="Email Developer">
+          <ActionIcon
+            variant="subtle"
+            color="gray"
+            size="sm"
+            component="a"
+            href="mailto:arun.subramanian.4505@gmail.com?subject=Admin%20Dashboard%20Support"
+            aria-label="Email Developer"
+          >
+            <IconMail size={16} />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label="WhatsApp Developer">
+          <ActionIcon
+            variant="subtle"
+            color="green"
+            size="sm"
+            component="a"
+            href="https://wa.me/919495319972"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="WhatsApp Developer"
+          >
+            <IconBrandWhatsapp size={16} />
+          </ActionIcon>
+        </Tooltip>
+      </Group>
     </Container>
   );
 }
