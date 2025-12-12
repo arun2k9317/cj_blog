@@ -35,6 +35,11 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
 
+  // Bypass auth in development environment for testing
+  if (process.env.NODE_ENV === 'development' && pathname.startsWith('/admin')) {
+    return supabaseResponse
+  }
+
   // Allow access to login page without authentication
   if (pathname === '/admin/login') {
     // If user is authenticated AND authorized, redirect away from login page

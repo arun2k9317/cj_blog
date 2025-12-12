@@ -9,8 +9,7 @@ import {
   IconChevronRight,
   IconLayoutGrid,
   IconInfoCircle,
-  IconMaximize,
-  IconMinimize,
+
   IconSun,
   IconMoon,
 } from "@tabler/icons-react";
@@ -55,7 +54,7 @@ export default function MobileImageLightbox({
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [infoOpen, setInfoOpen] = useState(false);
   const [thumbnailsOpen, setThumbnailsOpen] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false); // Controls object-fit: cover vs contain logic mostly
+
   
   // Sync internal state with prop
   useEffect(() => {
@@ -133,7 +132,7 @@ export default function MobileImageLightbox({
                 alt={`Image ${currentIndex + 1}`}
                 fill
                 style={{ 
-                    objectFit: isFullscreen ? "cover" : "contain",
+                    objectFit: "contain",
                     transition: "object-fit 0.3s ease"
                 }}
                 priority
@@ -251,16 +250,7 @@ export default function MobileImageLightbox({
                 <IconLayoutGrid size={24} />
             </ActionIcon>
 
-            <ActionIcon 
-                variant="subtle" 
-                size="xl" 
-                radius="xl"
-                color={theme === 'dark' ? 'gray.4' : 'gray.7'}
-                onClick={() => setIsFullscreen(!isFullscreen)}
-                aria-label={isFullscreen ? "Fit Image" : "Fill Screen"}
-            >
-                {isFullscreen ? <IconMinimize size={24} /> : <IconMaximize size={24} />}
-            </ActionIcon>
+
 
             <ActionIcon 
                 variant="subtle" 

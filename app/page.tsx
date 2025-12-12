@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Image from "next/image";
 import { Box } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
@@ -11,11 +11,31 @@ export default function Home() {
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   // Iconic image placeholder - will be replaced from admin module later
-  const BLOB_BASE =
-    "https://v96anmwogiriaihi.public.blob.vercel-storage.com/admin-uploads";
 
-  // Temporary iconic image (can be changed from admin later)
-  const iconicImage = `${BLOB_BASE}/behindTheTeaCup/behindTheTeaCup_1.jpg`;
+
+  const [iconicImages, setIconicImages] = useState<string[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    fetch("/api/iconic-images")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.images && Array.isArray(data.images) && data.images.length > 0) {
+             setIconicImages(data.images.map((i: any) => i.url));
+        }
+      })
+      .catch((err) => console.error("Failed to fetch iconic images", err));
+  }, []);
+
+  const displayImages = iconicImages;
+
+  useEffect(() => {
+    if (displayImages.length <= 1) return;
+    const interval = setInterval(() => {
+        setCurrentIndex(prev => (prev + 1) % displayImages.length);
+    }, 5000); // 5 seconds
+    return () => clearInterval(interval);
+  }, [displayImages]);
 
   type Series = {
     id: string;
@@ -59,7 +79,7 @@ export default function Home() {
   };
 
   if (isMobile) {
-    return <MobileHome />;
+    return <MobileHome iconicImages={iconicImages} />;
   }
 
   return (
@@ -72,23 +92,32 @@ export default function Home() {
       >
         <Box
           className="iconic-image-wrapper"
-          onClick={() => openGlobalLightbox(activeProject.id)}
           style={{
-            cursor: "pointer",
             position: "relative",
             width: "100%",
             height: "100%",
           }}
         >
-          <Image
-            src={iconicImage}
-            alt="NJ Photography"
-            fill
-            sizes="100vw"
-            style={{ objectFit: "cover" }}
-            className="iconic-image"
-            priority
-          />
+          {displayImages.map((src, index) => (
+             <Image
+                key={src}
+                src={src}
+                alt="NJ Photography"
+                fill
+                sizes="100vw"
+                style={{ 
+                    objectFit: "cover",
+                    opacity: index === currentIndex ? 1 : 0,
+                    transition: "opacity 1s ease-in-out",
+                    zIndex: index === currentIndex ? 1 : 0,
+                    position: 'absolute',
+                    top: 0,
+                    left: 0
+                }}
+                className="iconic-image"
+                priority={index === 0}
+              />
+          ))}
         </Box>
       </Box>
 
