@@ -146,6 +146,18 @@ export async function initializeDatabase() {
             sql: 'CREATE INDEX IF NOT EXISTS idx_projects_kind ON projects(kind)'
         });
 
+        // Create iconic_images table
+        await supabase.rpc('exec_sql', {
+            sql: `
+        CREATE TABLE IF NOT EXISTS iconic_images (
+          id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+          url TEXT NOT NULL,
+          "order" INTEGER DEFAULT 0,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        )
+      `
+        });
+
         console.log('Database initialized successfully');
     } catch (error) {
         console.error('Error initializing database:', error);
@@ -632,3 +644,45 @@ export async function getProjectsUsingImage(imageUrl: string) {
     return Array.from(projectsMap.values());
 }
 
+export async function getIconicImages() {
+    const supabase = getSupabaseServerClient();
+    const { data, error } = await supabase
+        .from('iconic_images')
+        .select('*')
+        .order('order', { ascending: true });
+
+    if (error) {
+        // atomic fail-safe: if table doesn't exist, return empty
+        if (error.code === '42P01') return [];
+        throw error;
+    }
+    return data || [];
+}
+
+export async function saveIconicImages(urls: string[]) {
+    const supabase = getSupabaseServerClient();
+
+    // First, delete all existing entries (simplest approach for this use case)
+    const { error: deleteError } = await supabase
+        .from('iconic_images')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+
+    if (deleteError) throw deleteError;
+
+    if (urls.length === 0) return [];
+
+    // Insert new ones
+    const rows = urls.map((url, index) => ({
+        url,
+        order: index
+    }));
+
+    const { data, error } = await supabase
+        .from('iconic_images')
+        .insert(rows)
+        .select();
+
+    if (error) throw error;
+    return data;
+}

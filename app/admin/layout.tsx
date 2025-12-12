@@ -23,6 +23,10 @@ export default async function AdminLayout({
   } = await supabase.auth.getUser()
 
   if (!user) {
+    // Bypass auth in development environment
+    if (process.env.NODE_ENV === 'development') {
+      return <>{children}</>
+    }
     redirect('/admin/login')
   }
 

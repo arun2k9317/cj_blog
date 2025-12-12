@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import GallerySection from "@/components/GallerySection";
 import ProjectCard from "@/components/ProjectCard";
+import IconicImageSelector from "@/components/IconicImageSelector";
 import { useTheme } from "@/contexts/ThemeContext";
 import { IconSun, IconMoon, IconLogout } from "@tabler/icons-react";
 import {
@@ -46,7 +47,9 @@ export default function AdminDashboardUI({
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === "dark";
   const [projectFilter, setProjectFilter] = useState<FilterOption>("all");
+
   const [storyFilter, setStoryFilter] = useState<FilterOption>("all");
+  const [iconicModalOpen, setIconicModalOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -168,6 +171,14 @@ export default function AdminDashboardUI({
               New Story
             </Button>
           </Link>
+          <Button 
+            variant="outline" 
+            size="xs" 
+            color={isDark ? "grape" : "grape"}
+            onClick={() => setIconicModalOpen(true)}
+          >
+             Iconic Images
+          </Button>
         </Group>
       </Group>
 
@@ -427,6 +438,13 @@ export default function AdminDashboardUI({
           )}
         </Paper>
       </Stack>
+
+      
+      <IconicImageSelector 
+        opened={iconicModalOpen} 
+        onClose={() => setIconicModalOpen(false)} 
+        galleryAssets={galleryAssets} 
+      />
     </Container>
   );
 }

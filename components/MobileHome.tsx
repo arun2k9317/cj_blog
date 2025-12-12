@@ -3,10 +3,26 @@
 import { useMemo } from "react";
 import Image from "next/image";
 import { Box, Text, Stack } from "@mantine/core";
-import { BLOB_BASE } from "@/lib/series";
 
-export default function MobileHome() {
-  const iconicImage = `${BLOB_BASE}/behindTheTeaCup/behindTheTeaCup_1.jpg`;
+
+interface MobileHomeProps {
+  iconicImages?: string[];
+}
+
+import { useState, useEffect } from "react";
+
+export default function MobileHome({ iconicImages = [] }: MobileHomeProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
+  const displayImages = iconicImages;
+
+  useEffect(() => {
+    if (displayImages.length <= 1) return;
+    const interval = setInterval(() => {
+        setCurrentIndex(prev => (prev + 1) % displayImages.length);
+    }, 5000); // 5 seconds
+    return () => clearInterval(interval);
+  }, [displayImages]);
 
   const projects = useMemo(
     () => [
@@ -45,22 +61,32 @@ export default function MobileHome() {
             Overview
           </Text> */}
           <Box
-            onClick={() => openGlobalLightbox(projects[0].id)}
             style={{
               position: "relative",
               width: "100%",
               aspectRatio: "3/4",
               overflow: "hidden",
-              cursor: "pointer",
             }}
           >
-            <Image
-              src={iconicImage}
-              alt="Featured - Behind The Tea Cup"
-              fill
-              sizes="(max-width: 768px) 100vw, 33vw"
-              style={{ objectFit: "cover" }}
-            />
+            {displayImages.map((src, index) => (
+                <Image
+                  key={src}
+                  src={src}
+                  alt="Featured Image"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  style={{ 
+                      objectFit: "cover",
+                      opacity: index === currentIndex ? 1 : 0,
+                      transition: "opacity 1s ease-in-out",
+                      zIndex: index === currentIndex ? 1 : 0,
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                  }}
+                  priority={index === 0}
+                />
+            ))}
             <Box
               style={{
                 position: "absolute",
