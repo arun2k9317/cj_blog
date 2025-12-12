@@ -37,46 +37,9 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [displayImages]);
 
-  type Series = {
-    id: string;
-    title: string;
-    folder: string;
-    description: string;
-    count: number;
-    ext: string;
-  };
 
-  // Projects catalog (can be replaced by admin-managed data later)
-  const projects = useMemo<Series[]>(
-    () => [
-      {
-        id: "behindTheTeaCup",
-        title: "Behind The Tea Cup",
-        folder: "behindTheTeaCup",
-        description: "Behind The Tea Cup photo series.",
-        count: 10,
-        ext: "jpg",
-      },
-      {
-        id: "coffee-and-the-hills",
-        title: "Coffee And The Hills",
-        folder: "coffeeAndTheHills",
-        description: "Coffee And The Hills photo series.",
-        count: 16,
-        ext: "jpg",
-      },
-    ],
-    []
-  );
 
-  const activeProject: Series = useMemo(() => projects[0], [projects]);
 
-  const openGlobalLightbox = (seriesId: string | null) => {
-    const evt = new CustomEvent<string | null>("open-series-lightbox", {
-      detail: seriesId,
-    });
-    window.dispatchEvent(evt);
-  };
 
   if (isMobile) {
     return <MobileHome iconicImages={iconicImages} />;
