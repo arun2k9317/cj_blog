@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+
 import Image from "next/image";
 import { Box, Text, Stack } from "@mantine/core";
 
@@ -24,27 +24,7 @@ export default function MobileHome({ iconicImages = [] }: MobileHomeProps) {
     return () => clearInterval(interval);
   }, [displayImages]);
 
-  const projects = useMemo(
-    () => [
-      {
-        id: "behindTheTeaCup",
-        title: "Behind The Tea Cup",
-        folder: "behindTheTeaCup",
-        description: "Behind The Tea Cup photo series.",
-        count: 10,
-        ext: "jpg",
-      },
-      {
-        id: "coffee-and-the-hills",
-        title: "Coffee And The Hills",
-        folder: "coffeeAndTheHills",
-        description: "Coffee And The Hills photo series.",
-        count: 16,
-        ext: "jpg",
-      },
-    ],
-    []
-  );
+
 
   const openGlobalLightbox = (seriesId: string | null) => {
     const evt = new CustomEvent<string | null>("open-series-lightbox", {
@@ -87,24 +67,7 @@ export default function MobileHome({ iconicImages = [] }: MobileHomeProps) {
                   priority={index === 0}
                 />
             ))}
-            <Box
-              style={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                padding: "20px",
-                background: "linear-gradient(to top, rgba(0,0,0,0.7), transparent)",
-                color: "white",
-              }}
-            >
-              <Text size="lg" fw={500}>
-                {projects[0].title}
-              </Text>
-              <Text size="sm" opacity={0.9}>
-                {projects[0].description}
-              </Text>
-            </Box>
+
           </Box>
         </Box>
 
