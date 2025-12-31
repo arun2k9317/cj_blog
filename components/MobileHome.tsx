@@ -1,125 +1,137 @@
 "use client";
 
-
 import Image from "next/image";
-import { Box, Text, Stack } from "@mantine/core";
-
+import { Box } from "@mantine/core";
+import { useState } from "react";
+import MobileImageLightbox from "./MobileImageLightbox";
 
 interface MobileHomeProps {
   iconicImages?: string[];
 }
 
-import { useState, useEffect } from "react";
-
 export default function MobileHome({ iconicImages = [] }: MobileHomeProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  
-  const displayImages = iconicImages;
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  useEffect(() => {
-    if (displayImages.length <= 1) return;
-    const interval = setInterval(() => {
-        setCurrentIndex(prev => (prev + 1) % displayImages.length);
-    }, 5000); // 5 seconds
-    return () => clearInterval(interval);
-  }, [displayImages]);
-
-
-
-  const openGlobalLightbox = (seriesId: string | null) => {
-    const evt = new CustomEvent<string | null>("open-series-lightbox", {
-      detail: seriesId,
-    });
-    window.dispatchEvent(evt);
+  const handleImageClick = (index: number) => {
+    setCurrentImageIndex(index);
+    setLightboxOpen(true);
   };
 
-  return (
-    <Box p="md" style={{ minHeight: "100svh", paddingBottom: "80px" }}>
-      <Stack gap="xl">
-        <Box>
-          {/* <Text size="xl" fw={700} mb="sm">
-            Overview
-          </Text> */}
-          <Box
-            style={{
-              position: "relative",
-              width: "100%",
-              aspectRatio: "3/4",
-              overflow: "hidden",
-            }}
-          >
-            {displayImages.map((src, index) => (
-                <Image
-                  key={src}
-                  src={src}
-                  alt="Featured Image"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                  style={{ 
-                      objectFit: "cover",
-                      opacity: index === currentIndex ? 1 : 0,
-                      transition: "opacity 1s ease-in-out",
-                      zIndex: index === currentIndex ? 1 : 0,
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                  }}
-                  priority={index === 0}
-                />
-            ))}
+  // Varying aspect ratios for masonry effect (similar to reference)
+  const getAspectRatio = (index: number) => {
+    const ratios = [
+      "4/3", // Landscape
+      "3/4", // Portrait
+      "16/9", // Wide landscape
+      "4/5", // Slightly portrait
+      "5/4", // Slightly landscape
+      "1/1", // Square
+    ];
+    return ratios[index % ratios.length];
+  };
 
-          </Box>
+  if (iconicImages.length === 0) {
+    return (
+      <Box p="md" style={{ minHeight: "100svh", paddingBottom: "80px" }}>
+        <Box
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "50vh",
+            color: "var(--mantine-color-dimmed)",
+          }}
+        >
+          No images available
         </Box>
+      </Box>
+    );
+  }
 
-        {/* <Box>
-          <Text size="xl" fw={700} mb="sm">
-            Latest Series
-          </Text>
-          <Stack gap="md">
-            {projects.map((project) => (
-              <Box
-                key={project.id}
-                onClick={() => openGlobalLightbox(project.id)}
-                style={{
-                  display: "flex",
-                  gap: "12px",
-                  cursor: "pointer",
-                  backgroundColor: "var(--mantine-color-body)",
-                  borderRadius: "8px",
-                  overflow: "hidden",
-                }}
-              >
-                 <Box
-                  style={{
-                    position: "relative",
-                    width: "80px",
-                    height: "80px",
-                    flexShrink: 0,
-                    borderRadius: "8px",
-                    overflow: "hidden",
-                  }}
-                >
-                  <Image
-                    src={`${BLOB_BASE}/${project.folder}/${project.folder}_1.${project.ext}`}
-                    alt={project.title}
-                    fill
-                    sizes="80px"
-                    style={{ objectFit: "cover" }}
-                  />
-                </Box>
-                <Box py="xs" style={{ flex: 1 }}>
-                  <Text fw={600} lineClamp={1}>
-                    {project.title}
-                  </Text>
-                  <Text size="sm" c="dimmed" lineClamp={2}>
-                    {project.description}
-                  </Text>
-                </Box>
-              </Box>
-            ))}
-          </Stack>
-        </Box> */}
-      </Stack>
-    </Box>
+  return (
+    <>
+      <Box
+        p="md"
+        style={{
+          minHeight: "100svh",
+          paddingBottom: "80px",
+        }}
+      >
+        <Box
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            gap: "8px",
+            width: "100%",
+          }}
+        >
+          {/* Create two columns manually */}
+          {[0, 1].map((colIndex) => (
+            <Box
+              key={colIndex}
+              style={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                gap: "8px",
+              }}
+            >
+              {iconicImages
+                .filter((_, index) => index % 2 === colIndex)
+                .map((src, filterIndex) => {
+                  const actualIndex = filterIndex * 2 + colIndex;
+                  const ratio = getAspectRatio(actualIndex);
+
+                  return (
+                    <Box
+                      key={`${src}-${actualIndex}`}
+                      onClick={() => handleImageClick(actualIndex)}
+                      style={{
+                        position: "relative",
+                        width: "100%",
+                        aspectRatio: ratio,
+                        overflow: "hidden",
+                        cursor: "pointer",
+                        borderRadius: "4px",
+                        transition: "transform 0.2s ease, opacity 0.2s ease",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "scale(0.98)";
+                        e.currentTarget.style.opacity = "0.9";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "scale(1)";
+                        e.currentTarget.style.opacity = "1";
+                      }}
+                    >
+                      <Image
+                        src={src}
+                        alt={`Iconic Image ${actualIndex + 1}`}
+                        fill
+                        sizes="(max-width: 768px) 50vw, 33vw"
+                        style={{
+                          objectFit: "cover",
+                        }}
+                        priority={actualIndex < 4}
+                        unoptimized
+                      />
+                    </Box>
+                  );
+                })}
+            </Box>
+          ))}
+        </Box>
+      </Box>
+
+      {/* Image Lightbox */}
+      <MobileImageLightbox
+        images={iconicImages}
+        currentIndex={currentImageIndex}
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        onImageChange={setCurrentImageIndex}
+      />
+    </>
   );
 }
