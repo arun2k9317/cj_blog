@@ -442,16 +442,16 @@ html::-webkit-scrollbar {
 .sidebar-nav-mantine {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   margin-left: 40px;
 }
 
 .sidebar-nav-mantine .mantine-NavLink-root {
   font-family: var(--font-primary);
   color: var(--gray-900);
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 400;
-  padding: 4px 0;
+  padding: 2px 0;
 }
 
 .sidebar-nav-mantine .mantine-NavLink-root:hover {
@@ -524,7 +524,7 @@ html::-webkit-scrollbar {
   font-family: var(--font-primary);
   color: var(--gray-900);
   text-decoration: none;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 400;
   display: block;
   padding: 4px 0;
@@ -545,15 +545,14 @@ html::-webkit-scrollbar {
 .sidebar-theme-switcher {
   position: absolute;
   bottom: 10px;
-  left: 30px;
-  right: 30px;
+  left: 40px;
 }
 
 /* Inline theme switcher layout */
 .theme-switcher-inline {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 10px;
 }
 

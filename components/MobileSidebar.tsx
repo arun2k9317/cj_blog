@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useState, useEffect } from "react";
 import {
-  IconMail,
   IconSun,
   IconMoon,
   IconChevronDown,
@@ -132,11 +131,19 @@ export default function MobileSidebar({
           onClick={onClose}
           fw={500}
         />
+
+        <NavLink
+          component="a"
+          href="mailto:mail@nitinjamdar.in"
+          label="Contact"
+          onClick={onClose}
+          fw={500}
+        />
       </Stack>
 
       <Divider my="md" />
 
-      <Group justify="space-between" px="md" pb="md">
+      <Group justify="flex-start" px="md" pb="md">
         <UnstyledButton 
             onClick={toggleTheme} 
             aria-label="Toggle theme"
@@ -150,18 +157,6 @@ export default function MobileSidebar({
                 {theme === 'dark' ? <IconSun size={20} /> : <IconMoon size={20} />}
                 <Text size="sm">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</Text>
             </Group>
-        </UnstyledButton>
-
-        <UnstyledButton 
-            component="a" 
-            href="mailto:contact@njphotography.com" 
-            aria-label="Email"
-            style={{ 
-                color: 'var(--mantine-color-text)',
-                padding: '8px',
-            }}
-        >
-             <IconMail size={22} />
         </UnstyledButton>
       </Group>
     </Box>

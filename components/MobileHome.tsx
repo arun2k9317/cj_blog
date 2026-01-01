@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Box } from "@mantine/core";
 import { useState } from "react";
 import MobileImageLightbox from "./MobileImageLightbox";
+import { FooterSimple } from "./FooterSimple";
 
 interface MobileHomeProps {
   iconicImages?: string[];
@@ -122,6 +123,11 @@ export default function MobileHome({ iconicImages = [] }: MobileHomeProps) {
             </Box>
           ))}
         </Box>
+      </Box>
+
+      {/* Footer */}
+      <Box style={{ marginTop: "40px" }}>
+        <FooterSimple />
       </Box>
 
       {/* Image Lightbox */}

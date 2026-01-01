@@ -1,51 +1,157 @@
 "use client";
 
-import { useState } from "react";
-import { Anchor, Container, Group, Text, Box } from "@mantine/core";
+import { useState, useEffect } from "react";
+import { Anchor, Container, Group, Text, Box, Menu } from "@mantine/core";
 import Link from "next/link";
 
-const links = [
-  { link: "/about", label: "About" },
-  { link: "/projects", label: "Projects" },
-  { link: "/stories", label: "Stories" },
-  { link: "mailto:mail@nitinjamdar.in", label: "Contact" },
-];
+type ProjectItem = {
+  id: string;
+  slug: string;
+  title: string;
+};
 
 export function FooterSimple() {
   const [showCopyright, setShowCopyright] = useState(false);
-  const items = links.map((link) => {
-    if (link.link.startsWith("mailto:")) {
-      return (
+  const [projects, setProjects] = useState<ProjectItem[]>([]);
+  const [stories, setStories] = useState<ProjectItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/projects-list")
+      .then((res) => res.json())
+      .then((data) => {
+        setProjects(data.projects || []);
+        setStories(data.stories || []);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching projects/stories:", error);
+        setLoading(false);
+      });
+  }, []);
+
+  const aboutLink = (
+    <Anchor
+      component={Link}
+      href="/about"
+      c="dimmed"
+      size="sm"
+      style={{
+        textDecoration: "none",
+        fontFamily: '"Crimson Text", "Ethos Nova", serif',
+      }}
+    >
+      About
+    </Anchor>
+  );
+
+  const projectsMenu = (
+    <Menu
+      trigger="hover"
+      openDelay={100}
+      closeDelay={200}
+      styles={{
+        dropdown: {
+          fontFamily: '"Crimson Text", "Ethos Nova", serif',
+        },
+      }}
+    >
+      <Menu.Target>
         <Anchor
-          key={link.label}
-          href={link.link}
           c="dimmed"
           size="sm"
           style={{
             textDecoration: "none",
             fontFamily: '"Crimson Text", "Ethos Nova", serif',
+            cursor: "pointer",
           }}
         >
-          {link.label}
+          Projects
         </Anchor>
-      );
-    }
-    return (
-      <Anchor
-        key={link.label}
-        component={Link}
-        href={link.link}
-        c="dimmed"
-        size="sm"
-        style={{
-          textDecoration: "none",
+      </Menu.Target>
+      <Menu.Dropdown>
+        {loading ? (
+          <Menu.Item disabled>Loading...</Menu.Item>
+        ) : projects.length === 0 ? (
+          <Menu.Item disabled>No projects</Menu.Item>
+        ) : (
+          projects.map((p) => (
+            <Menu.Item
+              key={p.id}
+              component={Link}
+              href={`/view/project/${p.slug || p.id}`}
+              style={{
+                fontFamily: '"Crimson Text", "Ethos Nova", serif',
+              }}
+            >
+              {p.title || "Untitled Project"}
+            </Menu.Item>
+          ))
+        )}
+      </Menu.Dropdown>
+    </Menu>
+  );
+
+  const storiesMenu = (
+    <Menu
+      trigger="hover"
+      openDelay={100}
+      closeDelay={200}
+      styles={{
+        dropdown: {
           fontFamily: '"Crimson Text", "Ethos Nova", serif',
-        }}
-      >
-        {link.label}
-      </Anchor>
-    );
-  });
+        },
+      }}
+    >
+      <Menu.Target>
+        <Anchor
+          c="dimmed"
+          size="sm"
+          style={{
+            textDecoration: "none",
+            fontFamily: '"Crimson Text", "Ethos Nova", serif',
+            cursor: "pointer",
+          }}
+        >
+          Stories
+        </Anchor>
+      </Menu.Target>
+      <Menu.Dropdown>
+        {loading ? (
+          <Menu.Item disabled>Loading...</Menu.Item>
+        ) : stories.length === 0 ? (
+          <Menu.Item disabled>No stories</Menu.Item>
+        ) : (
+          stories.map((s) => (
+            <Menu.Item
+              key={s.id}
+              component={Link}
+              href={`/view/story/${s.slug || s.id}`}
+              style={{
+                fontFamily: '"Crimson Text", "Ethos Nova", serif',
+              }}
+            >
+              {s.title || "Untitled Story"}
+            </Menu.Item>
+          ))
+        )}
+      </Menu.Dropdown>
+    </Menu>
+  );
+
+  const contactLink = (
+    <Anchor
+      href="mailto:mail@nitinjamdar.in"
+      c="dimmed"
+      size="sm"
+      style={{
+        textDecoration: "none",
+        fontFamily: '"Crimson Text", "Ethos Nova", serif',
+      }}
+    >
+      Contact
+    </Anchor>
+  );
 
   return (
     <div className="footer-simple">
@@ -93,7 +199,10 @@ export function FooterSimple() {
           )}
         </Box>
         <Group className="footer-simple-links" gap="md">
-          {items}
+          {aboutLink}
+          {projectsMenu}
+          {storiesMenu}
+          {contactLink}
         </Group>
       </Container>
     </div>
