@@ -110,6 +110,55 @@
   font-display: swap;
 }
 
+/* Crimson Text Font Face Declarations */
+@font-face {
+  font-family: "Crimson Text";
+  src: url("/fonts/CrimsonText-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Crimson Text";
+  src: url("/fonts/CrimsonText-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Crimson Text";
+  src: url("/fonts/CrimsonText-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Crimson Text";
+  src: url("/fonts/CrimsonText-SemiBoldItalic.ttf") format("truetype");
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Crimson Text";
+  src: url("/fonts/CrimsonText-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Crimson Text";
+  src: url("/fonts/CrimsonText-BoldItalic.ttf") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
 :root {
   /* --background: #ede8d0; */
   --background: #ffffff;
@@ -131,7 +180,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-primary: "Ethos Nova", sans-serif;
+  --font-primary: "Crimson Text", "Ethos Nova", serif;
 }
 
 /* Dark theme variables */
@@ -167,6 +216,20 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+body::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+html::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
 
 /* Iconic Image styles */
@@ -350,7 +413,7 @@ body {
   font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 10px;
-  text-transform: uppercase;
+  /* text-transform: uppercase; */
   letter-spacing: 2px;
   line-height: 1.2;
   display: flex;
@@ -369,22 +432,64 @@ body {
 
 .sidebar-nav {
   list-style: none;
-  margin: 0;
+  margin-left: 40;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.sidebar-nav-mantine {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-left: 40px;
+}
+
+.sidebar-nav-mantine .mantine-NavLink-root {
+  font-family: var(--font-primary);
+  color: var(--gray-900);
+  font-size: 15px;
+  font-weight: 400;
+  padding: 4px 0;
+}
+
+.sidebar-nav-mantine .mantine-NavLink-root:hover {
+  background-color: transparent;
+  color: var(--gray-900);
+}
+
+.sidebar-nav-mantine .mantine-NavLink-root[data-active="true"] {
+  color: var(--gray-900);
+  font-weight: 500;
+  background-color: transparent;
+}
+
+.sidebar-nav-mantine .mantine-NavLink-label {
+  font-family: var(--font-primary);
+  color: inherit;
+}
+
+.sidebar-nav-mantine .mantine-NavLink-section[data-position="right"] {
+  display: none;
+}
+
+.sidebar-nav-mantine .mantine-NavLink-section svg {
+  display: none;
 }
 
 .sidebar-submenu {
   list-style: none;
-  margin: 6px 0 10px 0;
-  padding: 0 8px 0 0; /* indent toward the right edge */
+  /* margin: 6px 0 10px 0; */
+  padding: 0 8px 0 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  /* gap: 6px; */
   max-height: 0;
   opacity: 0;
   overflow: hidden;
   transition: max-height 0.25s ease, opacity 0.2s ease;
-  align-items: flex-end; /* right-align submenu items */
+  align-items: flex-start; /* right-align submenu items */
 }
 
 .sidebar-submenu.open {
@@ -396,10 +501,10 @@ body {
   font-family: var(--font-primary);
   background: transparent;
   border: none;
-  color: var(--gray-700);
+  color: var(--gray-900);
   font-size: 8px;
   cursor: pointer;
-  text-align: right; /* align with right-justified sidebar */
+  text-align: left; /* align to left */
   display: block;
   width: 100%;
 }
@@ -410,19 +515,22 @@ body {
 }
 
 .sidebar-nav li {
-  margin-bottom: 8px;
+  margin-bottom: 4px;
+  align-self: flex-start;
+  width: 100%;
 }
 
 .sidebar-nav a {
   font-family: var(--font-primary);
-  color: var(--gray-700);
+  color: var(--gray-900);
   text-decoration: none;
   font-size: 15px;
   font-weight: 400;
   display: block;
-  padding: 8px 0;
+  padding: 4px 0;
   transition: color 0.3s ease;
-  text-align: right; /* align to left */
+  text-align: left;
+  align-self: flex-start;
 }
 
 .sidebar-nav a:hover {
@@ -525,10 +633,10 @@ body {
 
 .sidebar-tab {
   font-family: var(--font-primary);
-  padding: 8px 0;
+  padding: 4px 0;
   background: transparent;
   border: none;
-  color: var(--gray-700);
+  color: var(--gray-900);
   font-size: 15px; /* match main nav item size */
   font-weight: 400;
   cursor: pointer;
@@ -536,11 +644,11 @@ body {
   border-radius: 0;
   text-transform: none;
   letter-spacing: 0;
-  text-align: right;
-  width: 100%; /* occupy full row for proper right alignment */
+  text-align: left;
+  width: 100%; /* occupy full row for proper alignment */
   display: flex;
   align-items: center;
-  justify-content: flex-end; /* right-oriented */
+  justify-content: flex-start; /* left-oriented */
   gap: 8px;
 }
 
@@ -2245,4 +2353,44 @@ body {
   .story-viewer-scrollbar::-webkit-scrollbar-thumb:hover,
 .story-viewer-scrollbar.dark::-webkit-scrollbar-thumb:hover {
   background-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Footer Simple Styles */
+.footer-simple {
+  margin-top: 120px;
+  border-top: 1px solid var(--mantine-color-default-border);
+  font-family: "Crimson Text", "Ethos Nova", serif;
+}
+
+.footer-simple-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--mantine-spacing-xl);
+  padding-bottom: var(--mantine-spacing-xl);
+}
+
+.footer-simple-inner * {
+  font-family: "Crimson Text", "Ethos Nova", serif;
+}
+
+.footer-simple-links a {
+  font-family: "Crimson Text", "Ethos Nova", serif;
+}
+
+.footer-copyright-text {
+  border-top: 1px solid var(--mantine-color-default-border);
+  margin-top: var(--mantine-spacing-md);
+  padding-top: var(--mantine-spacing-md);
+  padding-bottom: var(--mantine-spacing-md);
+}
+
+@media (max-width: 768px) {
+  .footer-simple-inner {
+    flex-direction: column;
+  }
+
+  .footer-simple-links {
+    margin-top: var(--mantine-spacing-md);
+  }
 }

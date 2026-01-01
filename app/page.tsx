@@ -6,6 +6,8 @@ import { Box } from "@mantine/core";
 import { Carousel } from "@mantine/carousel";
 import { useMediaQuery } from "@mantine/hooks";
 import MobileHome from "@/components/MobileHome";
+import { FooterSimple } from "@/components/FooterSimple";
+import ImageLightbox from "@/components/ImageLightbox";
 // Lightbox is controlled globally by AppShell
 
 export default function Home() {
@@ -14,6 +16,8 @@ export default function Home() {
   // Iconic image placeholder - will be replaced from admin module later
 
   const [iconicImages, setIconicImages] = useState<string[]>([]);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     fetch("/api/iconic-images")
@@ -34,6 +38,11 @@ export default function Home() {
   const heroImage = iconicImages.length > 0 ? iconicImages[0] : null;
   const displayImages = iconicImages.slice(1); // Remaining images for carousel
 
+  const handleImageClick = (index: number) => {
+    setCurrentImageIndex(index);
+    setLightboxOpen(true);
+  };
+
   if (isMobile) {
     return <MobileHome iconicImages={iconicImages} />;
   }
@@ -44,17 +53,26 @@ export default function Home() {
       {heroImage && (
         <Box
           component="section"
+          onClick={() => handleImageClick(0)}
           style={{
             position: "relative",
             width: "100%",
             height: "60svh",
-            margin: 0,
+            marginTop: "40px",
             padding: 0,
             overflow: "hidden",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            cursor: "pointer",
+            transition: "opacity 0.2s ease",
             // backgroundColor: "var(--mantine-color-body)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.opacity = "0.9";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.opacity = "1";
           }}
         >
           <Image
@@ -66,6 +84,7 @@ export default function Home() {
               objectFit: "contain",
             }}
             priority
+            unoptimized
           />
         </Box>
       )}
@@ -85,8 +104,8 @@ export default function Home() {
             // slideSize="70%"
             height="60svh"
             slideGap="sm"
-            slideSize="70%"
-            withIndicators
+            slideSize="66.66%"
+            // withIndicators
             withControls
             emblaOptions={{
               loop: true,
@@ -107,37 +126,61 @@ export default function Home() {
               },
             }}
           >
-            {displayImages.map((src, index) => (
-              <Carousel.Slide key={src}>
-                <Box
-                  style={{
-                    position: "relative",
-                    width: "100%",
-                    height: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    // backgroundColor: "var(--mantine-color-body)",
-                  }}
-                >
-                  <Image
-                    src={src}
-                    alt="NJ Photography"
-                    fill
-                    sizes="70vw"
+            {displayImages.map((src, index) => {
+              // Add 1 to account for hero image being at index 0
+              const actualIndex = index + 1;
+              return (
+                <Carousel.Slide key={src}>
+                  <Box
+                    onClick={() => handleImageClick(actualIndex)}
                     style={{
-                      objectFit: "contain",
+                      position: "relative",
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      transition: "opacity 0.2s ease",
+                      // backgroundColor: "var(--mantine-color-body)",
                     }}
-                    priority={index === 0}
-                  />
-                </Box>
-              </Carousel.Slide>
-            ))}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.opacity = "0.9";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.opacity = "1";
+                    }}
+                  >
+                    <Image
+                      src={src}
+                      alt="NJ Photography"
+                      fill
+                      sizes="70vw"
+                      style={{
+                        objectFit: "contain",
+                      }}
+                      priority={index === 0}
+                      unoptimized
+                    />
+                  </Box>
+                </Carousel.Slide>
+              );
+            })}
           </Carousel>
         </Box>
       )}
 
-      {/* Image Lightbox handled globally */}
+      {/* Footer */}
+      <FooterSimple />
+
+      {/* Image Lightbox */}
+      <ImageLightbox
+        images={iconicImages}
+        currentIndex={currentImageIndex}
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        onImageChange={setCurrentImageIndex}
+      />
     </>
   );
 }
