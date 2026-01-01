@@ -4,10 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useState, useEffect } from "react";
+import { NavLink, Box } from "@mantine/core";
 import {
   IconChevronRight,
   IconChevronLeft,
-  IconMail,
   IconSun,
   IconMoon,
 } from "@tabler/icons-react";
@@ -33,23 +33,21 @@ export default function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
-  const [isProjectsOpen, setIsProjectsOpen] = useState(false);
-  const [isStoriesOpen, setIsStoriesOpen] = useState(false);
   const [projects, setProjects] = useState<ProjectItem[]>([]);
   const [stories, setStories] = useState<ProjectItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Fetch published projects and stories from database
-    fetch('/api/projects-list')
-      .then(res => res.json())
-      .then(data => {
+    fetch("/api/projects-list")
+      .then((res) => res.json())
+      .then((data) => {
         setProjects(data.projects || []);
         setStories(data.stories || []);
         setLoading(false);
       })
-      .catch(error => {
-        console.error('Error fetching projects/stories:', error);
+      .catch((error) => {
+        console.error("Error fetching projects/stories:", error);
         setLoading(false);
       });
   }, []);
@@ -60,7 +58,10 @@ export default function Sidebar({
   };
 
   return (
-    <aside className="sidebar" style={isMobile ? { width: "100%", border: "none" } : undefined}>
+    <aside
+      className="sidebar"
+      style={isMobile ? { width: "100%", border: "none" } : undefined}
+    >
       {!isMobile && (
         <button
           className="sidebar-toggle"
@@ -75,105 +76,71 @@ export default function Sidebar({
         </button>
       )}
 
-      <div className="sidebar-logo">
+      {/* <div className="sidebar-logo">
         <span>Nitin Jamdar</span>
-      </div>
+      </div> */}
 
       <nav>
-        <ul className="sidebar-nav">
-          <li>
-            <Link href="/" className={isActive("/") ? "active" : undefined}>
-              Home
-            </Link>
-          </li>
-          <li>
-            <button
-              className="sidebar-tab sidebar-tab-toggle"
-              aria-expanded={isProjectsOpen}
-              onClick={() => setIsProjectsOpen((v) => !v)}
-            >
-              <span className="sidebar-tab-label">Projects</span>
-            </button>
-            <ul className={`sidebar-submenu ${isProjectsOpen ? "open" : ""}`}>
-              {loading ? (
-                <li>
-                  <span className="sidebar-submenu-item" style={{ opacity: 0.6 }}>
-                    Loading...
-                  </span>
-                </li>
-              ) : projects.length === 0 ? (
-                <li>
-                  <span className="sidebar-submenu-item" style={{ opacity: 0.6 }}>
-                    No projects
-                  </span>
-                </li>
-              ) : (
-                projects.map((p) => (
-                  <li key={p.id}>
-                    <Link
-                      href={`/view/project/${p.slug || p.id}`}
-                      className={`sidebar-submenu-item ${isActive(`/view/project/${p.slug || p.id}`) ? "active" : ""}`}
-                      onClick={() => setIsProjectsOpen(false)}
-                    >
-                      {p.title || 'Untitled Project'}
-                    </Link>
-                  </li>
-                ))
-              )}
-            </ul>
-          </li>
-          <li>
-            <button
-              className="sidebar-tab sidebar-tab-toggle"
-              aria-expanded={isStoriesOpen}
-              onClick={() => setIsStoriesOpen((v) => !v)}
-            >
-              <span className="sidebar-tab-label">Stories</span>
-            </button>
-            <ul className={`sidebar-submenu ${isStoriesOpen ? "open" : ""}`}>
-              {loading ? (
-                <li>
-                  <span className="sidebar-submenu-item" style={{ opacity: 0.6 }}>
-                    Loading...
-                  </span>
-                </li>
-              ) : stories.length === 0 ? (
-                <li>
-                  <span className="sidebar-submenu-item" style={{ opacity: 0.6 }}>
-                    No stories
-                  </span>
-                </li>
-              ) : (
-                stories.map((s) => (
-                  <li key={s.id}>
-                    <Link
-                      href={`/view/story/${s.slug || s.id}`}
-                      className={`sidebar-submenu-item ${isActive(`/view/story/${s.slug || s.id}`) ? "active" : ""}`}
-                      onClick={() => setIsStoriesOpen(false)}
-                    >
-                      {s.title || 'Untitled Story'}
-                    </Link>
-                  </li>
-                ))
-              )}
-            </ul>
-          </li>
-          <li>
-            <Link
-              href="/about"
-              className={isActive("/about") ? "active" : undefined}
-            >
-              About
-            </Link>
-          </li>
-        </ul>
-      </nav>
+        <Box className="sidebar-nav-mantine">
+          <NavLink
+            component={Link}
+            href="/"
+            label="Home"
+            active={isActive("/")}
+            childrenOffset={28}
+          />
 
-      <div className="sidebar-social">
-        <a href="mailto:contact@njphotography.com" aria-label="Email">
-          <IconMail size={20} />
-        </a>
-      </div>
+          <NavLink label="Projects" childrenOffset={28}>
+            {loading ? (
+              <NavLink label="Loading..." disabled />
+            ) : projects.length === 0 ? (
+              <NavLink label="No projects" disabled />
+            ) : (
+              projects.map((p) => (
+                <NavLink
+                  key={p.id}
+                  component={Link}
+                  href={`/view/project/${p.slug || p.id}`}
+                  label={p.title || "Untitled Project"}
+                  active={isActive(`/view/project/${p.slug || p.id}`)}
+                />
+              ))
+            )}
+          </NavLink>
+
+          <NavLink label="Stories" childrenOffset={28}>
+            {loading ? (
+              <NavLink label="Loading..." disabled />
+            ) : stories.length === 0 ? (
+              <NavLink label="No stories" disabled />
+            ) : (
+              stories.map((s) => (
+                <NavLink
+                  key={s.id}
+                  component={Link}
+                  href={`/view/story/${s.slug || s.id}`}
+                  label={s.title || "Untitled Story"}
+                  active={isActive(`/view/story/${s.slug || s.id}`)}
+                />
+              ))
+            )}
+          </NavLink>
+
+          <NavLink
+            component={Link}
+            href="/about"
+            label="About"
+            active={isActive("/about")}
+            childrenOffset={28}
+          />
+
+          <NavLink
+            href="mailto:mail@nitinjamdar.in"
+            label="Contact"
+            childrenOffset={28}
+          />
+        </Box>
+      </nav>
 
       {/* Theme Switcher */}
       <div className="sidebar-theme-switcher">

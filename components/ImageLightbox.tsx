@@ -323,7 +323,7 @@ export default function ImageLightbox({
               transition: "transform 0.2s ease",
             }}
             priority
-            quality={90}
+            unoptimized
             sizes="100vw"
           />
           {isMagnifierOn && isLensVisible && imageWrapperRef.current && (
@@ -432,6 +432,7 @@ export default function ImageLightbox({
                   className="thumb-grid-image"
                   sizes="(max-width: 1200px) 33vw, 280px"
                   priority={index < 6}
+                  unoptimized
                 />
               </button>
             ))}

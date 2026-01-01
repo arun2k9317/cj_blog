@@ -1,10 +1,13 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Box } from "@mantine/core";
+import { Carousel } from "@mantine/carousel";
 import { useMediaQuery } from "@mantine/hooks";
 import MobileHome from "@/components/MobileHome";
+import { FooterSimple } from "@/components/FooterSimple";
+import ImageLightbox from "@/components/ImageLightbox";
 // Lightbox is controlled globally by AppShell
 
 export default function Home() {
@@ -12,34 +15,33 @@ export default function Home() {
 
   // Iconic image placeholder - will be replaced from admin module later
 
-
   const [iconicImages, setIconicImages] = useState<string[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     fetch("/api/iconic-images")
       .then((res) => res.json())
       .then((data) => {
-        if (data.images && Array.isArray(data.images) && data.images.length > 0) {
-             setIconicImages(data.images.map((i: any) => i.url));
+        if (
+          data.images &&
+          Array.isArray(data.images) &&
+          data.images.length > 0
+        ) {
+          setIconicImages(data.images.map((i: any) => i.url));
         }
       })
       .catch((err) => console.error("Failed to fetch iconic images", err));
   }, []);
 
-  const displayImages = iconicImages;
+  // Extract first image for hero, rest for carousel
+  const heroImage = iconicImages.length > 0 ? iconicImages[0] : null;
+  const displayImages = iconicImages.slice(1); // Remaining images for carousel
 
-  useEffect(() => {
-    if (displayImages.length <= 1) return;
-    const interval = setInterval(() => {
-        setCurrentIndex(prev => (prev + 1) % displayImages.length);
-    }, 5000); // 5 seconds
-    return () => clearInterval(interval);
-  }, [displayImages]);
-
-
-
-
+  const handleImageClick = (index: number) => {
+    setCurrentImageIndex(index);
+    setLightboxOpen(true);
+  };
 
   if (isMobile) {
     return <MobileHome iconicImages={iconicImages} />;
@@ -47,44 +49,138 @@ export default function Home() {
 
   return (
     <>
-      {/* Iconic Image Section */}
-      <Box
-        component="section"
-        className="iconic-image-container"
-        style={{ height: "90svh", margin: 0, padding: 0, overflow: "hidden" }}
-      >
+      {/* Hero Image - First Iconic Image */}
+      {heroImage && (
         <Box
-          className="iconic-image-wrapper"
+          component="section"
+          onClick={() => handleImageClick(0)}
           style={{
             position: "relative",
             width: "100%",
-            height: "100%",
+            height: "60svh",
+            marginTop: "40px",
+            padding: 0,
+            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            transition: "opacity 0.2s ease",
+            // backgroundColor: "var(--mantine-color-body)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.opacity = "0.9";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.opacity = "1";
           }}
         >
-          {displayImages.map((src, index) => (
-             <Image
-                key={src}
-                src={src}
-                alt="NJ Photography"
-                fill
-                sizes="100vw"
-                style={{ 
-                    objectFit: "cover",
-                    opacity: index === currentIndex ? 1 : 0,
-                    transition: "opacity 1s ease-in-out",
-                    zIndex: index === currentIndex ? 1 : 0,
-                    position: 'absolute',
-                    top: 0,
-                    left: 0
-                }}
-                className="iconic-image"
-                priority={index === 0}
-              />
-          ))}
+          <Image
+            src={heroImage}
+            alt="NJ Photography"
+            fill
+            sizes="100vw"
+            style={{
+              objectFit: "contain",
+            }}
+            priority
+            unoptimized
+          />
         </Box>
-      </Box>
+      )}
 
-      {/* Image Lightbox handled globally */}
+      {/* Iconic Image Carousel Section */}
+      {displayImages.length > 0 && (
+        <Box
+          component="section"
+          style={{
+            height: "60svh",
+            width: "100%",
+            marginTop: "20px",
+            padding: 0,
+          }}
+        >
+          <Carousel
+            // slideSize="70%"
+            height="60svh"
+            slideGap="sm"
+            slideSize="66.66%"
+            // withIndicators
+            withControls
+            emblaOptions={{
+              loop: true,
+              dragFree: false,
+              align: "center",
+            }}
+            styles={{
+              root: {
+                height: "100%",
+                width: "100%",
+              },
+              viewport: {
+                height: "100%",
+                width: "100%",
+              },
+              slide: {
+                height: "100%",
+              },
+            }}
+          >
+            {displayImages.map((src, index) => {
+              // Add 1 to account for hero image being at index 0
+              const actualIndex = index + 1;
+              return (
+                <Carousel.Slide key={src}>
+                  <Box
+                    onClick={() => handleImageClick(actualIndex)}
+                    style={{
+                      position: "relative",
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      transition: "opacity 0.2s ease",
+                      // backgroundColor: "var(--mantine-color-body)",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.opacity = "0.9";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.opacity = "1";
+                    }}
+                  >
+                    <Image
+                      src={src}
+                      alt="NJ Photography"
+                      fill
+                      sizes="70vw"
+                      style={{
+                        objectFit: "contain",
+                      }}
+                      priority={index === 0}
+                      unoptimized
+                    />
+                  </Box>
+                </Carousel.Slide>
+              );
+            })}
+          </Carousel>
+        </Box>
+      )}
+
+      {/* Footer */}
+      <FooterSimple />
+
+      {/* Image Lightbox */}
+      <ImageLightbox
+        images={iconicImages}
+        currentIndex={currentImageIndex}
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        onImageChange={setCurrentImageIndex}
+      />
     </>
   );
 }
