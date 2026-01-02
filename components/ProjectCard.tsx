@@ -149,6 +149,7 @@ export default function ProjectCard({
               fill
               style={{ objectFit: "cover" }}
               sizes="(max-width: 768px) 100vw, 50vw"
+              unoptimized
             />
           </div>
         ) : null}

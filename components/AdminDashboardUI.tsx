@@ -6,7 +6,14 @@ import GallerySection from "@/components/GallerySection";
 import ProjectCard from "@/components/ProjectCard";
 import IconicImageSelector from "@/components/IconicImageSelector";
 import { useTheme } from "@/contexts/ThemeContext";
-import { IconSun, IconMoon, IconLogout, IconMail, IconBrandWhatsapp } from "@tabler/icons-react";
+import { useFont, AVAILABLE_FONTS } from "@/contexts/FontContext";
+import {
+  IconSun,
+  IconMoon,
+  IconLogout,
+  IconMail,
+  IconBrandWhatsapp,
+} from "@tabler/icons-react";
 import {
   Container,
   Title,
@@ -45,6 +52,7 @@ export default function AdminDashboardUI({
   galleryAssets,
 }: AdminDashboardUIProps) {
   const { theme, toggleTheme } = useTheme();
+  const { selectedFont, setSelectedFont } = useFont();
   const isDark = theme === "dark";
   const [projectFilter, setProjectFilter] = useState<FilterOption>("all");
 
@@ -103,6 +111,88 @@ export default function AdminDashboardUI({
           Admin Dashboard
         </Title>
         <Group gap="xs">
+          <Group gap="xs" align="center">
+            <Text
+              size="xs"
+              c={
+                isDark
+                  ? "var(--mantine-color-gray-0)"
+                  : "var(--mantine-color-dark-9)"
+              }
+              style={{ whiteSpace: "nowrap" }}
+            >
+              Website Font
+            </Text>
+            <Select
+              placeholder="Select font"
+              value={selectedFont}
+              onChange={(value) => value && setSelectedFont(value)}
+              data={AVAILABLE_FONTS.map((f) => ({
+                value: f.value,
+                label: f.label,
+              }))}
+              size="xs"
+              style={{ minWidth: 150 }}
+              styles={{
+                input: {
+                  color: isDark
+                    ? "var(--mantine-color-gray-0)"
+                    : "var(--mantine-color-dark-9)",
+                  backgroundColor: isDark
+                    ? "var(--mantine-color-dark-5)"
+                    : "var(--mantine-color-white)",
+                },
+                dropdown: {
+                  backgroundColor: isDark
+                    ? "var(--mantine-color-dark-6)"
+                    : "var(--mantine-color-white)",
+                },
+                option: {
+                  color: isDark
+                    ? "var(--mantine-color-gray-0)"
+                    : "var(--mantine-color-dark-9)",
+                  backgroundColor: isDark
+                    ? "var(--mantine-color-dark-6)"
+                    : "var(--mantine-color-white)",
+                  "&:hover": {
+                    backgroundColor: isDark
+                      ? "var(--mantine-color-dark-5)"
+                      : "var(--mantine-color-gray-1)",
+                  },
+                },
+              }}
+            />
+          </Group>
+          <Link href="/admin/new?kind=project">
+            <Button variant="filled" color={isDark ? "gray" : "dark"} size="xs">
+              New Project
+            </Button>
+          </Link>
+          <Link href="/admin/new?kind=story">
+            <Button
+              variant="outline"
+              size="xs"
+              color={isDark ? "blue" : "dark"}
+              styles={{
+                root: {
+                  borderColor: isDark
+                    ? "var(--mantine-color-blue-6)"
+                    : undefined,
+                  color: isDark ? "var(--mantine-color-gray-0)" : undefined,
+                },
+              }}
+            >
+              New Story
+            </Button>
+          </Link>
+          <Button
+            variant="outline"
+            size="xs"
+            color={isDark ? "grape" : "grape"}
+            onClick={() => setIconicModalOpen(true)}
+          >
+            Iconic Images
+          </Button>
           <Tooltip
             label={isDark ? "Switch to light mode" : "Switch to dark mode"}
           >
@@ -149,36 +239,6 @@ export default function AdminDashboardUI({
               <IconLogout size={18} />
             </ActionIcon>
           </Tooltip>
-          <Link href="/admin/new?kind=project">
-            <Button variant="filled" color={isDark ? "gray" : "dark"} size="xs">
-              New Project
-            </Button>
-          </Link>
-          <Link href="/admin/new?kind=story">
-            <Button
-              variant="outline"
-              size="xs"
-              color={isDark ? "blue" : "dark"}
-              styles={{
-                root: {
-                  borderColor: isDark
-                    ? "var(--mantine-color-blue-6)"
-                    : undefined,
-                  color: isDark ? "var(--mantine-color-gray-0)" : undefined,
-                },
-              }}
-            >
-              New Story
-            </Button>
-          </Link>
-          <Button 
-            variant="outline" 
-            size="xs" 
-            color={isDark ? "grape" : "grape"}
-            onClick={() => setIconicModalOpen(true)}
-          >
-             Iconic Images
-          </Button>
         </Group>
       </Group>
 
@@ -439,11 +499,10 @@ export default function AdminDashboardUI({
         </Paper>
       </Stack>
 
-      
-      <IconicImageSelector 
-        opened={iconicModalOpen} 
-        onClose={() => setIconicModalOpen(false)} 
-        galleryAssets={galleryAssets} 
+      <IconicImageSelector
+        opened={iconicModalOpen}
+        onClose={() => setIconicModalOpen(false)}
+        galleryAssets={galleryAssets}
       />
 
       <Group justify="center" mt="xl" pb="md" gap="xs">

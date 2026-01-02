@@ -38,7 +38,7 @@ export function FooterSimple() {
       size="sm"
       style={{
         textDecoration: "none",
-        fontFamily: '"Crimson Text", "Ethos Nova", serif',
+        fontFamily: "var(--font-primary)",
       }}
     >
       About
@@ -52,7 +52,7 @@ export function FooterSimple() {
       closeDelay={200}
       styles={{
         dropdown: {
-          fontFamily: '"Crimson Text", "Ethos Nova", serif',
+          fontFamily: "var(--font-primary)",
         },
       }}
     >
@@ -62,7 +62,7 @@ export function FooterSimple() {
           size="sm"
           style={{
             textDecoration: "none",
-            fontFamily: '"Crimson Text", "Ethos Nova", serif',
+            fontFamily: "var(--font-primary)",
             cursor: "pointer",
           }}
         >
@@ -81,7 +81,7 @@ export function FooterSimple() {
               component={Link}
               href={`/view/project/${p.slug || p.id}`}
               style={{
-                fontFamily: '"Crimson Text", "Ethos Nova", serif',
+                fontFamily: "var(--font-primary)",
               }}
             >
               {p.title || "Untitled Project"}
@@ -99,7 +99,7 @@ export function FooterSimple() {
       closeDelay={200}
       styles={{
         dropdown: {
-          fontFamily: '"Crimson Text", "Ethos Nova", serif',
+          fontFamily: "var(--font-primary)",
         },
       }}
     >
@@ -109,7 +109,7 @@ export function FooterSimple() {
           size="sm"
           style={{
             textDecoration: "none",
-            fontFamily: '"Crimson Text", "Ethos Nova", serif',
+            fontFamily: "var(--font-primary)",
             cursor: "pointer",
           }}
         >
@@ -128,7 +128,7 @@ export function FooterSimple() {
               component={Link}
               href={`/view/story/${s.slug || s.id}`}
               style={{
-                fontFamily: '"Crimson Text", "Ethos Nova", serif',
+                fontFamily: "var(--font-primary)",
               }}
             >
               {s.title || "Untitled Story"}
@@ -146,7 +146,7 @@ export function FooterSimple() {
       size="sm"
       style={{
         textDecoration: "none",
-        fontFamily: '"Crimson Text", "Ethos Nova", serif',
+        fontFamily: "var(--font-primary)",
       }}
     >
       Contact
@@ -163,7 +163,7 @@ export function FooterSimple() {
               c="dimmed"
               fw={500}
               fz="32px"
-              style={{ fontFamily: '"Crimson Text", "Ethos Nova", serif' }}
+              style={{ fontFamily: "var(--font-primary)" }}
             >
               Nitin Jamdar
             </Text>
@@ -173,7 +173,7 @@ export function FooterSimple() {
               fw={500}
               fz="32px"
               style={{
-                fontFamily: '"Crimson Text", "Ethos Nova", serif',
+                fontFamily: "var(--font-primary)",
                 cursor: "pointer",
                 userSelect: "none",
               }}
@@ -187,7 +187,7 @@ export function FooterSimple() {
               size="sm"
               c="dimmed"
               style={{
-                fontFamily: '"Crimson Text", "Ethos Nova", serif',
+                fontFamily: "var(--font-primary)",
                 paddingTop: "8px",
               }}
             >

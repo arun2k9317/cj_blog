@@ -82,6 +82,7 @@ function SortableImage({ url, onRemove }: { url: string, onRemove: () => void })
                     fill 
                     style={{ objectFit: 'cover' }} 
                     sizes="100px"
+                    unoptimized
                 />
                 <ActionIcon 
                     color="red" 
@@ -297,6 +298,7 @@ export default function IconicImageSelector({ opened, onClose }: IconicImageSele
                                             fill 
                                             style={{ objectFit: 'cover' }} 
                                             sizes="(max-width: 768px) 50vw, 25vw"
+                                            unoptimized
                                         />
                                         {isSelected && (
                                             <Box 
