@@ -2358,7 +2358,7 @@ html::-webkit-scrollbar {
 .footer-simple {
   margin-top: 120px;
   border-top: 1px solid var(--mantine-color-default-border);
-  font-family: "Crimson Text", "Ethos Nova", serif;
+  font-family: var(--font-primary);
 }
 
 .footer-simple-inner {
@@ -2370,11 +2370,11 @@ html::-webkit-scrollbar {
 }
 
 .footer-simple-inner * {
-  font-family: "Crimson Text", "Ethos Nova", serif;
+  font-family: var(--font-primary);
 }
 
 .footer-simple-links a {
-  font-family: "Crimson Text", "Ethos Nova", serif;
+  font-family: var(--font-primary);
 }
 
 .footer-copyright-text {

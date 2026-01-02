@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { FontProvider } from "@/contexts/FontContext";
 import AppShell from "@/components/AppShell";
 import { MantineProviders } from "@/components/MantineProviders";
 
@@ -32,7 +33,9 @@ export default function RootLayout({
       >
         <MantineProviders>
           <ThemeProvider>
-            <AppShell>{children}</AppShell>
+            <FontProvider>
+              <AppShell>{children}</AppShell>
+            </FontProvider>
           </ThemeProvider>
         </MantineProviders>
       </body>

@@ -158,6 +158,27 @@ export async function initializeDatabase() {
       `
         });
 
+        // Create site_settings table
+        await supabase.rpc('exec_sql', {
+            sql: `
+        CREATE TABLE IF NOT EXISTS site_settings (
+          id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+          key VARCHAR(255) UNIQUE NOT NULL,
+          value TEXT NOT NULL,
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        )
+      `
+        });
+
+        // Insert default font setting if it doesn't exist
+        await supabase.rpc('exec_sql', {
+            sql: `
+        INSERT INTO site_settings (key, value)
+        VALUES ('primary_font', '"Crimson Text", "Ethos Nova", serif')
+        ON CONFLICT (key) DO NOTHING
+      `
+        });
+
         console.log('Database initialized successfully');
     } catch (error) {
         console.error('Error initializing database:', error);
@@ -657,6 +678,40 @@ export async function getIconicImages() {
         throw error;
     }
     return data || [];
+}
+
+// Site settings operations
+export async function getSetting(key: string): Promise<string | null> {
+    const supabase = getSupabaseServerClient();
+    const { data, error } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', key)
+        .single();
+
+    if (error) {
+        if (error.code === 'PGRST116') {
+            return null; // Setting doesn't exist
+        }
+        throw error;
+    }
+
+    return data?.value || null;
+}
+
+export async function setSetting(key: string, value: string): Promise<void> {
+    const supabase = getSupabaseServerClient();
+    const { error } = await supabase
+        .from('site_settings')
+        .upsert({
+            key,
+            value,
+            updated_at: new Date().toISOString()
+        }, {
+            onConflict: 'key'
+        });
+
+    if (error) throw error;
 }
 
 export async function saveIconicImages(urls: string[]) {
