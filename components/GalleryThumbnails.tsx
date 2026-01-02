@@ -562,6 +562,7 @@ export default function GalleryThumbnails({
                         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                         loading={index < 12 ? "eager" : "lazy"}
                         quality={85}
+                        unoptimized
                       />
                       {deleteMode && (
                         <div
