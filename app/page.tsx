@@ -49,7 +49,7 @@ export default function Home() {
 
   return (
     <>
-      {/* Hero Image - First Iconic Image */}
+      {/* Hero Image - First Iconic Image - Full Viewport Height */}
       {heroImage && (
         <Box
           component="section"
@@ -57,8 +57,9 @@ export default function Home() {
           style={{
             position: "relative",
             width: "100%",
-            height: "60svh",
-            marginTop: "40px",
+            height: "80vh",
+            marginTop: "10vh",
+            marginBottom: "10vh",
             padding: 0,
             overflow: "hidden",
             display: "flex",
@@ -66,7 +67,6 @@ export default function Home() {
             justifyContent: "center",
             cursor: "pointer",
             transition: "opacity 0.2s ease",
-            // backgroundColor: "var(--mantine-color-body)",
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.opacity = "0.9";
@@ -89,23 +89,20 @@ export default function Home() {
         </Box>
       )}
 
-      {/* Iconic Image Carousel Section */}
+      {/* Iconic Image Carousel Section - Full Viewport Height */}
       {displayImages.length > 0 && (
         <Box
           component="section"
           style={{
-            height: "60svh",
+            height: "80vh",
             width: "100%",
-            marginTop: "20px",
             padding: 0,
           }}
         >
           <Carousel
-            // slideSize="70%"
-            height="60svh"
+            height="80vh"
             slideGap="sm"
             slideSize="66.66%"
-            // withIndicators
             withControls
             emblaOptions={{
               loop: true,
@@ -142,7 +139,6 @@ export default function Home() {
                       justifyContent: "center",
                       cursor: "pointer",
                       transition: "opacity 0.2s ease",
-                      // backgroundColor: "var(--mantine-color-body)",
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.opacity = "0.9";
